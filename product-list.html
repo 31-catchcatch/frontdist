@@ -12,9 +12,12 @@
 <!-- ================= 공통 헤더 시작 (수정 금지) ================= -->
 <div class="utility">
   <div class="wrap">
-    <a href="faq.html">고객센터</a>
-    <a href="login.html">로그인</a>
-    <a href="signup.html">회원가입</a>
+    <a href="#">고객센터</a>
+    <a href="#">매장안내</a>
+    <a href="login.html" data-auth-guest>로그인</a>
+    <a href="signup.html" data-auth-guest>회원가입</a>
+    <a href="mypage.html" data-auth-member hidden>마이페이지</a>
+    <a href="#" data-auth-member data-logout hidden>로그아웃</a>
   </div>
 </div>
 
@@ -28,7 +31,7 @@
     </div>
     <a class="brand" href="main.html">캐치캐치</a>
     <div class="head-right">
-      <a href="mypage.html" aria-label="마이페이지"><svg class="icn" viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.6"/><path d="M5 20c1.2-3.6 3.8-5.4 7-5.4s5.8 1.8 7 5.4"/></svg></a>
+      <a href="mypage.html" id="mypageLink" aria-label="마이페이지"><svg class="icn" viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.6"/><path d="M5 20c1.2-3.6 3.8-5.4 7-5.4s5.8 1.8 7 5.4"/></svg></a>
       <a href="wishlist.html" aria-label="위시리스트"><svg class="icn" viewBox="0 0 24 24"><path d="M12 20s-7-4.6-7-9.3A3.7 3.7 0 0 1 12 8a3.7 3.7 0 0 1 7 2.7C19 15.4 12 20 12 20Z"/></svg></a>
       <a href="cart.html" aria-label="장바구니"><svg class="icn" viewBox="0 0 24 24"><path d="M6 7h12l-1.2 12.2a1 1 0 0 1-1 .8H8.2a1 1 0 0 1-1-.8L6 7Z"/><path d="M9 7a3 3 0 0 1 6 0"/></svg></a>
     </div>
@@ -38,6 +41,7 @@
 <nav class="cats">
   <div class="wrap">
     <a href="product-list.html">베스트</a>
+    <a href="brand.html">브랜드</a>
     <a href="product-list.html?cat=outer">아우터</a>
     <a href="product-list.html?cat=top">상의</a>
     <a href="product-list.html?cat=shirts">셔츠</a>
@@ -48,7 +52,6 @@
     <a href="product-list.html?cat=bag">가방</a>
     <a href="product-list.html?cat=acc">액세서리</a>
     <a href="product-list.html?cat=underwear">언더웨어</a>
-    <a href="product-list.html?cat=sale" style="color:var(--point)">SALE</a>
   </div>
 </nav>
 <!-- ================= 공통 헤더 끝 ================= -->
@@ -147,7 +150,7 @@
 </main>
 
 <!-- ================= 공통 푸터 시작 (수정 금지) ================= -->
-<footer class="site-foot">
+<footer>
   <div class="wrap">
     <div class="foot-top">
       <div class="foot-brand">
