@@ -65,6 +65,14 @@
     // 상단 로그인/회원가입 ↔ 로그아웃 전환 (CSS가 body 클래스로 처리)
     if (loggedIn) document.body.classList.add("is-member");
 
+    // 상단 유틸리티 메뉴: 비회원은 로그인/회원가입, 회원은 마이페이지/로그아웃을 표시
+    document.querySelectorAll("[data-auth-guest]").forEach((el) => {
+      el.hidden = loggedIn;
+    });
+    document.querySelectorAll("[data-auth-member]").forEach((el) => {
+      el.hidden = !loggedIn;
+    });
+
     // 로그아웃 버튼(있으면) 연결
     document.querySelectorAll("[data-logout]").forEach((el) => {
       el.addEventListener("click", (e) => {

@@ -42,8 +42,10 @@
   <div class="wrap">
     <a href="#">고객센터</a>
     <a href="#">매장안내</a>
-    <a href="#">로그인</a>
-    <a href="#">회원가입</a>
+    <a href="login.html" data-auth-guest>로그인</a>
+    <a href="#" data-auth-guest>회원가입</a>
+    <a href="mypage.html" data-auth-member hidden>마이페이지</a>
+    <a href="#" data-auth-member data-logout hidden>로그아웃</a>
   </div>
 </div>
 
@@ -255,27 +257,7 @@
 
 </script>
 
-<script>
-  // 마이페이지 접근 제어:
-  // 로그인 성공 시 login.html에서 저장한 로그인 상태/토큰을 확인합니다.
-  (() => {
-    const mypageLink = document.getElementById('mypageLink');
-    if (!mypageLink) return;
-
-    mypageLink.addEventListener('click', (event) => {
-      event.preventDefault();
-
-      const isLoggedIn =
-        sessionStorage.getItem('catchcatch.loggedIn') === 'true' ||
-        Boolean(sessionStorage.getItem('catchcatch.accessToken')) ||
-        Boolean(localStorage.getItem('catchcatch.accessToken'));
-
-      window.location.href = isLoggedIn
-        ? 'mypage.html'
-        : 'login.html?redirect=mypage.html';
-    });
-  })();
-</script>
+<script src="js/auth.js"></script>
 
 </body>
 </html>
