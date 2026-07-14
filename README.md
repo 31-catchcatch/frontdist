@@ -81,7 +81,6 @@ frontend/
 | 담당 | 파일명 | 페이지 | 기능 ID |
 |------|--------|--------|---------|
 | C | `mypage.html` | 마이페이지 요약 | U-MY-001~003, 006, 008, 009
-| C | `payment-methods.html` | 결제수단 관리 | U-MY-004~005
 | C | `points.html` | 포인트 내역 | U-MY-007
 | C | `addresses.html` | 배송지 관리 | U-ADDR-001~004
 | C | `notifications.html` | 알림 센터 | U-NOTI-001

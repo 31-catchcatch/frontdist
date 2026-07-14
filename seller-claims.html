@@ -46,7 +46,7 @@
         찾으시는 상품이 있나요?
       </label>
     </div>
-    <div class="brand">캐치캐치</div>
+    <a class="brand" href="main.html" aria-label="캐치캐치 메인 페이지">캐치캐치</a>
     <div class="head-right">
       <a href="mypage.html" id="mypageLink" aria-label="마이페이지"><svg class="icn" viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.6"/><path d="M5 20c1.2-3.6 3.8-5.4 7-5.4s5.8 1.8 7 5.4"/></svg></a>
       <a href="#" aria-label="위시리스트"><svg class="icn" viewBox="0 0 24 24"><path d="M12 20s-7-4.6-7-9.3A3.7 3.7 0 0 1 12 8a3.7 3.7 0 0 1 7 2.7C19 15.4 12 20 12 20Z"/></svg></a>
@@ -85,6 +85,7 @@
     <p class="kicker">Claim Management</p>
     <h3>교환 / 환불 관리</h3>
   </div>
+  <a class="seller-dashboard-link" href="seller-dashboard.html">← 대시보드</a>
 </div>
 
 
@@ -96,14 +97,14 @@
 
     <div class="input-group">
       <label>조회 기간</label>
-      <input type="date">
+      <input type="date" id="claimStartDate">
     </div>
 
     <span class="wave">~</span>
 
     <div class="input-group">
       <label>&nbsp;</label>
-      <input type="date">
+      <input type="date" id="claimEndDate">
     </div>
 
 
@@ -111,24 +112,26 @@
 
       <label>상태</label>
 
-      <select>
-        <option>전체</option>
-        <option>접수</option>
-        <option>검토중</option>
-        <option>승인</option>
-        <option>반려</option>
-        <option>완료</option>
+      <select id="claimStatusFilter">
+        <option value="all">전체</option>
+        <option value="접수">접수</option>
+        <option value="검토중">검토중</option>
+        <option value="승인">승인</option>
+        <option value="반려">반려</option>
+        <option value="완료">완료</option>
       </select>
 
     </div>
 
 
-    <button class="btn-search">
+    <button type="button" class="btn-search" id="claimSearchButton">
       조회
     </button>
 
 
   </div>
+
+  <p class="filter-message" id="claimFilterMessage" aria-live="polite"></p>
 
 </div>
 
@@ -171,7 +174,7 @@
 <tbody>
 
 
-<tr class="claim-item active">
+<tr class="claim-item active" data-id="C001" data-product="와이드 데님 팬츠" data-type="교환" data-reason="사이즈 변경" data-amount="45,000원" data-status="검토중" data-date="2026-07-14">
 
 <td>C001</td>
 <td>와이드 데님</td>
@@ -186,7 +189,7 @@
 
 
 
-<tr class="claim-item">
+<tr class="claim-item" data-id="C002" data-product="오버핏 셔츠" data-type="환불" data-reason="상품 불량" data-amount="32,000원" data-status="접수" data-date="2026-07-13">
 
 <td>C002</td>
 <td>오버핏 셔츠</td>
@@ -201,7 +204,7 @@
 
 
 
-<tr class="claim-item">
+<tr class="claim-item" data-id="C003" data-product="코튼 니트" data-type="환불" data-reason="단순 변심" data-amount="29,000원" data-status="완료" data-date="2026-07-10">
 
 <td>C003</td>
 <td>코튼 니트</td>
@@ -245,7 +248,7 @@
 
 <label>요청번호</label>
 
-<p>C001</p>
+<p id="claimId">C001</p>
 
 </div>
 
@@ -254,7 +257,7 @@
 
 <label>상품명</label>
 
-<p>와이드 데님 팬츠</p>
+<p id="claimProduct">와이드 데님 팬츠</p>
 
 </div>
 
@@ -264,7 +267,7 @@
 
 <label>요청 유형</label>
 
-<p>교환</p>
+<p id="claimType">교환</p>
 
 </div>
 
@@ -274,7 +277,7 @@
 
 <label>요청 사유</label>
 
-<p>사이즈 변경</p>
+<p id="claimReason">사이즈 변경</p>
 
 </div>
 
@@ -284,7 +287,7 @@
 
 <label>환불 금액</label>
 
-<p>45,000원</p>
+<p id="claimAmount">45,000원</p>
 
 </div>
 
@@ -309,7 +312,11 @@
 <div class="action-row">
 
 
-<select>
+<select id="claimStatusSelect">
+
+<option>
+접수
+</option>
 
 <option>
 검토중
@@ -323,10 +330,14 @@
 반려
 </option>
 
+<option>
+완료
+</option>
+
 </select>
 
 
-<button class="btn-primary">
+<button type="button" class="btn-primary" id="updateClaimStatusButton">
 상태 변경
 </button>
 
@@ -373,7 +384,7 @@
 
 
 
-<button class="btn-danger">
+<button type="button" class="btn-danger" id="completeRefundButton">
 
 환불 완료 처리
 
@@ -435,5 +446,6 @@
 
 <!-- 페이지 전용 스크립트가 있으면 여기에 추가 -->
 <script src="js/auth.js"></script>
+<script src="js/seller-claims.js"></script>
 </body>
 </html>

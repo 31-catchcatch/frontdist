@@ -249,3 +249,35 @@
     }
 
 }
+
+.filter-message{
+    min-height:20px;
+    margin:12px 0 0;
+    color:#666;
+    font-size:13px;
+}
+
+.seller-dashboard-link{
+    display:inline-flex;
+    align-items:center;
+    min-height:38px;
+    padding:0 14px;
+    border:1px solid #ddd;
+    border-radius:8px;
+    color:#444;
+    font-size:14px;
+    font-weight:600;
+    text-decoration:none;
+}
+
+.seller-dashboard-link:hover{
+    border-color:#111;
+    color:#111;
+}
+
+.selected-period{
+    margin:0 0 18px;
+    color:#333;
+    font-size:14px;
+    font-weight:700;
+}

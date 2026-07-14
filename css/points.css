@@ -1,49 +1,70 @@
 .point-table{
     width:100%;
-    border-collapse:collapse;
-    margin-top:20px;
+    border:1px solid #e6e7ea;
+    border-radius:14px;
+    border-collapse:separate;
+    border-spacing:0;
+    overflow:hidden;
+    background:#fff;
 }
 
 .point-table thead{
-    background:#f8fafc;
+    background:#f7f8fa;
+}
+
+.point-table th,
+.point-table td{
+    padding:17px 16px;
+    border-bottom:1px solid #eceef1;
+    text-align:center;
+    font-size:14px;
 }
 
 .point-table th{
-    padding:15px;
-    border-bottom:1px solid #ddd;
-    text-align:center;
+    color:var(--ink);
     font-weight:700;
 }
 
-.point-table td{
-    padding:16px;
-    border-bottom:1px solid #eee;
-    text-align:center;
+.point-table tbody tr:last-child td{
+    border-bottom:0;
 }
 
 .point-table tbody tr:hover{
-    background:#fafafa;
+    background:#fcfcfd;
+}
+
+.point-overview td{
+    padding:24px 16px;
 }
 
 .point-table strong{
-    font-size:22px;
-    color:#2563eb;
+    display:block;
+    color:var(--point);
+    font-size:clamp(22px, 2.5vw, 28px);
+    line-height:1.2;
 }
 
-.plus{
-    color:#2563eb;
-    font-weight:700;
+.point-table small{
+    color:var(--mid);
+    font-size:12px;
 }
 
+.plus,
 .minus{
-    color:#ef4444;
     font-weight:700;
 }
+
+.plus{ color:var(--point); }
+.minus{ color:#d14545; }
 
 @media (max-width:768px){
     .point-table{
         display:block;
         overflow-x:auto;
         white-space:nowrap;
+    }
+
+    .point-overview td{
+        padding:20px 14px;
     }
 }

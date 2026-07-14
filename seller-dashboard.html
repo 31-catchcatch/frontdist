@@ -46,7 +46,7 @@
         찾으시는 상품이 있나요?
       </label>
     </div>
-    <div class="brand">캐치캐치</div>
+    <a class="brand" href="main.html" aria-label="캐치캐치 메인 페이지">캐치캐치</a>
     <div class="head-right">
       <a href="mypage.html" id="mypageLink" aria-label="마이페이지"><svg class="icn" viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.6"/><path d="M5 20c1.2-3.6 3.8-5.4 7-5.4s5.8 1.8 7 5.4"/></svg></a>
       <a href="#" aria-label="위시리스트"><svg class="icn" viewBox="0 0 24 24"><path d="M12 20s-7-4.6-7-9.3A3.7 3.7 0 0 1 12 8a3.7 3.7 0 0 1 7 2.7C19 15.4 12 20 12 20Z"/></svg></a>
@@ -87,6 +87,13 @@
       </div>
     </div>
 
+    <nav class="seller-page-links" aria-label="판매자 관리 메뉴">
+      <a class="active" href="seller-dashboard.html">대시보드</a>
+      <a href="seller-sales.html?tab=sales">매출·정산</a>
+      <a href="seller-qna.html?status=wait">Q&amp;A 관리</a>
+      <a href="seller-claims.html?status=검토중">교환·환불</a>
+    </nav>
+
     <div class="dashboard-panel">
 
       <div class="dashboard-header">
@@ -102,29 +109,29 @@
 
       <div class="dashboard-summary">
 
-        <div class="summary-card">
+        <a class="summary-card summary-link" href="seller-sales.html?tab=sales">
           <span>오늘 매출</span>
           <strong>₩2,540,000</strong>
           <small>전일 대비 +12%</small>
-        </div>
+        </a>
 
-        <div class="summary-card">
+        <a class="summary-card summary-link" href="seller-sales.html?tab=sales">
           <span>신규 주문</span>
           <strong>34건</strong>
           <small>결제 완료 주문</small>
-        </div>
+        </a>
 
-        <div class="summary-card">
+        <a class="summary-card summary-link" href="seller-qna.html?status=wait">
           <span>미답변 Q&A</span>
           <strong>5건</strong>
           <small>빠른 답변이 필요합니다.</small>
-        </div>
+        </a>
 
-        <div class="summary-card">
+        <a class="summary-card summary-link" href="#couponRequestForm">
           <span>승인 대기 쿠폰</span>
-          <strong>2건</strong>
+          <strong id="pendingCouponCount">2건</strong>
           <small>관리자 승인 대기</small>
-        </div>
+        </a>
 
       </div>
 
@@ -143,7 +150,7 @@
       </div>
     </div>
 
-    <form class="coupon-form">
+    <form class="coupon-form" id="couponRequestForm">
 
       <div class="form-grid">
 
@@ -235,6 +242,8 @@
 
       </div>
 
+      <p class="coupon-message" id="couponMessage" aria-live="polite"></p>
+
     </form>
 
   </section>
@@ -278,6 +287,7 @@
 
 <!-- 페이지 전용 스크립트가 있으면 여기에 추가 -->
 <script src="js/auth.js"></script>
+<script src="js/seller-dashboard.js"></script>
 
 </body>
 </html>

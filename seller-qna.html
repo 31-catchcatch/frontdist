@@ -46,7 +46,7 @@
         찾으시는 상품이 있나요?
       </label>
     </div>
-    <div class="brand">캐치캐치</div>
+    <a class="brand" href="main.html" aria-label="캐치캐치 메인 페이지">캐치캐치</a>
     <div class="head-right">
       <a href="mypage.html" id="mypageLink" aria-label="마이페이지"><svg class="icn" viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.6"/><path d="M5 20c1.2-3.6 3.8-5.4 7-5.4s5.8 1.8 7 5.4"/></svg></a>
       <a href="#" aria-label="위시리스트"><svg class="icn" viewBox="0 0 24 24"><path d="M12 20s-7-4.6-7-9.3A3.7 3.7 0 0 1 12 8a3.7 3.7 0 0 1 7 2.7C19 15.4 12 20 12 20Z"/></svg></a>
@@ -88,28 +88,27 @@
 <h3>Q&A 관리</h3>
 </div>
 
+<a class="seller-dashboard-link" href="seller-dashboard.html">← 대시보드</a>
+
 
 
 <div class="qna-summary">
 
 
-<button class="summary-btn active"
-onclick="filterQna('all', this)">
-전체 문의 <b>32</b>
+<button type="button" class="summary-btn active" data-filter="all">
+전체 문의 <b aria-live="polite"></b>
 </button>
 
 
 
-<button class="summary-btn"
-onclick="filterQna('wait', this)">
-답변 대기 <b>8</b>
+<button type="button" class="summary-btn" data-filter="wait">
+답변 대기 <b aria-live="polite"></b>
 </button>
 
 
 
-<button class="summary-btn"
-onclick="filterQna('complete', this)">
-답변 완료 <b>24</b>
+<button type="button" class="summary-btn" data-filter="complete">
+답변 완료 <b aria-live="polite"></b>
 </button>
 
 
@@ -172,8 +171,6 @@ onclick="filterQna('complete', this)">
 <a href="#"
 class="qna-item"
 
-onclick="openAnswer(this)"
-
 data-product="오버핏 데님 자켓"
 
 data-question="사이즈가 크게 나왔나요?">
@@ -235,8 +232,6 @@ data-question="사이즈가 크게 나왔나요?">
 <a href="#"
 
 class="qna-item"
-
-onclick="openAnswer(this)"
 
 data-product="캐시미어 니트"
 
@@ -301,8 +296,6 @@ data-question="두께감과 비침 여부가 궁금합니다.">
 <a href="#"
 
 class="qna-item"
-
-onclick="openAnswer(this)"
 
 data-product="린넨 셔츠"
 
@@ -443,7 +436,7 @@ placeholder="고객 문의에 대한 답변을 입력하세요"></textarea>
 
 
 
-<button class="save-btn">
+<button type="button" class="save-btn" id="saveAnswerBtn">
 
 답변 등록
 
@@ -498,106 +491,6 @@ placeholder="고객 문의에 대한 답변을 입력하세요"></textarea>
 
 <!-- 페이지 전용 스크립트가 있으면 여기에 추가 -->
 <script src="js/auth.js"></script>
-<script>
-
-// ===================================
-// Q&A 상태 필터
-// ===================================
-
-function filterQna(type, btn){
-
-
-    document.querySelectorAll(".summary-btn")
-    .forEach(function(item){
-
-        item.classList.remove("active");
-
-    });
-
-
-    btn.classList.add("active");
-
-
-
-    document.querySelectorAll(".qna-table tbody tr")
-    .forEach(function(row){
-
-
-        if(type === "all"){
-
-            row.style.display = "";
-
-        }
-        else if(row.dataset.status === type){
-
-            row.style.display = "";
-
-        }
-        else{
-
-            row.style.display = "none";
-
-        }
-
-
-    });
-
-
-}
-
-
-
-
-
-// ===================================
-// 문의 선택 → 답변 등록창 표시
-// ===================================
-
-function openAnswer(item){
-
-
-    const answerBox =
-    document.getElementById("answerBox");
-
-
-    const answerProduct =
-    document.getElementById("answerProduct");
-
-
-    const answerQuestion =
-    document.getElementById("answerQuestion");
-
-
-
-    answerProduct.innerHTML =
-    "상품 : " + item.dataset.product;
-
-
-
-    answerQuestion.innerHTML =
-    "문의 : " + item.dataset.question;
-
-
-
-    // 답변 영역 표시
-
-    answerBox.style.display = "block";
-
-
-
-    // 답변 영역으로 이동
-
-    answerBox.scrollIntoView({
-
-        behavior : "smooth"
-
-    });
-
-
-}
-
-
-
-</script>
+<script src="js/seller-qna.js"></script>
 </body>
 </html>

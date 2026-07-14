@@ -46,7 +46,7 @@
         찾으시는 상품이 있나요?
       </label>
     </div>
-    <div class="brand">캐치캐치</div>
+    <a class="brand" href="main.html" aria-label="캐치캐치 메인 페이지">캐치캐치</a>
     <div class="head-right">
       <a href="mypage.html" id="mypageLink" aria-label="마이페이지"><svg class="icn" viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.6"/><path d="M5 20c1.2-3.6 3.8-5.4 7-5.4s5.8 1.8 7 5.4"/></svg></a>
       <a href="#" aria-label="위시리스트"><svg class="icn" viewBox="0 0 24 24"><path d="M12 20s-7-4.6-7-9.3A3.7 3.7 0 0 1 12 8a3.7 3.7 0 0 1 7 2.7C19 15.4 12 20 12 20Z"/></svg></a>
@@ -84,14 +84,15 @@
         <p class="kicker">Sales Management</p>
         <h3>매출 / 정산 관리</h3>
       </div>
+      <a class="seller-dashboard-link" href="seller-dashboard.html">← 대시보드</a>
     </div>
 
     <!-- 탭 -->
     <div class="tab-menu">
-      <button class="tab-btn active" data-tab="sales">
+      <button type="button" class="tab-btn active" data-tab="sales">
         매출 통계 조회
       </button>
-      <button class="tab-btn" data-tab="settlement">
+      <button type="button" class="tab-btn" data-tab="settlement">
         정산 내역 조회
       </button>
     </div>
@@ -108,17 +109,17 @@
 
           <div class="input-group">
             <label>조회 기간</label>
-            <input type="date">
+            <input type="date" id="salesStartDate">
           </div>
 
           <span class="wave">~</span>
 
           <div class="input-group">
             <label>&nbsp;</label>
-            <input type="date">
+            <input type="date" id="salesEndDate">
           </div>
 
-          <button class="btn-search">
+          <button type="button" class="btn-search" data-search-target="sales">
             조회
           </button>
 
@@ -126,21 +127,24 @@
 
       </div>
 
+      <p class="filter-message" id="salesFilterMessage" aria-live="polite"></p>
+      <p class="selected-period" id="salesPeriod" aria-live="polite" hidden></p>
+
       <div class="summary-grid">
 
         <div class="summary-card">
           <p>총 매출</p>
-          <h2>₩18,520,000</h2>
+          <h2 id="salesTotal">₩10,580,000</h2>
         </div>
 
         <div class="summary-card">
           <p>총 판매 건수</p>
-          <h2>542건</h2>
+          <h2 id="salesQuantity">300건</h2>
         </div>
 
         <div class="summary-card">
           <p>평균 주문 금액</p>
-          <h2>₩34,170</h2>
+          <h2 id="salesAverage">₩35,267</h2>
         </div>
 
       </div>
@@ -151,6 +155,7 @@
 
           <thead>
             <tr>
+              <th>판매일</th>
               <th>상품명</th>
               <th>판매 수량</th>
               <th>매출액</th>
@@ -160,28 +165,32 @@
 
           <tbody>
 
-            <tr>
+            <tr data-date="2026-07-01" data-amount="2400000" data-quantity="120">
+              <td>2026-07-01</td>
               <td>베이직 반팔 티셔츠</td>
               <td>120개</td>
               <td>₩2,400,000</td>
               <td>13%</td>
             </tr>
 
-            <tr>
+            <tr data-date="2026-07-03" data-amount="3870000" data-quantity="86">
+              <td>2026-07-03</td>
               <td>와이드 데님 팬츠</td>
               <td>86개</td>
               <td>₩3,870,000</td>
               <td>21%</td>
             </tr>
 
-            <tr>
+            <tr data-date="2026-07-05" data-amount="2750000" data-quantity="55">
+              <td>2026-07-05</td>
               <td>오버핏 후드집업</td>
               <td>55개</td>
               <td>₩2,750,000</td>
               <td>15%</td>
             </tr>
 
-            <tr>
+            <tr data-date="2026-07-12" data-amount="1560000" data-quantity="39">
+              <td>2026-07-12</td>
               <td>코튼 셔츠</td>
               <td>39개</td>
               <td>₩1,560,000</td>
@@ -208,23 +217,26 @@
 
           <div class="input-group">
             <label>조회 기간</label>
-            <input type="date">
+            <input type="date" id="settlementStartDate">
           </div>
 
           <span class="wave">~</span>
 
           <div class="input-group">
             <label>&nbsp;</label>
-            <input type="date">
+            <input type="date" id="settlementEndDate">
           </div>
 
-          <button class="btn-search">
+          <button type="button" class="btn-search" data-search-target="settlement">
             조회
           </button>
 
         </div>
 
       </div>
+
+      <p class="filter-message" id="settlementFilterMessage" aria-live="polite"></p>
+      <p class="selected-period" id="settlementPeriod" aria-live="polite" hidden></p>
 
       <div class="summary-grid">
 
@@ -264,7 +276,7 @@
 
           <tbody>
 
-            <tr>
+            <tr data-date="2026-07-01">
               <td>2026-07-01</td>
               <td>202607010001</td>
               <td>와이드 데님 팬츠</td>
@@ -273,7 +285,7 @@
               <td><span class="status done">완료</span></td>
             </tr>
 
-            <tr>
+            <tr data-date="2026-07-03">
               <td>2026-07-03</td>
               <td>202607030215</td>
               <td>베이직 티셔츠</td>
@@ -282,7 +294,7 @@
               <td><span class="status wait">예정</span></td>
             </tr>
 
-            <tr>
+            <tr data-date="2026-07-05">
               <td>2026-07-05</td>
               <td>202607050091</td>
               <td>코튼 셔츠</td>
@@ -340,25 +352,6 @@
 
 <!-- 페이지 전용 스크립트가 있으면 여기에 추가 -->
 <script src="js/auth.js"></script>
-<script>
-
-const tabs=document.querySelectorAll(".tab-btn");
-const contents=document.querySelectorAll(".tab-content");
-
-tabs.forEach(tab=>{
-
-    tab.addEventListener("click",()=>{
-
-        tabs.forEach(t=>t.classList.remove("active"));
-        contents.forEach(c=>c.classList.remove("active"));
-
-        tab.classList.add("active");
-        document.getElementById(tab.dataset.tab).classList.add("active");
-
-    });
-
-});
-
-</script>
+<script src="js/seller-sales.js"></script>
 </body>
 </html>
