@@ -1,13 +1,9 @@
 (() => {
   "use strict";
 
-  /*
-   * 입점 신청 페이지는 로그인한 사용자만 접근할 수 있습니다.
-   * 로그인 성공 시 login.html에서 아래 값을 저장해야 합니다.
-   *
-   * sessionStorage.setItem("catchcatch.loggedIn", "true");
-   * sessionStorage.setItem("catchcatch.loginType", "seller");
-   */
+  const FILE_PREVIEW_MODE = location.protocol === "file:";
+  const FILE_UPLOAD_API = "/api/v1/files/upload";
+  const SELLER_APPLICATION_API = "/api/v1/seller/applications";
 
   function isLoggedIn() {
     return (
@@ -17,24 +13,27 @@
     );
   }
 
-  function moveToSellerLogin() {
-    const redirectPage = encodeURIComponent("seller-entry.html");
-    window.location.replace(
-      `login.html?type=seller&redirect=${redirectPage}`
+  function moveToLogin() {
+    location.replace(
+      `login.html?redirect=${encodeURIComponent("seller-entry.html")}`
     );
   }
 
-  // 로그인하지 않은 상태에서 직접 주소로 접근해도 로그인 페이지로 이동
-  if (!isLoggedIn()) {
-    moveToSellerLogin();
+  function clearLoginState() {
+    sessionStorage.removeItem("catchcatch.loggedIn");
+    sessionStorage.removeItem("catchcatch.loginType");
+    sessionStorage.removeItem("catchcatch.accessToken");
+    localStorage.removeItem("catchcatch.accessToken");
+  }
+
+  if (!FILE_PREVIEW_MODE && !isLoggedIn()) {
+    moveToLogin();
     return;
   }
 
   const form = document.getElementById("sellerEntryForm");
   const submitButton = document.getElementById("submitButton");
   const formMessage = document.getElementById("formMessage");
-  const logoutLink = document.getElementById("logoutLink");
-
   const businessLicense = document.getElementById("businessLicense");
   const mailOrderLicense = document.getElementById("mailOrderLicense");
   const businessLicenseName = document.getElementById("businessLicenseName");
@@ -46,34 +45,6 @@
     "image/jpeg",
     "image/png"
   ];
-
-  /*
-   * 현재 API 정의서에는 일반/판매자 공통 로그아웃 URI가
-   * /api/v1/auth/user/logout 으로 작성되어 있습니다.
-   * 판매자 전용 로그아웃 URI가 생기면 아래 주소만 변경하면 됩니다.
-   */
-  async function logout() {
-    try {
-      await fetch("/api/v1/auth/user/logout", {
-        method: "POST",
-        credentials: "include"
-      });
-    } catch (_) {
-      // 서버 요청 실패 여부와 관계없이 브라우저 로그인 상태는 제거
-    } finally {
-      sessionStorage.removeItem("catchcatch.loggedIn");
-      sessionStorage.removeItem("catchcatch.loginType");
-      sessionStorage.removeItem("catchcatch.accessToken");
-      localStorage.removeItem("catchcatch.accessToken");
-
-      window.location.href = "login.html?type=seller";
-    }
-  }
-
-  logoutLink.addEventListener("click", (event) => {
-    event.preventDefault();
-    logout();
-  });
 
   function showFileName(input, output) {
     output.textContent =
@@ -116,36 +87,44 @@
     }
   }
 
+  function handleUnauthorized(response) {
+    if (response.status !== 401 && response.status !== 403) {
+      return false;
+    }
+
+    clearLoginState();
+    moveToLogin();
+    return true;
+  }
+
   async function uploadFile(file, documentType) {
     const formData = new FormData();
     formData.append("file", file);
     formData.append("documentType", documentType);
 
-    const response = await fetch("/api/v1/files/upload", {
+    const response = await fetch(FILE_UPLOAD_API, {
       method: "POST",
       credentials: "include",
       body: formData
     });
+
+    if (handleUnauthorized(response)) {
+      throw new Error("로그인이 만료되었습니다.");
+    }
 
     let data = {};
     try {
       data = await response.json();
     } catch (_) {}
 
-    if (response.status === 401 || response.status === 403) {
-      sessionStorage.removeItem("catchcatch.loggedIn");
-      moveToSellerLogin();
-      throw new Error("로그인이 만료되었습니다.");
-    }
-
     if (!response.ok) {
       throw new Error(data.message || "서류 업로드에 실패했습니다.");
     }
 
     const fileUrl =
-      data.url ||
-      data.fileUrl ||
-      data.data?.url ||
+      data.url ??
+      data.fileUrl ??
+      data.data?.url ??
       data.data?.fileUrl;
 
     if (!fileUrl) {
@@ -159,8 +138,8 @@
     event.preventDefault();
     clearMessage();
 
-    if (!isLoggedIn()) {
-      moveToSellerLogin();
+    if (!FILE_PREVIEW_MODE && !isLoggedIn()) {
+      moveToLogin();
       return;
     }
 
@@ -176,6 +155,14 @@
       validateFile(businessLicenseFile, "사업자등록증");
       validateFile(mailOrderLicenseFile, "통신판매업 신고증");
 
+      if (FILE_PREVIEW_MODE) {
+        showMessage(
+          "미리보기 모드입니다. 실제 서버에서는 서류 업로드 후 입점 신청 API가 호출됩니다.",
+          "success"
+        );
+        return;
+      }
+
       submitButton.disabled = true;
       submitButton.textContent = "서류 업로드 중...";
 
@@ -187,10 +174,6 @@
 
       submitButton.textContent = "신청서 제출 중...";
 
-      /*
-       * 백엔드 DTO 필드명이 다르면 아래 payload의 키 이름만
-       * 백엔드 명세에 맞게 수정하면 됩니다.
-       */
       const payload = {
         businessName: document.getElementById("businessName").value.trim(),
         brandName: document.getElementById("brandName").value.trim(),
@@ -206,7 +189,7 @@
         mailOrderRegistrationUrl
       };
 
-      const response = await fetch("/api/v1/seller/applications", {
+      const response = await fetch(SELLER_APPLICATION_API, {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
@@ -215,16 +198,12 @@
         body: JSON.stringify(payload)
       });
 
+      if (handleUnauthorized(response)) return;
+
       let data = {};
       try {
         data = await response.json();
       } catch (_) {}
-
-      if (response.status === 401 || response.status === 403) {
-        sessionStorage.removeItem("catchcatch.loggedIn");
-        moveToSellerLogin();
-        return;
-      }
 
       if (!response.ok) {
         throw new Error(data.message || "입점 신청서 제출에 실패했습니다.");
