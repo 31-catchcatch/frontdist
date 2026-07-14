@@ -22,16 +22,16 @@ frontend/
 파일명은 서로 링크로 연결돼 있어서 **바꾸면 다른 사람 페이지가 깨집니다.**
 `js/auth.js`(공통 인증 모듈)와 `css/common.css`는 **리더만 수정**합니다.
 
-### 리더 — 거래 흐름 + 인증 인프라 (최고 난이도)
+### Key — 거래 흐름 + 인증 인프라
 
 | 담당 | 파일명 | 페이지 | 기능 ID | 받는 파라미터 |
 |------|--------|--------|---------|--------------|
-| 리더 | `index.html` | 메인/홈 ✅완성 | U-MAIN-001~006 | — |
-| 리더 | `login.html` | 로그인 | U-AUTH-001~003 | — |
-| 리더 | `signup.html` | 회원가입 | U-AUTH-004~007 | — |
-| 리더 | `js/auth.js` | 공통 인증 모듈(토큰 재발급) | U-AUTH-008 | — |
-| 리더 | `checkout.html` | 결제(주문서) | U-ORDER-001~004 | — |
-| 리더 | `orders.html` | 주문 내역/배송추적/구매확정/교환환불 | U-ORDER-005~010 | `?orderId=` |
+| Key | `index.html` | 메인/홈 ✅완성 | U-MAIN-001~006 | — |
+| Key | `login.html` | 로그인 | U-AUTH-001~003 | — |
+| Key | `signup.html` | 회원가입 | U-AUTH-004~007 | — |
+| Key | `js/auth.js` | 공통 인증 모듈(토큰 재발급) | U-AUTH-008 | — |
+| Key | `checkout.html` | 결제(주문서) | U-ORDER-001~004 | — |
+| Key | `orders.html` | 주문 내역/배송추적/구매확정/교환환불 | U-ORDER-005~010 | `?orderId=` |
 
 ### 팀원 A — 상품·장바구니 + 유저 계정
 
