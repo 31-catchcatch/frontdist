@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>위시리스트 — 캐치캐치</title>
+<link rel="stylesheet" href="css/common.css">
+<link rel="stylesheet" href="css/wishlist.css">
+</head>
+<body>
+
+<!-- ================= 공통 헤더 시작 (수정 금지) ================= -->
+<div class="utility">
+  <div class="wrap">
+    <a href="#">고객센터</a>
+    <a href="#">매장안내</a>
+    <a href="login.html" data-auth-guest>로그인</a>
+    <a href="signup.html" data-auth-guest>회원가입</a>
+    <a href="mypage.html" data-auth-member hidden>마이페이지</a>
+    <a href="#" data-auth-member data-logout hidden>로그아웃</a>
+  </div>
+</div>
+
+<header class="site">
+  <div class="wrap head-row">
+    <div class="head-left">
+      <form class="search" action="product-list.html" method="get" role="search">
+        <svg class="icn" viewBox="0 0 24 24" style="width:15px;height:15px"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg>
+        <input type="text" name="q" placeholder="찾으시는 상품이 있나요?" aria-label="상품 검색">
+      </form>
+    </div>
+    <a class="brand" href="main.html">캐치캐치</a>
+    <div class="head-right">
+      <a href="mypage.html" id="mypageLink" aria-label="마이페이지"><svg class="icn" viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.6"/><path d="M5 20c1.2-3.6 3.8-5.4 7-5.4s5.8 1.8 7 5.4"/></svg></a>
+      <a href="wishlist.html" aria-label="위시리스트"><svg class="icn" viewBox="0 0 24 24"><path d="M12 20s-7-4.6-7-9.3A3.7 3.7 0 0 1 12 8a3.7 3.7 0 0 1 7 2.7C19 15.4 12 20 12 20Z"/></svg></a>
+      <a href="cart.html" aria-label="장바구니"><svg class="icn" viewBox="0 0 24 24"><path d="M6 7h12l-1.2 12.2a1 1 0 0 1-1 .8H8.2a1 1 0 0 1-1-.8L6 7Z"/><path d="M9 7a3 3 0 0 1 6 0"/></svg></a>
+    </div>
+  </div>
+</header>
+
+<nav class="cats">
+  <div class="wrap">
+    <a href="product-list.html">베스트</a>
+    <a href="brand.html">브랜드</a>
+    <a href="product-list.html?cat=outer">아우터</a>
+    <a href="product-list.html?cat=top">상의</a>
+    <a href="product-list.html?cat=shirts">셔츠</a>
+    <a href="product-list.html?cat=knit">니트</a>
+    <a href="product-list.html?cat=pants">팬츠</a>
+    <a href="product-list.html?cat=denim">데님</a>
+    <a href="product-list.html?cat=shoes">신발</a>
+    <a href="product-list.html?cat=bag">가방</a>
+    <a href="product-list.html?cat=acc">액세서리</a>
+    <a href="product-list.html?cat=underwear">언더웨어</a>
+  </div>
+</nav>
+<!-- ================= 공통 헤더 끝 ================= -->
+
+<main class="wrap wish-page">
+
+<!-- ▼▼▼ 위시리스트 =====================================
+     기능정의서 매핑
+     - U-HEAD-002  위시리스트 이동 (비로그인 시 로그인 페이지로)
+     - U-WISH-001  위시리스트 목록 조회
+       ⚠️ 백엔드 API 추가 필요 (제안: GET /api/v1/users/me/wishlist)
+          현재 명세에는 좋아요 등록·해제 API만 있음
+     - U-PROD-004  찜 해제 → POST /api/v1/products/{productId}/like
+================================================================ -->
+
+  <div class="wish-head">
+    <div>
+      <p class="kicker">Wishlist</p>
+      <h3>위시리스트</h3>
+    </div>
+    <span class="total-count">총 <b data-role="total">0</b>개</span>
+  </div>
+
+  <!-- 찜한 상품이 있을 때 -->
+  <div data-role="wish-body">
+
+    <!-- 툴바 -->
+    <div class="wish-toolbar">
+      <label class="check-all">
+        <input type="checkbox" data-action="check-all">
+        <span>전체선택 (<b data-role="checked-count">0</b>/<span data-role="total-count2">0</span>)</span>
+      </label>
+      <div class="toolbar-btns">
+        <button type="button" class="btn-outline" data-action="add-cart-checked">선택상품 장바구니 담기</button>
+        <button type="button" class="btn-text" data-action="delete-checked">선택삭제</button>
+      </div>
+    </div>
+
+    <!-- 상품 그리드 (JS가 채움) -->
+    <div class="wish-grid" data-role="wish-grid"></div>
+
+  </div>
+
+  <!-- 찜한 상품이 없을 때 -->
+  <div class="wish-empty" data-role="wish-empty" hidden>
+    <p>찜한 상품이 없습니다.</p>
+    <a href="product-list.html" class="btn-primary">쇼핑하러 가기</a>
+  </div>
+
+<!-- ▲▲▲ 여기까지 ▲▲▲ -->
+
+</main>
+
+<!-- ================= 공통 푸터 시작 (수정 금지) ================= -->
+<footer>
+  <div class="wrap">
+    <div class="foot-top">
+      <div class="foot-brand">
+        <div class="brand">캐치캐치</div>
+        <p>예쁜 옷 많이 캐치캐치</p>
+      </div>
+      <div class="foot-col">
+        <h5>Shop</h5>
+        <a href="product-list.html">베스트</a><a href="brand.html">브랜드</a>
+      </div>
+      <div class="foot-col">
+        <h5>Customer</h5>
+        <a href="#">공지사항</a><a href="#">자주 묻는 질문</a><a href="#">1:1 문의</a><a href="#">배송/반품</a>
+      </div>
+      <div class="foot-col">
+        <h5>About</h5>
+        <a href="#">브랜드 스토리</a><a href="#">매장 안내</a><a href="#">채용</a><a href="#">제휴 문의</a>
+      </div>
+    </div>
+    <div class="foot-bar">
+      <span>© 2026 CATCHCATCH STORE. 서울특별시 성동구 · 사업자등록 000-00-00000</span>
+      <div class="socials">
+        <a href="#" aria-label="Instagram"><svg viewBox="0 0 24 24"><rect x="3.5" y="3.5" width="17" height="17" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.2" cy="6.8" r="1" fill="currentColor" stroke="none"/></svg></a>
+        <a href="#" aria-label="YouTube"><svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="12" rx="3.5"/><path d="M11 9.5l4 2.5-4 2.5z" fill="currentColor" stroke="none"/></svg></a>
+        <a href="#" aria-label="X"><svg viewBox="0 0 24 24"><path d="M5 5l14 14M19 5L5 19"/></svg></a>
+      </div>
+    </div>
+  </div>
+</footer>
+<!-- ================= 공통 푸터 끝 ================= -->
+
+<script src="js/auth.js"></script>
+<script src="js/wishlist.js"></script>
+</body>
+</html>
