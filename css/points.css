@@ -1,0 +1,49 @@
+.point-table{
+    width:100%;
+    border-collapse:collapse;
+    margin-top:20px;
+}
+
+.point-table thead{
+    background:#f8fafc;
+}
+
+.point-table th{
+    padding:15px;
+    border-bottom:1px solid #ddd;
+    text-align:center;
+    font-weight:700;
+}
+
+.point-table td{
+    padding:16px;
+    border-bottom:1px solid #eee;
+    text-align:center;
+}
+
+.point-table tbody tr:hover{
+    background:#fafafa;
+}
+
+.point-table strong{
+    font-size:22px;
+    color:#2563eb;
+}
+
+.plus{
+    color:#2563eb;
+    font-weight:700;
+}
+
+.minus{
+    color:#ef4444;
+    font-weight:700;
+}
+
+@media (max-width:768px){
+    .point-table{
+        display:block;
+        overflow-x:auto;
+        white-space:nowrap;
+    }
+}
