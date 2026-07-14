@@ -214,21 +214,6 @@
 
 </section>
 
-<script>
-const tabs=document.querySelectorAll(".tab-btn");
-const contents=document.querySelectorAll(".tab-content");
-
-tabs.forEach(tab=>{
-    tab.addEventListener("click",()=>{
-        tabs.forEach(t=>t.classList.remove("active"));
-        contents.forEach(c=>c.classList.remove("active"));
-
-        tab.classList.add("active");
-        document.getElementById(tab.dataset.tab).classList.add("active");
-    });
-});
-</script>
-
   <!-- ▲▲▲ 여기까지 ▲▲▲ -->
 
 </main>
@@ -267,6 +252,19 @@ tabs.forEach(tab=>{
 <!-- ================= 공통 푸터 끝 ================= -->
 
 <!-- 페이지 전용 스크립트가 있으면 여기에 추가 -->
+<script>
+const tabs=document.querySelectorAll(".tab-btn");
+const contents=document.querySelectorAll(".tab-content");
 
+tabs.forEach(tab=>{
+    tab.addEventListener("click",()=>{
+        tabs.forEach(t=>t.classList.remove("active"));
+        contents.forEach(c=>c.classList.remove("active"));
+
+        tab.classList.add("active");
+        document.getElementById(tab.dataset.tab).classList.add("active");
+    });
+});
+</script>
 </body>
 </html>
