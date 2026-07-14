@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="캐치캐치 관리자 · 포인트 현황 및 강제 조정">
+  <title>포인트 관리 · 캐치캐치 관리자</title>
+  <link rel="stylesheet" href="css/common.css">
+  <link rel="stylesheet" href="css/admin.css">
+  <script src="js/admin-auth.js"></script>
+  <script>AdminAuth.requireLogin();</script>
+</head>
+<body>
+  <header class="admin-bar">
+    <a class="admin-brand" href="admin-dashboard.html">캐치캐치 <span>ADMIN</span></a>
+    <nav aria-label="관리자 메뉴">
+      <a href="admin-dashboard.html">대시보드</a>
+      <a href="admin-users.html">사용자</a>
+      <a href="admin-products.html">상품</a>
+      <a href="admin-seller-applications.html">입점심사</a>
+      <a href="admin-sellers.html">입점업체</a>
+      <a href="admin-coupons.html">쿠폰</a>
+      <a class="is-current" href="admin-points.html">포인트</a>
+      <a href="admin-qna.html">Q&amp;A</a>
+      <a href="admin-settlements.html">정산</a>
+    </nav>
+    <div class="admin-actions">
+      <a href="main.html">쇼핑몰 보기</a>
+      <a href="admin-login.html" data-admin-logout>로그아웃</a>
+    </div>
+  </header>
+
+  <main class="admin-page wrap">
+    <div class="page-head">
+      <div>
+        <p class="kicker">POINT MANAGEMENT · A-POINT-001~002</p>
+        <h1>포인트 관리</h1>
+        <p class="desc">사용자별 포인트 적립·차감 현황을 조회하고, 비정상 포인트를 강제로 조정(가감)합니다.</p>
+      </div>
+      <span class="preview-badge">화면 미리보기 · /api/v1/admin/users/points</span>
+    </div>
+
+    <div class="toolbar">
+      <label class="search-box">
+        <svg class="icn" viewBox="0 0 24 24" style="width:15px;height:15px"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg>
+        <input type="text" id="q" placeholder="이름·사용자ID 검색">
+      </label>
+      <span class="count">총 <b id="count">0</b>명</span>
+    </div>
+
+    <div class="table-wrap">
+      <table class="data">
+        <thead>
+          <tr>
+            <th>사용자ID</th>
+            <th>이름</th>
+            <th class="num">보유 포인트</th>
+            <th class="num">누적 적립</th>
+            <th class="num">누적 사용</th>
+            <th>최근 변동</th>
+            <th>강제 조정</th>
+          </tr>
+        </thead>
+        <tbody id="rows"></tbody>
+      </table>
+    </div>
+
+    <div class="pager">
+      <button type="button">‹</button>
+      <button type="button" class="on">1</button>
+      <button type="button">›</button>
+    </div>
+  </main>
+
+  <script src="js/admin-ui.js?v=3"></script>
+  <script>
+    // ---------- 사용자별 포인트 현황 (GET /api/v1/admin/users/points) ----------
+    const POINTS = [
+      { id: 'U1001', name: '홍길동', balance: 12500, earned: 34000, used: 21500, updated: '2026-07-10' },
+      { id: 'U1002', name: '김민지', balance: 3200,  earned: 8200,  used: 5000,  updated: '2026-07-08' },
+      { id: 'U1003', name: '이철수', balance: 0,     earned: 15000, used: 15000, updated: '2026-06-30' },
+      { id: 'U1004', name: '박영희', balance: 88000, earned: 88000, used: 0,     updated: '2026-07-12' },
+      { id: 'U1006', name: '최수아', balance: 5400,  earned: 12400, used: 7000,  updated: '2026-07-11' },
+    ];
+
+    const rowsEl = document.getElementById('rows');
+    const countEl = document.getElementById('count');
+    const qEl = document.getElementById('q');
+
+    function render(list, total = list.length) {
+      if (!list.length) {
+        rowsEl.innerHTML = '<tr class="empty-row"><td colspan="7">조건에 맞는 사용자가 없습니다.</td></tr>';
+        countEl.textContent = 0;
+        return;
+      }
+      rowsEl.innerHTML = list.map((p) => `
+        <tr data-id="${AdminUI.escape(p.id)}">
+          <td class="num">${AdminUI.escape(p.id)}</td>
+          <td class="strong">${AdminUI.escape(p.name)}</td>
+          <td class="num strong">${AdminUI.num(p.balance)} P</td>
+          <td class="num muted">${AdminUI.num(p.earned)}</td>
+          <td class="num muted">${AdminUI.num(p.used)}</td>
+          <td class="muted">${AdminUI.escape(p.updated)}</td>
+          <td><button class="btn sm" data-act="adjust">조정</button></td>
+        </tr>`).join('');
+      countEl.textContent = total;
+    }
+
+    const listController = AdminUI.createListController({ pager: document.querySelector('.pager'), render });
+
+    function applyFilter() {
+      const q = qEl.value.trim().toLowerCase();
+      listController.setItems(POINTS.filter((p) =>
+        !q || p.name.toLowerCase().includes(q) || p.id.toLowerCase().includes(q)
+      ));
+    }
+    qEl.addEventListener('input', applyFilter);
+
+    rowsEl.addEventListener('click', async (e) => {
+      const btn = e.target.closest('button[data-act="adjust"]');
+      if (!btn) return;
+      const id = btn.closest('tr').dataset.id;
+      const p = POINTS.find((x) => x.id === id);
+
+      // PATCH /api/v1/admin/users/{userId}/points  (가감 조정)
+      const res = await AdminUI.form({
+        title: `${p.name} 포인트 강제 조정`,
+        message: `현재 보유 ${AdminUI.num(p.balance)} P. 더할 값은 양수, 뺄 값은 음수로 입력하세요.`,
+        okText: '조정 적용',
+        fields: [
+          { name: 'amount', label: '조정 포인트 (+/-)', type: 'number', placeholder: '예: -1000 또는 5000' },
+          { name: 'reason', label: '조정 사유', type: 'textarea', placeholder: '예: 이벤트 오적립 회수' },
+        ],
+      });
+      if (!res) return;
+      const amount = Number(res.amount);
+      if (!amount || Number.isNaN(amount)) { AdminUI.toast('조정 포인트를 올바르게 입력하세요.'); return; }
+      if (p.balance + amount < 0) { AdminUI.toast('보유 포인트보다 큰 값을 차감할 수 없습니다.'); return; }
+      p.balance += amount;
+      if (amount > 0) p.earned += amount; else p.used += -amount;
+      p.updated = new Date().toISOString().slice(0, 10);
+      applyFilter();
+      AdminUI.toast(`${amount > 0 ? '+' : ''}${AdminUI.num(amount)} P 조정되었습니다.`);
+    });
+
+    listController.setItems(POINTS);
+  </script>
+</body>
+</html>

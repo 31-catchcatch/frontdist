@@ -1,0 +1,38 @@
+/* =========================================================
+   admin-pages.css — 관리자 목록/관리 페이지 공용 스타일
+   ---------------------------------------------------------
+   대상: admin-users / admin-products / admin-seller-applications
+         admin-sellers / admin-coupons / admin-points / admin-qna
+         admin-settlements
+   common.css 다음에 로드. (admin-dashboard.css 와 톤 통일)
+   ========================================================= */
+
+body { background: #f6f5f2; }
+
+/* ---------- 상단바 (대시보드와 동일 규칙) ---------- */
+.admin-bar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  min-height: 60px;
+  padding: 0 max(24px, calc((100vw - var(--w)) / 2));
+  gap: 34px;
+  background: var(--ink);
+  color: var(--paper);
+}
+.admin-brand { font-size: 14px; font-weight: 800; letter-spacing: .1em; white-space: nowrap; }
+.admin-brand span { margin-left: 7px; color: #bfbfbf; font-size: 9px; letter-spacing: .15em; }
+.admin-bar nav { display: flex; align-self: stretch; gap: 24px; overflow-x: auto; scrollbar-width: none; }
+.admin-bar nav::-webkit-scrollbar { display: none; }
+.admin-bar nav a { display: grid; place-items: center; border-bottom: 2px solid transparent; color: #bdbdbd; font-size: 12px; font-weight: 700; white-space: nowrap; }
+.admin-bar nav a:hover, .admin-bar nav a.is-current { border-color: var(--point); color: var(--paper); }
+.admin-actions { display: flex; gap: 16px; margin-left: auto; color: #c4c4c4; font-size: 12px; white-space: nowrap; }
+.admin-actions a:hover { color: var(--paper); }
+
+/* ---------- 페이지 골격 ---------- */
+.admin-page { padding-top: 52px; padding-bottom: 80px; }
+.section-kicker { margin: 0 0 10px; color: var(--point); font-size: 10px; font-weight: 800; letter-spacing: .2em; }
+.page-head h1 { margin: 0; color: var(--ink); font-size: clamp(26px, 3.2vw, 36px); letter-spacing: -.055em; }
+.page-desc { margin: 12px 0 0; color: var(--mid); font-size: 13px; line-height: 1

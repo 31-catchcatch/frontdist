@@ -14,10 +14,15 @@
   <header class="admin-bar">
     <a class="admin-brand" href="admin-dashboard.html">캐치캐치 <span>ADMIN</span></a>
     <nav aria-label="관리자 메뉴">
-      <a class="is-current" href="#overview">운영 현황</a>
-      <a href="#work-queue">처리 대기</a>
-      <a href="#management">관리 기능</a>
-      <a href="#settlement">정산</a>
+      <a class="is-current" href="admin-dashboard.html">대시보드</a>
+      <a href="admin-users.html">사용자</a>
+      <a href="admin-products.html">상품</a>
+      <a href="admin-seller-applications.html">입점심사</a>
+      <a href="admin-sellers.html">입점업체</a>
+      <a href="admin-coupons.html">쿠폰</a>
+      <a href="admin-points.html">포인트</a>
+      <a href="admin-qna.html">Q&amp;A</a>
+      <a href="admin-settlements.html">정산</a>
     </nav>
     <div class="admin-actions">
       <a href="main.html">쇼핑몰 보기</a>
@@ -73,7 +78,7 @@
         <p>실시간 수치는 각 조회 API 연결 후 자동 갱신됩니다.</p>
       </div>
       <div class="queue-grid">
-        <a class="queue-card" href="#seller-applications">
+        <a class="queue-card" href="admin-seller-applications.html">
           <span class="queue-index">01</span>
           <div>
             <h3>입점 신청 검토</h3>
@@ -81,7 +86,7 @@
           </div>
           <span class="queue-action">신청 목록 보기</span>
         </a>
-        <a class="queue-card" href="#coupon-requests">
+        <a class="queue-card" href="admin-coupons.html">
           <span class="queue-index">02</span>
           <div>
             <h3>쿠폰 발행 요청</h3>
@@ -89,7 +94,7 @@
           </div>
           <span class="queue-action">요청 확인하기</span>
         </a>
-        <a class="queue-card" href="#product-moderation">
+        <a class="queue-card" href="admin-products.html">
           <span class="queue-index">03</span>
           <div>
             <h3>상품 모니터링</h3>
@@ -97,7 +102,7 @@
           </div>
           <span class="queue-action">상품 관리하기</span>
         </a>
-        <a class="queue-card" href="#qna-monitoring">
+        <a class="queue-card" href="admin-qna.html">
           <span class="queue-index">04</span>
           <div>
             <h3>Q&amp;A 모니터링</h3>
@@ -108,79 +113,13 @@
       </div>
     </section>
 
-    <section class="dashboard-section" id="management" aria-labelledby="management-title">
-      <div class="section-heading">
-        <div>
-          <p class="section-kicker">MANAGEMENT MAP</p>
-          <h2 id="management-title">관리 기능</h2>
-        </div>
-        <p>기능 정의서와 API 명세를 기준으로 구성했습니다.</p>
-      </div>
-      <div class="management-grid">
-        <article class="management-card" id="user-management">
-          <span class="management-number">01</span>
-          <h3>사용자·포인트</h3>
-          <p>전체 사용자 상태와 인가 권한, 고객별 포인트 적립·차감 현황을 관리합니다.</p>
-          <div class="endpoint-list" aria-label="사용자 관리 API">
-            <code>GET /api/v1/admin/users</code>
-            <code>GET /api/v1/admin/users/points</code>
-            <code>PATCH /api/v1/admin/users/{userId}/points</code>
-          </div>
-        </article>
-        <article class="management-card" id="product-moderation">
-          <span class="management-number">02</span>
-          <h3>상품 운영</h3>
-          <p>전체 상품을 조회하고 불법·위험·신고 상품의 노출을 중지하거나 삭제합니다.</p>
-          <div class="endpoint-list" aria-label="상품 관리 API">
-            <code>GET /api/v1/admin/products</code>
-            <code>DELETE /api/v1/admin/products/{productId}</code>
-          </div>
-        </article>
-        <article class="management-card" id="seller-applications">
-          <span class="management-number">03</span>
-          <h3>입점 승인·상태</h3>
-          <p>입점 신청을 승인 또는 반려하고, 기존 입점 업체의 운영 상태를 변경합니다.</p>
-          <div class="endpoint-list" aria-label="입점 관리 API">
-            <code>GET /api/v1/admin/sellers/applications</code>
-            <code>POST /api/v1/admin/sellers/applications/{appId}/status</code>
-            <code>PUT /api/v1/admin/sellers/{sellerId}/status</code>
-          </div>
-        </article>
-        <article class="management-card" id="coupon-requests">
-          <span class="management-number">04</span>
-          <h3>쿠폰 인가</h3>
-          <p>판매자의 쿠폰 발행 요청을 조회하고 최종 승인 및 인가 처리를 진행합니다.</p>
-          <div class="endpoint-list" aria-label="쿠폰 관리 API">
-            <code>GET /api/v1/admin/coupons/requests</code>
-            <code>PUT /api/v1/admin/coupons/requests/{requestId}</code>
-          </div>
-        </article>
-        <article class="management-card" id="qna-monitoring">
-          <span class="management-number">05</span>
-          <h3>Q&amp;A 모니터링</h3>
-          <p>플랫폼 전체에서 발생한 고객 문의 내역을 조회하고 응대 흐름을 확인합니다.</p>
-          <div class="endpoint-list" aria-label="Q&A 관리 API">
-            <code>GET /api/v1/admin/qna</code>
-          </div>
-        </article>
-        <article class="management-card" id="settlement">
-          <span class="management-number">06</span>
-          <h3>플랫폼 정산</h3>
-          <p>전체 거래액, 수수료 수익, 업체별 정산 주기를 확인하고 관리합니다.</p>
-          <div class="endpoint-list" aria-label="정산 관리 API">
-            <code>GET /api/v1/admin/settlements</code>
-          </div>
-        </article>
-      </div>
-    </section>
-
     <section class="integration-panel" aria-labelledby="integration-title">
       <div>
         <p class="section-kicker">NEXT STEP</p>
         <h2 id="integration-title">데이터 연동 준비</h2>
         <p>현재 화면은 운영 업무의 구조를 확인하는 단계입니다. 각 관리 메뉴는 명세된 관리자 API의 실제 응답값으로 연결하면 됩니다.</p>
       </div>
-      <a href="#management">관리 기능 다시 보기</a>
+      <a href="#work-queue">우선 처리 업무 보기</a>
     </section>
   </main>
 </body>

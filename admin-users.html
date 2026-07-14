@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="캐치캐치 관리자 · 사용자 관리">
+  <title>사용자 관리 · 캐치캐치 관리자</title>
+  <link rel="stylesheet" href="css/common.css">
+  <link rel="stylesheet" href="css/admin.css">
+  <script src="js/admin-auth.js"></script>
+  <script>AdminAuth.requireLogin();</script>
+</head>
+<body>
+  <header class="admin-bar">
+    <a class="admin-brand" href="admin-dashboard.html">캐치캐치 <span>ADMIN</span></a>
+    <nav aria-label="관리자 메뉴">
+      <a href="admin-dashboard.html">대시보드</a>
+      <a class="is-current" href="admin-users.html">사용자</a>
+      <a href="admin-products.html">상품</a>
+      <a href="admin-seller-applications.html">입점심사</a>
+      <a href="admin-sellers.html">입점업체</a>
+      <a href="admin-coupons.html">쿠폰</a>
+      <a href="admin-points.html">포인트</a>
+      <a href="admin-qna.html">Q&amp;A</a>
+      <a href="admin-settlements.html">정산</a>
+    </nav>
+    <div class="admin-actions">
+      <a href="main.html">쇼핑몰 보기</a>
+      <a href="admin-login.html" data-admin-logout>로그아웃</a>
+    </div>
+  </header>
+
+  <main class="admin-page wrap">
+    <div class="page-head">
+      <div>
+        <p class="kicker">USER MANAGEMENT · A-USER-001</p>
+        <h1>사용자 관리</h1>
+        <p class="desc">전체 사용자의 상태(정상/정지)와 인가 권한을 조회하고 관리합니다.</p>
+      </div>
+      <span class="preview-badge">화면 미리보기 · GET /api/v1/admin/users</span>
+    </div>
+
+    <div class="toolbar">
+      <label class="search-box">
+        <svg class="icn" viewBox="0 0 24 24" style="width:15px;height:15px"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg>
+        <input type="text" id="q" placeholder="이름·이메일·ID 검색">
+      </label>
+      <select id="roleFilter">
+        <option value="">전체 권한</option>
+        <option value="USER">일반</option>
+        <option value="SELLER">판매자</option>
+      </select>
+      <select id="statusFilter">
+        <option value="">전체 상태</option>
+        <option value="ok">정상</option>
+        <option value="stop">정지</option>
+      </select>
+      <span class="count">총 <b id="count">0</b>명</span>
+    </div>
+
+    <div class="table-wrap">
+      <table class="data">
+        <thead>
+          <tr>
+            <th class="chk"><input type="checkbox" id="checkAll" aria-label="전체 선택"></th>
+            <th>ID</th>
+            <th>이름</th>
+            <th>이메일</th>
+            <th>권한</th>
+            <th>상태</th>
+            <th>가입일</th>
+            <th>관리</th>
+          </tr>
+        </thead>
+        <tbody id="rows"></tbody>
+      </table>
+    </div>
+
+    <div class="pager">
+      <button type="button">‹</button>
+      <button type="button" class="on">1</button>
+      <button type="button">2</button>
+      <button type="button">3</button>
+      <button type="button">›</button>
+    </div>
+  </main>
+
+  <script src="js/admin-ui.js?v=3"></script>
+  <script>
+    // ---------- 사용자 목록 (임시 mock — GET /api/v1/admin/users 로 교체) ----------
+    const USERS = [
+      { id: 'U1001', name: '홍길동', email: 'gildong@example.com', role: 'USER',   status: 'ok',   joined: '2026-05-21' },
+      { id: 'U1002', name: '김민지', email: 'minji@example.com',   role: 'USER',   status: 'ok',   joined: '2026-06-02' },
+      { id: 'U1003', name: '이철수', email: 'chulsoo@example.com', role: 'SELLER', status: 'ok',   joined: '2026-06-08' },
+      { id: 'U1004', name: '박영희', email: 'younghee@example.com',role: 'USER',   status: 'stop', joined: '2026-06-15' },
+      { id: 'U1005', name: '정하준', email: 'hajun@example.com',   role: 'SELLER', status: 'ok',   joined: '2026-06-22' },
+      { id: 'U1006', name: '최수아', email: 'sua@example.com',     role: 'USER',   status: 'ok',   joined: '2026-07-01' },
+      { id: 'U1007', name: '강도현', email: 'dohyun@example.com',  role: 'USER',   status: 'stop', joined: '2026-07-09' },
+    ];
+
+    const ROLE = { USER: '일반', SELLER: '판매자' };
+    const STATUS = { ok: '정상', stop: '정지' };
+
+    const rowsEl = document.getElementById('rows');
+    const countEl = document.getElementById('count');
+    const qEl = document.getElementById('q');
+    const roleEl = document.getElementById('roleFilter');
+    const statusEl = document.getElementById('statusFilter');
+
+    function render(list, total = list.length) {
+      if (!list.length) {
+        rowsEl.innerHTML = '<tr class="empty-row"><td colspan="8">조건에 맞는 사용자가 없습니다.</td></tr>';
+        countEl.textContent = 0;
+        return;
+      }
+      rowsEl.innerHTML = list.map((u) => `
+        <tr data-id="${AdminUI.escape(u.id)}">
+          <td class="chk"><input type="checkbox" aria-label="${AdminUI.escape(u.name)} 선택"></td>
+          <td class="num">${AdminUI.escape(u.id)}</td>
+          <td class="strong">${AdminUI.escape(u.name)}</td>
+          <td class="muted">${AdminUI.escape(u.email)}</td>
+          <td><span class="tag role">${ROLE[u.role] || u.role}</span></td>
+          <td><span class="tag ${u.status}">${STATUS[u.status]}</span></td>
+          <td class="muted">${AdminUI.escape(u.joined)}</td>
+          <td>
+            <div class="row-actions">
+              <button class="btn sm" data-act="detail">상세</button>
+              ${u.status === 'ok'
+                ? '<button class="btn sm danger" data-act="suspend">정지</button>'
+                : '<button class="btn sm ok" data-act="restore">정지해제</button>'}
+            </div>
+          </td>
+        </tr>`).join('');
+      countEl.textContent = total;
+    }
+
+    const listController = AdminUI.createListController({ pager: document.querySelector('.pager'), render });
+
+    function applyFilter() {
+      const q = qEl.value.trim().toLowerCase();
+      const role = roleEl.value;
+      const status = statusEl.value;
+      listController.setItems(USERS.filter((u) =>
+        (!role || u.role === role) &&
+        (!status || u.status === status) &&
+        (!q || u.name.toLowerCase().includes(q) || u.email.toLowerCase().includes(q) || u.id.toLowerCase().includes(q))
+      ));
+    }
+    qEl.addEventListener('input', applyFilter);
+    roleEl.addEventListener('change', applyFilter);
+    statusEl.addEventListener('change', applyFilter);
+
+    document.getElementById('checkAll').addEventListener('change', (e) => {
+      rowsEl.querySelectorAll('input[type="checkbox"]').forEach((c) => (c.checked = e.target.checked));
+    });
+
+    // 행 액션 (정지/해제/상세) — 현재는 화면 미리보기용으로 로컬 상태만 변경
+    rowsEl.addEventListener('click', async (e) => {
+      const btn = e.target.closest('button[data-act]');
+      if (!btn) return;
+      const id = btn.closest('tr').dataset.id;
+      const user = USERS.find((u) => u.id === id);
+      if (btn.dataset.act === 'detail') {
+        AdminUI.toast(`${user.name} (${user.id}) 상세 — 상세 API 연동 예정`);
+        return;
+      }
+      const suspend = btn.dataset.act === 'suspend';
+      const ok = await AdminUI.confirm({
+        title: suspend ? '사용자 정지' : '정지 해제',
+        message: `${user.name}(${user.id}) 계정을 ${suspend ? '정지' : '정상 복구'}하시겠습니까?`,
+        okText: suspend ? '정지' : '해제',
+        danger: suspend,
+      });
+      if (!ok) return;
+      user.status = suspend ? 'stop' : 'ok';
+      applyFilter();
+      AdminUI.toast(suspend ? '정지 처리되었습니다.' : '정지 해제되었습니다.');
+    });
+
+    listController.setItems(USERS);
+  </script>
+</body>
+</html>

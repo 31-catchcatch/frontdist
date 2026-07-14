@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="캐치캐치 관리자 · 입점 업체 상태 관리">
+  <title>입점 업체 관리 · 캐치캐치 관리자</title>
+  <link rel="stylesheet" href="css/common.css">
+  <link rel="stylesheet" href="css/admin.css">
+  <script src="js/admin-auth.js"></script>
+  <script>AdminAuth.requireLogin();</script>
+</head>
+<body>
+  <header class="admin-bar">
+    <a class="admin-brand" href="admin-dashboard.html">캐치캐치 <span>ADMIN</span></a>
+    <nav aria-label="관리자 메뉴">
+      <a href="admin-dashboard.html">대시보드</a>
+      <a href="admin-users.html">사용자</a>
+      <a href="admin-products.html">상품</a>
+      <a href="admin-seller-applications.html">입점심사</a>
+      <a class="is-current" href="admin-sellers.html">입점업체</a>
+      <a href="admin-coupons.html">쿠폰</a>
+      <a href="admin-points.html">포인트</a>
+      <a href="admin-qna.html">Q&amp;A</a>
+      <a href="admin-settlements.html">정산</a>
+    </nav>
+    <div class="admin-actions">
+      <a href="main.html">쇼핑몰 보기</a>
+      <a href="admin-login.html" data-admin-logout>로그아웃</a>
+    </div>
+  </header>
+
+  <main class="admin-page wrap">
+    <div class="page-head">
+      <div>
+        <p class="kicker">SELLER STATUS · A-SELLER-003</p>
+        <h1>입점 업체 상태 관리</h1>
+        <p class="desc">기존 입점 업체의 운영 상태를 정상 · 일시정지 · 강제폐점으로 변경합니다.</p>
+      </div>
+      <span class="preview-badge">화면 미리보기 · PUT /api/v1/admin/sellers/{sellerId}/status</span>
+    </div>
+
+    <div class="toolbar">
+      <label class="search-box">
+        <svg class="icn" viewBox="0 0 24 24" style="width:15px;height:15px"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg>
+        <input type="text" id="q" placeholder="업체명·대표자·ID 검색">
+      </label>
+      <select id="statusFilter">
+        <option value="">전체 상태</option>
+        <option value="ok">정상</option>
+        <option value="wait">일시정지</option>
+        <option value="stop">강제폐점</option>
+      </select>
+      <span class="count">총 <b id="count">0</b>개 업체</span>
+    </div>
+
+    <div class="table-wrap">
+      <table class="data">
+        <thead>
+          <tr>
+            <th>업체ID</th>
+            <th>업체명</th>
+            <th>대표자</th>
+            <th class="num">등록상품</th>
+            <th>입점일</th>
+            <th>상태</th>
+            <th>상태 변경</th>
+          </tr>
+        </thead>
+        <tbody id="rows"></tbody>
+      </table>
+    </div>
+
+    <div class="pager">
+      <button type="button">‹</button>
+      <button type="button" class="on">1</button>
+      <button type="button">›</button>
+    </div>
+  </main>
+
+  <script src="js/admin-ui.js?v=3"></script>
+  <script>
+    // ---------- 입점 업체 목록 (GET 목록 후 PUT status 로 상태 변경) ----------
+    const SELLERS = [
+      { id: 'S4001', company: 'STANDARD', ceo: '한대표', products: 128, joined: '2026-03-11', status: 'ok' },
+      { id: 'S4002', company: '데일리룩',  ceo: '김대표', products: 64,  joined: '2026-04-02', status: 'ok' },
+      { id: 'S4003', company: '어반스타일', ceo: '이사장', products: 41,  joined: '2026-04-20', status: 'wait' },
+      { id: 'S4004', company: '뷰티샵',    ceo: '조대표', products: 22,  joined: '2026-05-08', status: 'stop' },
+      { id: 'S4005', company: '무드서울',  ceo: '정대표', products: 37,  joined: '2026-05-19', status: 'ok' },
+    ];
+
+    const STATUS = { ok: '정상', wait: '일시정지', stop: '강제폐점' };
+
+    const rowsEl = document.getElementById('rows');
+    const countEl = document.getElementById('count');
+    const qEl = document.getElementById('q');
+    const statusEl = document.getElementById('statusFilter');
+
+    function render(list, total = list.length) {
+      if (!list.length) {
+        rowsEl.innerHTML = '<tr class="empty-row"><td colspan="7">조건에 맞는 업체가 없습니다.</td></tr>';
+        countEl.textContent = 0;
+        return;
+      }
+      rowsEl.innerHTML = list.map((s) => `
+        <tr data-id="${AdminUI.escape(s.id)}">
+          <td class="num">${AdminUI.escape(s.id)}</td>
+          <td class="strong">${AdminUI.escape(s.company)}</td>
+          <td>${AdminUI.escape(s.ceo)}</td>
+          <td class="num">${AdminUI.num(s.products)}</td>
+          <td class="muted">${AdminUI.escape(s.joined)}</td>
+          <td><span class="tag ${s.status}">${STATUS[s.status]}</span></td>
+          <td><button class="btn sm" data-act="change">상태 변경</button></td>
+        </tr>`).join('');
+      countEl.textContent = total;
+    }
+
+    const listController = AdminUI.createListController({ pager: document.querySelector('.pager'), render });
+
+    function applyFilter() {
+      const q = qEl.value.trim().toLowerCase();
+      const status = statusEl.value;
+      listController.setItems(SELLERS.filter((s) =>
+        (!status || s.status === status) &&
+        (!q || s.company.toLowerCase().includes(q) || s.ceo.toLowerCase().includes(q) || s.id.toLowerCase().includes(q))
+      ));
+    }
+    qEl.addEventListener('input', applyFilter);
+    statusEl.addEventListener('change', applyFilter);
+
+    rowsEl.addEventListener('click', async (e) => {
+      const btn = e.target.closest('button[data-act="change"]');
+      if (!btn) return;
+      const id = btn.closest('tr').dataset.id;
+      const s = SELLERS.find((x) => x.id === id);
+
+      // PUT /api/v1/admin/sellers/{sellerId}/status
+      const res = await AdminUI.form({
+        title: `${s.company} 상태 변경`,
+        message: '변경할 운영 상태를 선택하세요.',
+        okText: '변경',
+        fields: [{
+          name: 'status', label: '운영 상태', type: 'select', value: s.status,
+          options: [
+            { value: 'ok', label: '정상' },
+            { value: 'wait', label: '일시정지' },
+            { value: 'stop', label: '강제폐점' },
+          ],
+        }],
+      });
+      if (!res) return;
+      s.status = res.status;
+      applyFilter();
+      AdminUI.toast(`상태가 '${STATUS[res.status]}'(으)로 변경되었습니다.`);
+    });
+
+    listController.setItems(SELLERS);
+  </script>
+</body>
+</html>
