@@ -1,0 +1,287 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>판매자 회원가입 — 캐치캐치</title>
+<link rel="stylesheet" href="css/common.css">
+<link rel="stylesheet" href="css/signup.css">
+</head>
+<body>
+
+<!-- ================= 공통 헤더 시작 (수정 금지) ================= -->
+<div class="utility">
+  <div class="wrap">
+    <a href="faq.html">고객센터</a>
+    <a href="login.html">로그인</a>
+    <a href="signup.html">회원가입</a>
+  </div>
+</div>
+
+<header class="site">
+  <div class="wrap head-row">
+    <div class="head-left">
+      <form class="search" action="search.html" method="get" role="search">
+        <svg class="icn" viewBox="0 0 24 24" style="width:15px;height:15px"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg>
+        <input type="text" name="q" placeholder="찾으시는 상품이 있나요?" aria-label="상품 검색">
+      </form>
+    </div>
+    <a class="brand" href="main.html">캐치캐치</a>
+    <div class="head-right">
+      <a href="mypage.html" aria-label="마이페이지"><svg class="icn" viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.6"/><path d="M5 20c1.2-3.6 3.8-5.4 7-5.4s5.8 1.8 7 5.4"/></svg></a>
+      <a href="wishlist.html" aria-label="위시리스트"><svg class="icn" viewBox="0 0 24 24"><path d="M12 20s-7-4.6-7-9.3A3.7 3.7 0 0 1 12 8a3.7 3.7 0 0 1 7 2.7C19 15.4 12 20 12 20Z"/></svg></a>
+      <a href="cart.html" aria-label="장바구니"><svg class="icn" viewBox="0 0 24 24"><path d="M6 7h12l-1.2 12.2a1 1 0 0 1-1 .8H8.2a1 1 0 0 1-1-.8L6 7Z"/><path d="M9 7a3 3 0 0 1 6 0"/></svg></a>
+    </div>
+  </div>
+</header>
+
+<nav class="cats">
+  <div class="wrap">
+    <a href="product-list.html">베스트</a>
+    <a href="product-list.html?cat=outer">아우터</a>
+    <a href="product-list.html?cat=top">상의</a>
+    <a href="product-list.html?cat=shirts">셔츠</a>
+    <a href="product-list.html?cat=knit">니트</a>
+    <a href="product-list.html?cat=pants">팬츠</a>
+    <a href="product-list.html?cat=denim">데님</a>
+    <a href="product-list.html?cat=shoes">신발</a>
+    <a href="product-list.html?cat=bag">가방</a>
+    <a href="product-list.html?cat=acc">액세서리</a>
+    <a href="product-list.html?cat=underwear">언더웨어</a>
+    <a href="product-list.html?cat=sale" style="color:var(--point)">SALE</a>
+  </div>
+</nav>
+<!-- ================= 공통 헤더 끝 ================= -->
+
+<main class="wrap signup-page">
+
+<!-- ▼▼▼ 판매자 회원가입 =====================================
+     기능정의서 매핑
+     - S-AUTH-003 판매자 회원가입  → POST /api/v1/auth/seller/signup
+     - S-AUTH-004 판매자 본인인증  → POST /api/v1/auth/seller/verify
+     ※ 입점 서류 제출(S-ENTRY-001~002)은 seller-entry.html에서 처리
+================================================================ -->
+
+<section class="block signup-block" id="signupFormBlock">
+  <div class="sec-head">
+    <div>
+      <p class="kicker">Seller Join</p>
+      <h3>판매자 회원가입</h3>
+    </div>
+  </div>
+
+  <ol class="signup-steps" aria-hidden="true">
+    <li class="is-active" data-step-tab="1">정보입력</li>
+    <li data-step-tab="2">본인인증</li>
+    <li data-step-tab="3">가입완료</li>
+  </ol>
+
+  <form id="signupForm" class="signup-form" novalidate>
+
+    <!-- ===== STEP 1 ===== -->
+    <div class="step-panel" data-step-panel="1">
+
+      <!-- 계정 정보 -->
+      <fieldset class="form-section">
+        <legend>계정 정보</legend>
+
+        <div class="field">
+          <label for="userId">아이디 <span class="req">*</span></label>
+          <div class="field-row">
+            <input type="text" id="userId" name="userId" placeholder="영문/숫자 4~16자" required>
+            <button type="button" class="btn-outline" data-action="check-username">중복확인</button>
+          </div>
+          <p class="field-msg" data-role="username-msg"></p>
+        </div>
+
+        <div class="field">
+          <label for="email">이메일 <span class="req">*</span></label>
+          <div class="field-row">
+            <input type="email" id="email" name="email" placeholder="seller@catchcatch.com" required>
+            <button type="button" class="btn-outline" data-action="send-email-code">인증코드 발송</button>
+          </div>
+          <div class="field-row" data-group="email-code" hidden>
+            <input type="text" inputmode="numeric" placeholder="인증코드 6자리" maxlength="6" id="emailCode">
+            <button type="button" class="btn-outline" data-action="confirm-email-code">확인</button>
+            <span class="timer" data-role="email-timer">03:00</span>
+          </div>
+          <p class="field-msg" data-role="email-msg"></p>
+        </div>
+
+        <div class="field">
+          <label for="pw">비밀번호 <span class="req">*</span></label>
+          <input type="password" id="pw" name="pw" placeholder="영문, 숫자, 특수문자 포함 8~20자" required>
+        </div>
+
+        <div class="field">
+          <label for="pwConfirm">비밀번호 확인 <span class="req">*</span></label>
+          <input type="password" id="pwConfirm" name="pwConfirm" placeholder="비밀번호 재입력" required>
+          <p class="field-msg" data-role="pw-confirm-msg"></p>
+        </div>
+      </fieldset>
+
+      <!-- 사업자 정보 (판매자 전용) -->
+      <fieldset class="form-section">
+        <legend>사업자 정보</legend>
+
+        <div class="field">
+          <label for="companyName">상호명 <span class="req">*</span></label>
+          <input type="text" id="companyName" name="companyName" placeholder="사업자등록증상 상호명" required>
+        </div>
+
+        <div class="field">
+          <label for="brandName">브랜드명 <span class="req">*</span></label>
+          <input type="text" id="brandName" name="brandName" placeholder="쇼핑몰에 노출될 브랜드명" required>
+        </div>
+
+        <div class="field">
+          <label for="bizNumber">사업자등록번호 <span class="req">*</span></label>
+          <input type="text" id="bizNumber" name="bizNumber" placeholder="숫자 10자리 (- 없이)" maxlength="10" required>
+        </div>
+
+        <div class="field">
+          <label for="ceoName">대표자명 <span class="req">*</span></label>
+          <input type="text" id="ceoName" name="ceoName" placeholder="대표자 실명" required>
+        </div>
+      </fieldset>
+
+      <!-- 담당자 정보 (S-AUTH-003: "담당자 정보를 포함해") -->
+      <fieldset class="form-section">
+        <legend>담당자 정보</legend>
+
+        <div class="field">
+          <label for="managerName">담당자명 <span class="req">*</span></label>
+          <input type="text" id="managerName" name="managerName" placeholder="실명 입력" required>
+        </div>
+
+        <div class="field">
+          <label for="managerPhone">담당자 연락처 <span class="req">*</span></label>
+          <input type="tel" id="managerPhone" name="managerPhone" placeholder="숫자만 입력" required>
+        </div>
+      </fieldset>
+
+      <!-- 약관 동의 -->
+      <fieldset class="form-section">
+        <legend>이용약관 동의</legend>
+
+        <label class="agree-all">
+          <input type="checkbox" data-action="agree-all">
+          <span>전체 약관에 동의합니다</span>
+        </label>
+        <hr class="agree-divider">
+
+        <label class="agree-item">
+          <input type="checkbox" name="agreeTerms" data-agree-required>
+          <span>[필수] 판매자 이용약관 동의</span>
+          <a href="#" class="agree-view">보기</a>
+        </label>
+
+        <label class="agree-item">
+          <input type="checkbox" name="agreePrivacy" data-agree-required>
+          <span>[필수] 개인정보 수집·이용 동의</span>
+          <a href="#" class="agree-view">보기</a>
+        </label>
+
+        <label class="agree-item">
+          <input type="checkbox" name="agreeSettlement" data-agree-required>
+          <span>[필수] 정산·수수료 정책 동의</span>
+          <a href="#" class="agree-view">보기</a>
+        </label>
+
+        <label class="agree-item">
+          <input type="checkbox" name="agreeMarketing">
+          <span>[선택] 마케팅 정보 수신 동의</span>
+          <a href="#" class="agree-view">보기</a>
+        </label>
+      </fieldset>
+
+      <button type="button" class="btn-submit" data-action="go-step2">다음</button>
+    </div>
+
+    <!-- ===== STEP 2 : 본인인증 (S-AUTH-004) ===== -->
+    <div class="step-panel" data-step-panel="2" hidden>
+      <fieldset class="form-section">
+        <legend>담당자 본인인증</legend>
+
+        <div class="field">
+          <label for="telecom">통신사</label>
+          <select id="telecom" name="telecom">
+            <option value="">선택</option>
+            <option value="skt">SKT</option>
+            <option value="kt">KT</option>
+            <option value="lgu">LG U+</option>
+            <option value="mvno">알뜰폰</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="authPhone">휴대폰번호</label>
+          <div class="field-row">
+            <input type="tel" id="authPhone" name="authPhone" placeholder="숫자만 입력">
+            <button type="button" class="btn-outline" data-action="send-auth-code">인증요청</button>
+          </div>
+        </div>
+
+        <div class="field" data-group="auth-code" hidden>
+          <label for="authCode">인증번호</label>
+          <div class="field-row">
+            <input type="text" id="authCode" inputmode="numeric" maxlength="6" placeholder="6자리 입력">
+            <button type="button" class="btn-outline" data-action="confirm-auth-code">확인</button>
+            <span class="timer" data-role="auth-timer">03:00</span>
+          </div>
+          <p class="field-msg" data-role="auth-msg"></p>
+        </div>
+      </fieldset>
+
+      <div class="step-nav">
+        <button type="button" class="btn-outline" data-action="go-step1">이전</button>
+        <button type="submit" class="btn-submit">가입하기</button>
+      </div>
+    </div>
+
+    <!-- ===== STEP 3 : 가입완료 ===== -->
+    <div class="step-panel" data-step-panel="3" hidden>
+      <div class="signup-complete">
+        <h4>판매자 가입이 완료되었습니다!</h4>
+        <p>
+          이제 <strong>입점 신청</strong>을 진행해 주세요.<br>
+          사업자등록증·통신판매업 신고증을 제출하면<br>
+          관리자 승인 후 상품 등록이 가능합니다.
+        </p>
+        <a href="seller-entry.html" class="btn-submit" style="display:inline-block;text-decoration:none;line-height:52px;padding:0 40px;">입점 신청하러 가기</a>
+      </div>
+    </div>
+
+  </form>
+</section>
+
+<!-- ▲▲▲ 여기까지 ▲▲▲ -->
+
+</main>
+
+<!-- ================= 공통 푸터 시작 (수정 금지) ================= -->
+<footer class="site-foot">
+  <div class="wrap">
+    <div class="foot-top">
+      <div class="foot-brand">
+        <div class="brand">캐치캐치</div>
+        <p>예쁜 옷 많이 캐치캐치</p>
+      </div>
+      <div class="foot-col">
+        <h5>Shop</h5>
+        <a href="product-list.html">베스트</a><a href="product-list.html?cat=outer">아우터</a>
+      </div>
+      <div class="foot-col">
+        <h5>Customer</h5>
+        <a href="#">공지사항</a><a href="faq.html">자주 묻는 질문</a><a href="#">1:1 문의</a><a href="#">배송/반품</a>
+      </div>
+      <div class="foot-col">
+        <h5>About</h5>
+        <a href="#">브랜드 스토리</a><a href="#">매장 안내</a><a href="#">채용</a><a href="#">제휴 문의</a>
+      </div>
+    </div>
+    <div class="foot-bar">
+      <span>© 2026 CATCHCATCH STORE. 서울특별시 성동구 · 사업자등록 000-00-00000</span>
+      <div class="socials">
+        <a href="#" aria-label="Instagram"><svg viewBox="0 0 24 24"><rect x="3.5" y="3.5" width="17" height="17" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.2" cy="6.8" r="1" fill="currentColor" stroke="none"/></svg></a>
+        <a href="#" aria-label="YouTube"><svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="12"
