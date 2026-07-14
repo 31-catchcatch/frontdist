@@ -1,0 +1,581 @@
+/* =================================================
+   교환 / 환불 관리 페이지
+   claim.css
+================================================= */
+
+
+/* ===========================
+   전체 영역
+=========================== */
+
+.claim-dashboard{
+    display:flex;
+    flex-direction:column;
+    gap:25px;
+}
+
+
+/* ===========================
+   검색 영역
+=========================== */
+
+.filter-box{
+
+    background:#f8f9fb;
+    border:1px solid #e5e7eb;
+    border-radius:12px;
+
+    padding:20px;
+
+}
+
+
+.filter-row{
+
+    display:flex;
+    align-items:flex-end;
+    gap:16px;
+    flex-wrap:wrap;
+
+}
+
+
+.input-group{
+
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+
+}
+
+
+.input-group label{
+
+    font-size:14px;
+    color:#666;
+    font-weight:600;
+
+}
+
+
+.input-group input,
+.input-group select{
+
+    height:42px;
+
+    padding:0 12px;
+
+    border:1px solid #ddd;
+    border-radius:8px;
+
+    background:#fff;
+
+    font-size:14px;
+
+}
+
+
+.input-group input{
+
+    width:180px;
+
+}
+
+
+.input-group select{
+
+    width:150px;
+
+}
+
+
+
+.wave{
+
+    padding-bottom:10px;
+
+    color:#888;
+
+}
+
+
+
+.btn-search{
+
+    height:42px;
+
+    padding:0 28px;
+
+    background:#111;
+
+    color:#fff;
+
+    border:none;
+
+    border-radius:8px;
+
+    cursor:pointer;
+
+    font-weight:600;
+
+}
+
+
+.btn-search:hover{
+
+    opacity:.85;
+
+}
+
+
+
+
+
+/* ===========================
+   클레임 대시보드
+=========================== */
+
+
+.claim-dashboard-layout{
+
+    display:grid;
+
+    grid-template-columns:420px 1fr;
+
+    gap:24px;
+
+    align-items:start;
+
+}
+
+
+
+
+
+/* ===========================
+   목록 영역
+=========================== */
+
+
+.claim-list,
+.claim-detail{
+
+    background:#fff;
+
+    border:1px solid #e5e5e5;
+
+    border-radius:14px;
+
+    padding:24px;
+
+}
+
+
+
+.claim-list h4,
+.claim-detail h4{
+
+    margin:0 0 20px;
+
+    font-size:18px;
+
+}
+
+
+
+
+
+/* ===========================
+   테이블
+=========================== */
+
+
+.data-table{
+
+    width:100%;
+
+    border-collapse:collapse;
+
+}
+
+
+
+.data-table thead{
+
+    background:#f5f6f8;
+
+}
+
+
+.data-table th{
+
+    padding:14px;
+
+    font-size:14px;
+
+    font-weight:700;
+
+    border-bottom:1px solid #ddd;
+
+    text-align:center;
+
+}
+
+
+
+.data-table td{
+
+    padding:14px;
+
+    border-bottom:1px solid #eee;
+
+    text-align:center;
+
+    font-size:14px;
+
+}
+
+
+
+.claim-item{
+
+    cursor:pointer;
+
+    transition:.2s;
+
+}
+
+
+
+.claim-item:hover{
+
+    background:#fafafa;
+
+}
+
+
+
+.claim-item.active{
+
+    background:#f1f4f8;
+
+}
+
+
+
+
+
+/* ===========================
+   상태 표시
+=========================== */
+
+
+.status{
+
+    display:inline-block;
+
+    min-width:60px;
+
+    padding:6px 12px;
+
+    border-radius:20px;
+
+    font-size:13px;
+
+    font-weight:600;
+
+    background:#eee;
+
+    color:#555;
+
+}
+
+
+
+.status.wait{
+
+    background:#fff4d6;
+
+    color:#b77900;
+
+}
+
+
+
+.status.done{
+
+    background:#e7f7eb;
+
+    color:#1c7c3a;
+
+}
+
+
+
+
+
+
+/* ===========================
+   상세 정보
+=========================== */
+
+
+.detail-box{
+
+    border:1px solid #eee;
+
+    border-radius:10px;
+
+    padding:20px;
+
+}
+
+
+
+.detail-row{
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+    padding:14px 0;
+
+    border-bottom:1px solid #eee;
+
+}
+
+
+
+.detail-row:last-child{
+
+    border-bottom:none;
+
+}
+
+
+
+.detail-row label{
+
+    color:#777;
+
+    font-size:14px;
+
+}
+
+
+
+.detail-row p{
+
+    margin:0;
+
+    font-weight:600;
+
+}
+
+
+
+
+
+/* ===========================
+   처리 영역
+=========================== */
+
+
+.action-section{
+
+    margin-top:25px;
+
+    padding-top:25px;
+
+    border-top:1px solid #eee;
+
+}
+
+
+
+.action-section h5{
+
+    margin:0 0 15px;
+
+    font-size:16px;
+
+}
+
+
+
+.action-row{
+
+    display:flex;
+
+    gap:12px;
+
+    align-items:center;
+
+}
+
+
+
+.action-row select{
+
+    height:42px;
+
+    padding:0 15px;
+
+    border:1px solid #ddd;
+
+    border-radius:8px;
+
+}
+
+
+
+.btn-primary{
+
+    height:42px;
+
+    padding:0 25px;
+
+    border:none;
+
+    border-radius:8px;
+
+    background:#111;
+
+    color:white;
+
+    font-weight:600;
+
+    cursor:pointer;
+
+}
+
+
+.btn-primary:hover{
+
+    opacity:.85;
+
+}
+
+
+
+
+
+/* ===========================
+   환불 처리
+=========================== */
+
+
+.refund-check{
+
+    padding:18px;
+
+    border-radius:10px;
+
+    background:#f8f8f8;
+
+}
+
+
+
+.refund-check p{
+
+    margin:8px 0;
+
+    font-size:14px;
+
+}
+
+
+
+.btn-danger{
+
+    width:100%;
+
+    height:46px;
+
+    margin-top:18px;
+
+    border:none;
+
+    border-radius:8px;
+
+    background:#d64545;
+
+    color:white;
+
+    font-weight:700;
+
+    cursor:pointer;
+
+}
+
+
+
+.btn-danger:hover{
+
+    opacity:.85;
+
+}
+
+
+
+
+
+/* ===========================
+   반응형
+=========================== */
+
+
+@media(max-width:1100px){
+
+
+    .claim-dashboard-layout{
+
+        grid-template-columns:1fr;
+
+    }
+
+
+}
+
+
+
+@media(max-width:700px){
+
+
+    .filter-row{
+
+        flex-direction:column;
+
+        align-items:stretch;
+
+    }
+
+
+    .input-group input,
+    .input-group select{
+
+        width:100%;
+
+    }
+
+
+    .action-row{
+
+        flex-direction:column;
+
+        align-items:stretch;
+
+    }
+
+
+    .btn-primary{
+
+        width:100%;
+
+    }
+
+
+}
