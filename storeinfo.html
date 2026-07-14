@@ -1,0 +1,202 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>매장안내 — 캐치캐치</title>
+<link rel="stylesheet" href="css/common.css">
+<link rel="stylesheet" href="css/storeinfo.css">
+</head>
+<body>
+
+<!-- ================= 공통 헤더 시작 (수정 금지) ================= -->
+<div class="utility">
+  <div class="wrap">
+    <a href="#">고객센터</a>
+    <a href="storeinfo.html">매장안내</a>
+    <a href="login.html" data-auth-guest>로그인</a>
+    <a href="signup.html" data-auth-guest>회원가입</a>
+    <a href="mypage.html" data-auth-member hidden>마이페이지</a>
+    <a href="#" data-auth-member data-logout hidden>로그아웃</a>
+  </div>
+</div>
+
+<header class="site">
+  <div class="wrap head-row">
+    <div class="head-left">
+      <label class="search">
+        <svg class="icn" viewBox="0 0 24 24" style="width:15px;height:15px"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg>
+        찾으시는 상품이 있나요?
+      </label>
+    </div>
+    <div class="brand">캐치캐치</div>
+    <div class="head-right">
+      <a href="mypage.html" id="mypageLink" aria-label="마이페이지"><svg class="icn" viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.6"/><path d="M5 20c1.2-3.6 3.8-5.4 7-5.4s5.8 1.8 7 5.4"/></svg></a>
+      <a href="#" aria-label="위시리스트"><svg class="icn" viewBox="0 0 24 24"><path d="M12 20s-7-4.6-7-9.3A3.7 3.7 0 0 1 12 8a3.7 3.7 0 0 1 7 2.7C19 15.4 12 20 12 20Z"/></svg></a>
+      <a href="shoppingcart.html" aria-label="장바구니"><svg class="icn" viewBox="0 0 24 24"><path d="M6 7h12l-1.2 12.2a1 1 0 0 1-1 .8H8.2a1 1 0 0 1-1-.8L6 7Z"/><path d="M9 7a3 3 0 0 1 6 0"/></svg></a>
+    </div>
+  </div>
+</header>
+
+<nav class="cats">
+  <div class="wrap">
+    <a href="#" class="on">베스트</a>
+    <a href="brand.html">브랜드</a>
+    <a href="#">아우터</a>
+    <a href="#">상의</a>
+    <a href="#">셔츠</a>
+    <a href="#">니트</a>
+    <a href="#">팬츠</a>
+    <a href="#">데님</a>
+    <a href="#">신발</a>
+    <a href="#">가방</a>
+    <a href="#">액세서리</a>
+    <a href="#">언더웨어</a>
+  </div>
+</nav>
+<!-- ================= 공통 헤더 끝 ================= -->
+
+<main class="wrap">
+  <section class="store-page">
+    <div class="page-head">
+      <p class="page-kicker">Offline store</p>
+      <h1>매장안내</h1>
+      <p>캐치캐치 오프라인 매장의 위치와 운영 정보를 확인하세요.</p>
+    </div>
+
+    <div class="store-layout">
+      <section class="store-list" aria-label="매장 목록">
+        <button class="store-card on" type="button" data-store-id="seongsu">
+          <span class="store-badge">Flagship</span>
+          <h2>캐치캐치 성수점</h2>
+          <p>서울특별시 성동구 연무장길 00</p>
+          <dl>
+            <div><dt>운영시간</dt><dd>11:00–21:00</dd></div>
+            <div><dt>연락처</dt><dd>02-000-0001</dd></div>
+          </dl>
+        </button>
+
+        <button class="store-card" type="button" data-store-id="hongdae">
+          <span class="store-badge">Store</span>
+          <h2>캐치캐치 홍대점</h2>
+          <p>서울특별시 마포구 양화로 00</p>
+          <dl>
+            <div><dt>운영시간</dt><dd>11:30–22:00</dd></div>
+            <div><dt>연락처</dt><dd>02-000-0002</dd></div>
+          </dl>
+        </button>
+
+        <button class="store-card" type="button" data-store-id="suwon">
+          <span class="store-badge">Store</span>
+          <h2>캐치캐치 수원점</h2>
+          <p>경기도 수원시 팔달구 덕영대로 00</p>
+          <dl>
+            <div><dt>운영시간</dt><dd>10:30–20:30</dd></div>
+            <div><dt>연락처</dt><dd>031-000-0003</dd></div>
+          </dl>
+        </button>
+      </section>
+
+      <section class="store-detail" id="storeDetail" aria-live="polite">
+        <div class="map-placeholder">
+          <div>
+            <span>MAP</span>
+            <strong id="mapStoreName">캐치캐치 성수점</strong>
+            <p id="mapAddress">서울특별시 성동구 연무장길 00</p>
+          </div>
+        </div>
+
+        <div class="detail-copy">
+          <div>
+            <p class="detail-kicker">Selected store</p>
+            <h2 id="detailStoreName">캐치캐치 성수점</h2>
+          </div>
+
+          <dl>
+            <div>
+              <dt>주소</dt>
+              <dd id="detailAddress">서울특별시 성동구 연무장길 00</dd>
+            </div>
+            <div>
+              <dt>운영시간</dt>
+              <dd id="detailHours">매일 11:00–21:00</dd>
+            </div>
+            <div>
+              <dt>휴무일</dt>
+              <dd id="detailClosed">설날·추석 당일</dd>
+            </div>
+            <div>
+              <dt>연락처</dt>
+              <dd id="detailPhone">02-000-0001</dd>
+            </div>
+            <div>
+              <dt>주차</dt>
+              <dd id="detailParking">인근 유료 주차장 이용</dd>
+            </div>
+          </dl>
+
+          <div class="detail-actions">
+            <a id="phoneLink" href="tel:020000001">전화하기</a>
+            <a id="mapLink" href="#" target="_blank" rel="noopener">지도에서 보기</a>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <section class="store-notice">
+      <h2>방문 전 확인</h2>
+      <div>
+        <article>
+          <strong>상품 재고</strong>
+          <p>온라인과 오프라인 매장의 재고는 다를 수 있습니다.</p>
+        </article>
+        <article>
+          <strong>교환 및 반품</strong>
+          <p>온라인 주문 상품의 매장 교환·반품 가능 여부는 고객센터에 문의해 주세요.</p>
+        </article>
+        <article>
+          <strong>운영시간 변경</strong>
+          <p>공휴일과 매장 사정에 따라 운영시간이 변경될 수 있습니다.</p>
+        </article>
+      </div>
+    </section>
+  </section>
+</main>
+
+<!-- ================= 공통 푸터 시작 (수정 금지) ================= -->
+<footer>
+  <div class="wrap">
+    <div class="foot-top">
+      <div class="foot-brand">
+        <div class="brand">캐치캐치</div>
+        <p>예쁜 옷 많이 캐치캐치</p>
+      </div>
+      <div class="foot-col">
+        <h5>Shop</h5>
+        <a href="#">베스트</a><a href="#">아우터</a>
+      </div>
+      <div class="foot-col">
+        <h5>Customer</h5>
+        <a href="#">공지사항</a><a href="#">자주 묻는 질문</a><a href="#">1:1 문의</a><a href="#">배송/반품</a>
+      </div>
+      <div class="foot-col">
+        <h5>About</h5>
+        <a href="#">브랜드 스토리</a><a href="storeinfo.html">매장 안내</a><a href="#">채용</a><a href="#">제휴 문의</a>
+      </div>
+    </div>
+    <div class="foot-bar">
+      <span>© 2026 CATCHCATCH STORE. 서울특별시 성동구 · 사업자등록 000-00-00000</span>
+      <div class="socials">
+        <a href="#" aria-label="Instagram"><svg viewBox="0 0 24 24"><rect x="3.5" y="3.5" width="17" height="17" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.2" cy="6.8" r="1" fill="currentColor" stroke="none"/></svg></a>
+        <a href="#" aria-label="YouTube"><svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="12" rx="3.5"/><path d="M11 9.5l4 2.5-4 2.5z" fill="currentColor" stroke="none"/></svg></a>
+        <a href="#" aria-label="X"><svg viewBox="0 0 24 24"><path d="M5 5l14 14M19 5L5 19"/></svg></a>
+      </div>
+    </div>
+  </div>
+</footer>
+<!-- ================= 공통 푸터 끝 ================= -->
+
+<script src="js/auth.js"></script>
+<script src="js/storeinfo.js"></script>
+</body>
+</html>
