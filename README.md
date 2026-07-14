@@ -130,7 +130,15 @@ git commit -m "장바구니 목록 조회 UI 구현 (U-CART-001)"
 
 # ④ 올리기
 git push origin feature/buy-cart
+
+# main 파일 업데이트 시 중간에 merge하는 방법
+git checkout main
+git pull origin main
+
+git checkout feature/login
+git merge main
 ```
+
 
 ### ⑤ PR 올리기
 1. github.com에서 repo 열기 → 노란 배너 **"Compare & pull request"** 클릭
