@@ -27,7 +27,7 @@
         상품을 검색해 보세요
       </label>
     </div>
-    <a class="brand" href="main.html" aria-label="캐치캐치 홈">CATCHCATCH</a>
+    <a class="brand" href="main.html" aria-label="캐치캐치 홈">캐치캐치</a>
     <div class="head-right">
       <a href="mypage.html" aria-label="마이페이지"><svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="3.6"/><path d="M5 20c1.2-3.6 3.8-5.4 7-5.4s5.8 1.8 7 5.4"/></svg></a>
       <a href="wishlist.html" aria-label="위시리스트"><svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20s-7-4.6-7-9.3A3.7 3.7 0 0 1 12 8a3.7 3.7 0 0 1 7 2.7C19 15.4 12 20 12 20Z"/></svg></a>
@@ -185,7 +185,7 @@
   document.querySelectorAll('.period').forEach(button => button.addEventListener('click', () => { activeMonths = button.dataset.months; document.querySelectorAll('.period').forEach(tab => tab.classList.toggle('on', tab === button)); renderOrders(); }));
   document.querySelector('[data-close-dialog]').addEventListener('click', () => dialog.close());
   dialog.addEventListener('click', event => { if (event.target === dialog) dialog.close(); });
-  dialog.addEventListener('submit', event => { if (event.target.id !== 'claimForm') return; event.preventDefault(); dialog.close(); showToast(`${selectedOrder.item} ${event.target.type.value} 신청이 접수되었습니다.`); });
+  dialog.addEventListener('submit', event => { if (event.target.id !== 'claimForm') return; event.preventDefault(); dialog.close(); showToast(`${selectedOrder.item} ${event.target.elements.type.value} 신청이 접수되었습니다.`); });
   renderOrders();
 </script>
 </body>
