@@ -9,40 +9,52 @@
 </head>
 <body>
 
+<!-- ================= 공통 헤더 시작 (수정 금지) ================= -->
 <div class="utility">
   <div class="wrap">
-    <a href="faq.html">고객센터</a>
-    <a href="store.html">매장안내</a>
-    <a href="seller-dashboard.html">마이페이지</a>
-    <a href="#" id="logoutLink">로그아웃</a>
+    <a href="#">고객센터</a>
+    <a href="#">매장안내</a>
+    <a href="login.html" data-auth-guest>로그인</a>
+    <a href="signup.html" data-auth-guest>회원가입</a>
+    <a href="mypage.html" data-auth-member hidden>마이페이지</a>
+    <a href="#" data-auth-member data-logout hidden>로그아웃</a>
   </div>
 </div>
 
 <header class="site">
   <div class="wrap head-row">
     <div class="head-left">
-      <form class="search" action="search.html" method="get" role="search">
+      <label class="search">
         <svg class="icn" viewBox="0 0 24 24" style="width:15px;height:15px"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg>
-        <input type="text" name="q" placeholder="찾으시는 상품이 있나요?" aria-label="상품 검색">
-      </form>
+        찾으시는 상품이 있나요?
+      </label>
     </div>
-    <a class="brand" href="index.html">캐치캐치</a>
+    <div class="brand">캐치캐치</div>
     <div class="head-right">
-      <a href="seller-dashboard.html" aria-label="판매자 마이페이지"><svg class="icn" viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.6"/><path d="M5 20c1.2-3.6 3.8-5.4 7-5.4s5.8 1.8 7 5.4"/></svg></a>
+      <a href="mypage.html" id="mypageLink" aria-label="마이페이지"><svg class="icn" viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.6"/><path d="M5 20c1.2-3.6 3.8-5.4 7-5.4s5.8 1.8 7 5.4"/></svg></a>
+      <a href="#" aria-label="위시리스트"><svg class="icn" viewBox="0 0 24 24"><path d="M12 20s-7-4.6-7-9.3A3.7 3.7 0 0 1 12 8a3.7 3.7 0 0 1 7 2.7C19 15.4 12 20 12 20Z"/></svg></a>
+      <a href="#" aria-label="장바구니"><svg class="icn" viewBox="0 0 24 24"><path d="M6 7h12l-1.2 12.2a1 1 0 0 1-1 .8H8.2a1 1 0 0 1-1-.8L6 7Z"/><path d="M9 7a3 3 0 0 1 6 0"/></svg></a>
     </div>
   </div>
 </header>
 
 <nav class="cats">
   <div class="wrap">
-    <a href="seller-dashboard.html">대시보드</a>
-    <a class="on" href="seller-products.html">내 상품</a>
-    <a href="seller-orders.html">주문/배송</a>
-    <a href="seller-claims.html">교환/환불</a>
-    <a href="seller-qna.html">상품 문의</a>
-    <a href="seller-settlements.html">정산</a>
+    <a href="#" class="on">베스트</a>
+    <a href="brand.html">브랜드</a>
+    <a href="#">아우터</a>
+    <a href="#">상의</a>
+    <a href="#">셔츠</a>
+    <a href="#">니트</a>
+    <a href="#">팬츠</a>
+    <a href="#">데님</a>
+    <a href="#">신발</a>
+    <a href="#">가방</a>
+    <a href="#">액세서리</a>
+    <a href="#">언더웨어</a>
   </div>
 </nav>
+<!-- ================= 공통 헤더 끝 ================= -->
 
 <main class="wrap">
   <section class="seller-products-page">
@@ -50,9 +62,9 @@
       <div>
         <p class="page-kicker">Seller products</p>
         <h1>내 상품 목록</h1>
-        <p>등록한 상품을 조회하고 판매 상태를 확인하거나 상품을 삭제할 수 있습니다.</p>
+        <p>등록한 상품을 조회하고 판매 상태를 확인하거나 상품을 수정·삭제할 수 있습니다.</p>
       </div>
-      <a class="register-button" href="seller-product-create.html">상품 등록</a>
+      <a class="register-button" href="seller-product-form.html">상품 등록</a>
     </div>
 
     <section class="summary-grid" aria-label="상품 현황">
@@ -69,6 +81,7 @@
           <input id="productKeyword" type="search" placeholder="상품명 또는 상품번호 검색">
           <button type="submit">검색</button>
         </form>
+
         <select id="statusFilter" aria-label="판매 상태 필터">
           <option value="">전체 상태</option>
           <option value="SELLING">판매 중</option>
@@ -81,7 +94,13 @@
         <table class="product-table">
           <thead>
             <tr>
-              <th>상품</th><th>상품번호</th><th>판매가</th><th>재고</th><th>상태</th><th>등록일</th><th>관리</th>
+              <th scope="col">상품</th>
+              <th scope="col">상품번호</th>
+              <th scope="col">판매가</th>
+              <th scope="col">재고</th>
+              <th scope="col">상태</th>
+              <th scope="col">등록일</th>
+              <th scope="col">관리</th>
             </tr>
           </thead>
           <tbody id="productTableBody">
@@ -113,13 +132,26 @@
   </section>
 </div>
 
-<footer class="site-foot">
+<!-- ================= 공통 푸터 시작 (수정 금지) ================= -->
+<footer>
   <div class="wrap">
     <div class="foot-top">
-      <div class="foot-brand"><div class="brand">캐치캐치</div><p>예쁜 옷 많이 캐치캐치</p></div>
-      <div class="foot-col"><h5>Seller</h5><a href="seller-dashboard.html">대시보드</a><a href="seller-products.html">내 상품</a></div>
-      <div class="foot-col"><h5>Customer</h5><a href="#">공지사항</a><a href="faq.html">자주 묻는 질문</a><a href="#">1:1 문의</a><a href="#">배송/반품</a></div>
-      <div class="foot-col"><h5>About</h5><a href="#">브랜드 스토리</a><a href="store.html">매장 안내</a><a href="#">채용</a><a href="#">제휴 문의</a></div>
+      <div class="foot-brand">
+        <div class="brand">캐치캐치</div>
+        <p>예쁜 옷 많이 캐치캐치</p>
+      </div>
+      <div class="foot-col">
+        <h5>Shop</h5>
+        <a href="#">베스트</a><a href="#">아우터</a>
+      </div>
+      <div class="foot-col">
+        <h5>Customer</h5>
+        <a href="#">공지사항</a><a href="#">자주 묻는 질문</a><a href="#">1:1 문의</a><a href="#">배송/반품</a>
+      </div>
+      <div class="foot-col">
+        <h5>About</h5>
+        <a href="#">브랜드 스토리</a><a href="#">매장 안내</a><a href="#">채용</a><a href="#">제휴 문의</a>
+      </div>
     </div>
     <div class="foot-bar">
       <span>© 2026 CATCHCATCH STORE. 서울특별시 성동구 · 사업자등록 000-00-00000</span>
@@ -131,8 +163,9 @@
     </div>
   </div>
 </footer>
+<!-- ================= 공통 푸터 끝 ================= -->
 
-<script src="js/common.js"></script>
+<script src="js/auth.js"></script>
 <script src="js/seller-products.js"></script>
 </body>
 </html>
