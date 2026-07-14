@@ -1,0 +1,263 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>입점 신청 — 캐치캐치</title>
+<link rel="stylesheet" href="css/common.css">
+<link rel="stylesheet" href="css/seller-entry.css">
+</head>
+<body>
+
+<!-- ================= 공통 헤더 시작 ================= -->
+<div class="utility">
+  <div class="wrap">
+    <a href="faq.html">고객센터</a>
+    <a href="store.html">매장안내</a>
+    <a href="seller-dashboard.html">마이페이지</a>
+    <a href="#" id="logoutLink">로그아웃</a>
+  </div>
+</div>
+
+<header class="site">
+  <div class="wrap head-row">
+    <div class="head-left">
+      <form class="search" action="search.html" method="get" role="search">
+        <svg class="icn" viewBox="0 0 24 24" style="width:15px;height:15px">
+          <circle cx="11" cy="11" r="7"/>
+          <path d="M21 21l-4-4"/>
+        </svg>
+        <input type="text" name="q" placeholder="찾으시는 상품이 있나요?" aria-label="상품 검색">
+      </form>
+    </div>
+
+    <a class="brand" href="index.html">캐치캐치</a>
+
+    <div class="head-right">
+      <a href="mypage.html" data-auth-required aria-label="마이페이지">
+        <svg class="icn" viewBox="0 0 24 24">
+          <circle cx="12" cy="8" r="3.6"/>
+          <path d="M5 20c1.2-3.6 3.8-5.4 7-5.4s5.8 1.8 7 5.4"/>
+        </svg>
+      </a>
+      <a href="wishlist.html" data-auth-required aria-label="위시리스트">
+        <svg class="icn" viewBox="0 0 24 24">
+          <path d="M12 20s-7-4.6-7-9.3A3.7 3.7 0 0 1 12 8a3.7 3.7 0 0 1 7 2.7C19 15.4 12 20 12 20Z"/>
+        </svg>
+      </a>
+      <a href="cart.html" data-auth-required aria-label="장바구니">
+        <svg class="icn" viewBox="0 0 24 24">
+          <path d="M6 7h12l-1.2 12.2a1 1 0 0 1-1 .8H8.2a1 1 0 0 1-1-.8L6 7Z"/>
+          <path d="M9 7a3 3 0 0 1 6 0"/>
+        </svg>
+      </a>
+    </div>
+  </div>
+</header>
+
+<nav class="cats">
+  <div class="wrap">
+    <a href="product-list.html">베스트</a>
+    <a href="brand.html">브랜드</a>
+    <a href="product-list.html?cat=outer">아우터</a>
+    <a href="product-list.html?cat=top">상의</a>
+    <a href="product-list.html?cat=shirts">셔츠</a>
+    <a href="product-list.html?cat=knit">니트</a>
+    <a href="product-list.html?cat=pants">팬츠</a>
+    <a href="product-list.html?cat=denim">데님</a>
+    <a href="product-list.html?cat=shoes">신발</a>
+    <a href="product-list.html?cat=bag">가방</a>
+    <a href="product-list.html?cat=acc">액세서리</a>
+    <a href="product-list.html?cat=underwear">언더웨어</a>
+  </div>
+</nav>
+<!-- ================= 공통 헤더 끝 ================= -->
+
+<main class="wrap">
+  <section class="seller-entry">
+    <div class="entry-head">
+      <p class="entry-kicker">Seller application</p>
+      <h1>입점 신청</h1>
+      <p>사업자 정보와 필수 서류를 등록하면 담당자 검토 후 결과를 안내합니다.</p>
+    </div>
+
+    <ol class="entry-steps" aria-label="입점 신청 단계">
+      <li class="on"><span>1</span>정보 입력</li>
+      <li><span>2</span>서류 제출</li>
+      <li><span>3</span>검토 대기</li>
+    </ol>
+
+    <form id="sellerEntryForm" class="entry-form" novalidate>
+      <section class="form-section" aria-labelledby="businessInfoTitle">
+        <div class="form-section-head">
+          <div>
+            <span class="section-number">01</span>
+            <h2 id="businessInfoTitle">사업자 정보</h2>
+          </div>
+          <p><strong>*</strong> 표시는 필수 입력 항목입니다.</p>
+        </div>
+
+        <div class="form-grid">
+          <div class="field">
+            <label for="businessName">상호명 <strong>*</strong></label>
+            <input id="businessName" name="businessName" type="text" placeholder="사업자등록증의 상호명을 입력하세요" required>
+          </div>
+
+          <div class="field">
+            <label for="brandName">브랜드명 <strong>*</strong></label>
+            <input id="brandName" name="brandName" type="text" placeholder="쇼핑몰에 표시할 브랜드명을 입력하세요" required>
+          </div>
+
+          <div class="field">
+            <label for="businessNumber">사업자등록번호 <strong>*</strong></label>
+            <input id="businessNumber" name="businessNumber" type="text" inputmode="numeric" maxlength="12" placeholder="000-00-00000" required>
+          </div>
+
+          <div class="field">
+            <label for="representativeName">대표자명 <strong>*</strong></label>
+            <input id="representativeName" name="representativeName" type="text" placeholder="대표자명을 입력하세요" required>
+          </div>
+
+          <div class="field">
+            <label for="businessType">업태 <strong>*</strong></label>
+            <input id="businessType" name="businessType" type="text" placeholder="예: 도소매업" required>
+          </div>
+
+          <div class="field">
+            <label for="businessCategory">업종 <strong>*</strong></label>
+            <input id="businessCategory" name="businessCategory" type="text" placeholder="예: 의류 및 패션잡화" required>
+          </div>
+
+          <div class="field field-full">
+            <label for="businessAddress">사업장 주소 <strong>*</strong></label>
+            <input id="businessAddress" name="businessAddress" type="text" placeholder="사업장 주소를 입력하세요" required>
+          </div>
+        </div>
+      </section>
+
+      <section class="form-section" aria-labelledby="managerInfoTitle">
+        <div class="form-section-head">
+          <div>
+            <span class="section-number">02</span>
+            <h2 id="managerInfoTitle">담당자 정보</h2>
+          </div>
+        </div>
+
+        <div class="form-grid">
+          <div class="field">
+            <label for="managerName">담당자명 <strong>*</strong></label>
+            <input id="managerName" name="managerName" type="text" placeholder="담당자명을 입력하세요" required>
+          </div>
+
+          <div class="field">
+            <label for="managerPhone">연락처 <strong>*</strong></label>
+            <input id="managerPhone" name="managerPhone" type="tel" inputmode="tel" placeholder="010-0000-0000" required>
+          </div>
+
+          <div class="field field-full">
+            <label for="managerEmail">이메일 <strong>*</strong></label>
+            <input id="managerEmail" name="managerEmail" type="email" placeholder="검토 결과를 받을 이메일을 입력하세요" required>
+          </div>
+        </div>
+      </section>
+
+      <section class="form-section" aria-labelledby="documentTitle">
+        <div class="form-section-head">
+          <div>
+            <span class="section-number">03</span>
+            <h2 id="documentTitle">필수 서류 업로드</h2>
+          </div>
+          <p>PDF, JPG, JPEG, PNG / 파일당 최대 10MB</p>
+        </div>
+
+        <div class="upload-grid">
+          <div class="upload-card">
+            <div class="upload-copy">
+              <span class="upload-badge">필수</span>
+              <h3>사업자등록증</h3>
+              <p>사업자 정보가 선명하게 확인되는 파일을 등록하세요.</p>
+            </div>
+            <label class="upload-button" for="businessLicense">
+              파일 선택
+              <input id="businessLicense" name="businessLicense" type="file" accept=".pdf,.jpg,.jpeg,.png" required>
+            </label>
+            <p class="file-name" id="businessLicenseName">선택된 파일 없음</p>
+          </div>
+
+          <div class="upload-card">
+            <div class="upload-copy">
+              <span class="upload-badge">필수</span>
+              <h3>통신판매업 신고증</h3>
+              <p>통신판매업 신고번호가 확인되는 파일을 등록하세요.</p>
+            </div>
+            <label class="upload-button" for="mailOrderLicense">
+              파일 선택
+              <input id="mailOrderLicense" name="mailOrderLicense" type="file" accept=".pdf,.jpg,.jpeg,.png" required>
+            </label>
+            <p class="file-name" id="mailOrderLicenseName">선택된 파일 없음</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="agreement-box" aria-labelledby="agreementTitle">
+        <h2 id="agreementTitle">신청 전 확인</h2>
+        <label class="agreement-check">
+          <input id="agreement" type="checkbox" required>
+          <span>입력한 정보와 제출한 서류가 사실과 다르지 않으며, 입점 심사를 위한 정보 수집 및 이용에 동의합니다.</span>
+        </label>
+      </section>
+
+      <div class="form-message" id="formMessage" role="alert"></div>
+
+      <div class="form-actions">
+        <a class="button-secondary" href="index.html">취소</a>
+        <button class="button-primary" id="submitButton" type="submit">입점 신청하기</button>
+      </div>
+    </form>
+  </section>
+</main>
+
+<!-- ================= 공통 푸터 시작 ================= -->
+<footer class="site-foot">
+  <div class="wrap">
+    <div class="foot-top">
+      <div class="foot-brand">
+        <div class="brand">캐치캐치</div>
+        <p>예쁜 옷 많이 캐치캐치</p>
+      </div>
+      <div class="foot-col">
+        <h5>Shop</h5>
+        <a href="product-list.html">베스트</a>
+        <a href="product-list.html?cat=outer">아우터</a>
+      </div>
+      <div class="foot-col">
+        <h5>Customer</h5>
+        <a href="#">공지사항</a>
+        <a href="faq.html">자주 묻는 질문</a>
+        <a href="#">1:1 문의</a>
+        <a href="#">배송/반품</a>
+      </div>
+      <div class="foot-col">
+        <h5>About</h5>
+        <a href="#">브랜드 스토리</a>
+        <a href="store.html">매장 안내</a>
+        <a href="#">채용</a>
+        <a href="#">제휴 문의</a>
+      </div>
+    </div>
+    <div class="foot-bar">
+      <span>© 2026 CATCHCATCH STORE. 서울특별시 성동구 · 사업자등록 000-00-00000</span>
+      <div class="socials">
+        <a href="#" aria-label="Instagram"><svg viewBox="0 0 24 24"><rect x="3.5" y="3.5" width="17" height="17" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.2" cy="6.8" r="1" fill="currentColor" stroke="none"/></svg></a>
+        <a href="#" aria-label="YouTube"><svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="12" rx="3.5"/><path d="M11 9.5l4 2.5-4 2.5z" fill="currentColor" stroke="none"/></svg></a>
+        <a href="#" aria-label="X"><svg viewBox="0 0 24 24"><path d="M5 5l14 14M19 5L5 19"/></svg></a>
+      </div>
+    </div>
+  </div>
+</footer>
+<!-- ================= 공통 푸터 끝 ================= -->
+
+<script src="js/common.js"></script>
+<script src="js/seller-entry.js"></script>
+</body>
+</html>
