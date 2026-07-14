@@ -197,16 +197,16 @@ document.addEventListener("DOMContentLoaded", () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   });
 
-  // 찜 버튼 (이벤트 위임)
+// 찜 버튼 (이벤트 위임)
   grid.addEventListener("click", (e) => {
     const btn = e.target.closest(".card-like");
     if (!btn) return;
     e.preventDefault();
 
+    // 로그인 체크 (U-PROD-004는 인증 필요)
+    if (!CatchAuth.requireLogin()) return;
+
     const id = Number(btn.dataset.likeId);
-    const product = ALL_PRODUCTS.find((p) => p.id === id);
-    product.liked = !product.liked;
-    btn.classList.toggle("is-liked", product.liked);
 
     // TODO: POST /api/v1/products/{productId}/like  (U-PROD-004)
   });
