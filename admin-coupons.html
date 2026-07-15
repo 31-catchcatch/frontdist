@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="캐치캐치 관리자 · 쿠폰 발행 승인">
+  <title>쿠폰 인가 · 캐치캐치 관리자</title>
+  <link rel="stylesheet" href="css/common.css">
+  <link rel="stylesheet" href="css/admin.css">
+  <script src="js/admin-auth.js"></script>
+  <script>AdminAuth.requireLogin();</script>
+</head>
+<body>
+  <header class="admin-bar">
+    <a class="admin-brand" href="admin-dashboard.html">캐치캐치 <span>ADMIN</span></a>
+    <nav aria-label="관리자 메뉴">
+      <a href="admin-dashboard.html">대시보드</a>
+      <a href="admin-users.html">사용자</a>
+      <a href="admin-products.html">상품</a>
+      <a href="admin-seller-applications.html">입점심사</a>
+      <a href="admin-sellers.html">입점업체</a>
+      <a class="is-current" href="admin-coupons.html">쿠폰</a>
+      <a href="admin-points.html">포인트</a>
+      <a href="admin-qna.html">Q&amp;A</a>
+      <a href="admin-settlements.html">정산</a>
+    </nav>
+    <div class="admin-actions">
+      <a href="index.html">쇼핑몰 보기</a>
+      <a href="admin-login.html" data-admin-logout>로그아웃</a>
+    </div>
+  </header>
+
+  <main class="admin-page wrap">
+    <div class="page-head">
+      <div>
+        <p class="kicker">COUPON APPROVAL · A-COUPON-001~002</p>
+        <h1>쿠폰 발행 인가</h1>
+        <p class="desc">판매자가 요청한 프로모션 쿠폰 발급 건을 조회하고 최종 승인 또는 반려합니다.</p>
+      </div>
+      <span class="preview-badge">화면 미리보기 · /api/v1/admin/coupons/requests</span>
+    </div>
+
+    <div class="toolbar">
+      <label class="search-box">
+        <svg class="icn" viewBox="0 0 24 24" style="width:15px;height:15px"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg>
+        <input type="text" id="q" placeholder="판매자·쿠폰명 검색">
+      </label>
+      <select id="statusFilter">
+        <option value="">전체 상태</option>
+        <option value="wait">대기</option>
+        <option value="ok">승인</option>
+        <option value="stop">반려</option>
+      </select>
+      <span class="count">총 <b id="count">0</b>건</span>
+    </div>
+
+    <div class="table-wrap">
+      <table class="data">
+        <thead>
+          <tr>
+            <th>요청ID</th>
+            <th>판매자</th>
+            <th>쿠폰명</th>
+            <th class="num">할인</th>
+            <th class="num">발행수량</th>
+            <th>사용기간</th>
+            <th>요청일</th>
+            <th>상태</th>
+            <th>인가</th>
+          </tr>
+        </thead>
+        <tbody id="rows"></tbody>
+      </table>
+    </div>
+
+    <div class="pager">
+      <button type="button">‹</button>
+      <button type="button" class="on">1</button>
+      <button type="button">›</button>
+    </div>
+  </main>
+
+  <script src="js/admin-ui.js?v=3"></script>
+  <script>
+    // ---------- 쿠폰 발행 요청 목록 (GET /api/v1/admin/coupons/requests) ----------
+    const COUPONS = [
+      { id: 'C5001', seller: 'STANDARD', name: '여름 시즌 10% 할인', discount: '10%',      qty: 5000, period: '~2026-08-31', created: '2026-07-01', status: 'wait' },
+      { id: 'C5002', seller: '데일리룩',  name: '신규 고객 3,000원', discount: '3,000원',  qty: 2000, period: '~2026-07-31', created: '2026-07-03', status: 'wait' },
+      { id: 'C5003', seller: '어반스타일', name: '가을 프리뷰 15%',   discount: '15%',      qty: 3000, period: '~2026-09-30', created: '2026-07-05', status: 'ok' },
+      { id: 'C5004', seller: '무드서울',  name: '첫 구매 5,000원',   discount: '5,000원',  qty: 1000, period: '~2026-08-15', created: '2026-07-08', status: 'stop' },
+      { id: 'C5005', seller: '데일리룩',  name: '주말 특가 20%',     discount: '20%',      qty: 800,  period: '~2026-07-20', created: '2026-07-10', status: 'wait' },
+    ];
+
+    const STATUS = { wait: '대기', ok: '승인', stop: '반려' };
+
+    const rowsEl = document.getElementById('rows');
+    const countEl = document.getElementById('count');
+    const qEl = document.getElementById('q');
+    const statusEl = document.getElementById('statusFilter');
+
+    function render(list, total = list.length) {
+      if (!list.length) {
+        rowsEl.innerHTML = '<tr class="empty-row"><td colspan="9">조건에 맞는 요청이 없습니다.</td></tr>';
+        countEl.textContent = 0;
+        return;
+      }
+      rowsEl.innerHTML = list.map((c) => `
+        <tr data-id="${AdminUI.escape(c.id)}">
+          <td class="num">${AdminUI.escape(c.id)}</td>
+          <td class="muted">${AdminUI.escape(c.seller)}</td>
+          <td class="strong">${AdminUI.escape(c.name)}</td>
+          <td class="num">${AdminUI.escape(c.discount)}</td>
+          <td class="num">${AdminUI.num(c.qty)}</td>
+          <td class="muted">${AdminUI.escape(c.period)}</td>
+          <td class="muted">${AdminUI.escape(c.created)}</td>
+          <td><span class="tag ${c.status}">${STATUS[c.status]}</span></td>
+          <td>
+            ${c.status === 'wait'
+              ? `<div class="row-actions">
+                   <button class="btn sm ok" data-act="approve">승인</button>
+                   <button class="btn sm danger" data-act="reject">반려</button>
+                 </div>`
+              : '<span class="muted">처리완료</span>'}
+          </td>
+        </tr>`).join('');
+      countEl.textContent = total;
+    }
+
+    const listController = AdminUI.createListController({ pager: document.querySelector('.pager'), render });
+
+    function applyFilter() {
+      const q = qEl.value.trim().toLowerCase();
+      const status = statusEl.value;
+      listController.setItems(COUPONS.filter((c) =>
+        (!status || c.status === status) &&
+        (!q || c.seller.toLowerCase().includes(q) || c.name.toLowerCase().includes(q))
+      ));
+    }
+    qEl.addEventListener('input', applyFilter);
+    statusEl.addEventListener('change', applyFilter);
+
+    rowsEl.addEventListener('click', async (e) => {
+      const btn = e.target.closest('button[data-act]');
+      if (!btn) return;
+      const id = btn.closest('tr').dataset.id;
+      const c = COUPONS.find((x) => x.id === id);
+
+      // PUT /api/v1/admin/coupons/requests/{requestId}
+      const approve = btn.dataset.act === 'approve';
+      const ok = await AdminUI.confirm({
+        title: approve ? '쿠폰 발행 승인' : '쿠폰 발행 반려',
+        message: `[${c.seller}] '${c.name}' 쿠폰 발행을 ${approve ? '승인' : '반려'}하시겠습니까?`,
+        okText: approve ? '승인' : '반려', danger: !approve,
+      });
+      if (!ok) return;
+      c.status = approve ? 'ok' : 'stop';
+      applyFilter();
+      AdminUI.toast(approve ? '쿠폰 발행이 승인되었습니다.' : '반려 처리되었습니다.');
+    });
+
+    listController.setItems(COUPONS);
+  </script>
+</body>
+</html>

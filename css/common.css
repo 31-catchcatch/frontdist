@@ -80,6 +80,19 @@
     font-size: 12px;
   }
   .search:focus-within { border-color: var(--ink); color: var(--ink); }
+  /* ===== 헤더 검색창 input 스타일 ===== */
+  .search input {
+    flex: 1;
+    min-width: 0;
+    border: none;
+    background: none;
+    padding: 0;
+    font-family: inherit;
+    font-size: 12px;
+    color: var(--ink);
+  }
+  .search input::placeholder { color: var(--mid); }
+  .search input:focus { outline: none; }
   .head-left .txtlink { font-size: 12.5px; font-weight: 600; letter-spacing: .01em; }
   .head-left .txtlink:hover { color: var(--point); }
 

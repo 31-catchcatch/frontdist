@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="캐치캐치 관리자 · 사업자 등록 승인/반려">
+  <title>입점 심사 · 캐치캐치 관리자</title>
+  <link rel="stylesheet" href="css/common.css">
+  <link rel="stylesheet" href="css/admin.css">
+  <script src="js/admin-auth.js"></script>
+  <script>AdminAuth.requireLogin();</script>
+</head>
+<body>
+  <header class="admin-bar">
+    <a class="admin-brand" href="admin-dashboard.html">캐치캐치 <span>ADMIN</span></a>
+    <nav aria-label="관리자 메뉴">
+      <a href="admin-dashboard.html">대시보드</a>
+      <a href="admin-users.html">사용자</a>
+      <a href="admin-products.html">상품</a>
+      <a class="is-current" href="admin-seller-applications.html">입점심사</a>
+      <a href="admin-sellers.html">입점업체</a>
+      <a href="admin-coupons.html">쿠폰</a>
+      <a href="admin-points.html">포인트</a>
+      <a href="admin-qna.html">Q&amp;A</a>
+      <a href="admin-settlements.html">정산</a>
+    </nav>
+    <div class="admin-actions">
+      <a href="index.html">쇼핑몰 보기</a>
+      <a href="admin-login.html" data-admin-logout>로그아웃</a>
+    </div>
+  </header>
+
+  <main class="admin-page wrap">
+    <div class="page-head">
+      <div>
+        <p class="kicker">SELLER APPLICATIONS · A-SELLER-001~002</p>
+        <h1>입점 심사</h1>
+        <p class="desc">판매자들이 제출한 입점 신청 서류를 검토하고 최종 승인 또는 반려합니다.</p>
+      </div>
+      <span class="preview-badge">화면 미리보기 · /api/v1/admin/sellers/applications</span>
+    </div>
+
+    <div class="toolbar">
+      <label class="search-box">
+        <svg class="icn" viewBox="0 0 24 24" style="width:15px;height:15px"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg>
+        <input type="text" id="q" placeholder="업체명·대표자·사업자번호 검색">
+      </label>
+      <select id="statusFilter">
+        <option value="">전체 상태</option>
+        <option value="wait">대기</option>
+        <option value="ok">승인</option>
+        <option value="stop">반려</option>
+      </select>
+      <span class="count">총 <b id="count">0</b>건</span>
+    </div>
+
+    <div class="table-wrap">
+      <table class="data">
+        <thead>
+          <tr>
+            <th>신청ID</th>
+            <th>업체명</th>
+            <th>사업자번호</th>
+            <th>대표자</th>
+            <th>업태/업종</th>
+            <th>서류</th>
+            <th>신청일</th>
+            <th>상태</th>
+            <th>심사</th>
+          </tr>
+        </thead>
+        <tbody id="rows"></tbody>
+      </table>
+    </div>
+
+    <div class="pager">
+      <button type="button">‹</button>
+      <button type="button" class="on">1</button>
+      <button type="button">›</button>
+    </div>
+  </main>
+
+  <script src="js/admin-ui.js?v=3"></script>
+  <script>
+    // ---------- 입점 신청 목록 (GET /api/v1/admin/sellers/applications) ----------
+    const APPS = [
+      { id: 'A3001', company: '데일리룩', biz: '123-45-67890', ceo: '김대표', category: '도소매 / 의류', created: '2026-06-20', status: 'wait' },
+      { id: 'A3002', company: '어반스타일', biz: '234-56-78901', ceo: '이사장', category: '도소매 / 잡화', created: '2026-06-24', status: 'wait' },
+      { id: 'A3003', company: '코지홈',   biz: '345-67-89012', ceo: '박대표', category: '도소매 / 리빙', created: '2026-06-28', status: 'ok' },
+      { id: 'A3004', company: '노브랜드샵', biz: '456-78-90123', ceo: '최사장', category: '도소매 / 의류', created: '2026-07-02', status: 'stop' },
+      { id: 'A3005', company: '무드서울', biz: '567-89-01234', ceo: '정대표', category: '도소매 / 액세서리', created: '2026-07-08', status: 'wait' },
+    ];
+
+    const STATUS = { wait: '대기', ok: '승인', stop: '반려' };
+
+    const rowsEl = document.getElementById('rows');
+    const countEl = document.getElementById('count');
+    const qEl = document.getElementById('q');
+    const statusEl = document.getElementById('statusFilter');
+
+    function render(list, total = list.length) {
+      if (!list.length) {
+        rowsEl.innerHTML = '<tr class="empty-row"><td colspan="9">조건에 맞는 신청이 없습니다.</td></tr>';
+        countEl.textContent = 0;
+        return;
+      }
+      rowsEl.innerHTML = list.map((a) => `
+        <tr data-id="${AdminUI.escape(a.id)}">
+          <td class="num">${AdminUI.escape(a.id)}</td>
+          <td class="strong">${AdminUI.escape(a.company)}</td>
+          <td class="muted">${AdminUI.escape(a.biz)}</td>
+          <td>${AdminUI.escape(a.ceo)}</td>
+          <td class="muted">${AdminUI.escape(a.category)}</td>
+          <td><button class="btn sm ghost" data-act="docs">서류 보기</button></td>
+          <td class="muted">${AdminUI.escape(a.created)}</td>
+          <td><span class="tag ${a.status}">${STATUS[a.status]}</span></td>
+          <td>
+            ${a.status === 'wait'
+              ? `<div class="row-actions">
+                   <button class="btn sm ok" data-act="approve">승인</button>
+                   <button class="btn sm danger" data-act="reject">반려</button>
+                 </div>`
+              : '<span class="muted">처리완료</span>'}
+          </td>
+        </tr>`).join('');
+      countEl.textContent = total;
+    }
+
+    const listController = AdminUI.createListController({ pager: document.querySelector('.pager'), render });
+
+    function applyFilter() {
+      const q = qEl.value.trim().toLowerCase();
+      const status = statusEl.value;
+      listController.setItems(APPS.filter((a) =>
+        (!status || a.status === status) &&
+        (!q || a.company.toLowerCase().includes(q) || a.ceo.toLowerCase().includes(q) || a.biz.includes(q))
+      ));
+    }
+    qEl.addEventListener('input', applyFilter);
+    statusEl.addEventListener('change', applyFilter);
+
+    rowsEl.addEventListener('click', async (e) => {
+      const btn = e.target.closest('button[data-act]');
+      if (!btn) return;
+      const id = btn.closest('tr').dataset.id;
+      const app = APPS.find((x) => x.id === id);
+      const act = btn.dataset.act;
+
+      if (act === 'docs') { AdminUI.toast(`${app.company} 제출 서류 — 파일 뷰어 연동 예정`); return; }
+
+      // POST /api/v1/admin/sellers/applications/{appId}/status
+      const approve = act === 'approve';
+      if (approve) {
+        const ok = await AdminUI.confirm({
+          title: '입점 승인',
+          message: `[${app.company}]의 입점을 승인하시겠습니까? 승인 시 판매자 계정이 활성화됩니다.`,
+          okText: '승인',
+        });
+        if (!ok) return;
+        app.status = 'ok';
+        applyFilter();
+        AdminUI.toast('입점이 승인되었습니다.');
+      } else {
+        const res = await AdminUI.form({
+          title: '입점 반려',
+          message: `[${app.company}] 신청을 반려합니다. 사유를 입력하세요.`,
+          okText: '반려 처리',
+          fields: [{ name: 'reason', label: '반려 사유', type: 'textarea', placeholder: '예: 사업자등록증 사본이 불명확합니다.' }],
+        });
+        if (!res) return;
+        app.status = 'stop';
+        applyFilter();
+        AdminUI.toast('반려 처리되었습니다.');
+      }
+    });
+
+    listController.setItems(APPS);
+  </script>
+</body>
+</html>

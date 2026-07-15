@@ -43,7 +43,7 @@
       sessionStorage.removeItem(KEY_FLAG);
       sessionStorage.removeItem(KEY_TOKEN);
       localStorage.removeItem(KEY_TOKEN);
-      location.href = "main.html";
+      location.href = "index.html";
     },
   };
 

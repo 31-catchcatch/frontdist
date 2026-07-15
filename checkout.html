@@ -1,0 +1,192 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="캐치캐치 주문서와 결제 정보를 확인하세요.">
+<title>주문/결제 | 캐치캐치</title>
+<link rel="stylesheet" href="css/common.css">
+<link rel="stylesheet" href="css/checkout.css">
+</head>
+<body>
+
+<!-- ================= 공통 헤더 시작 (수정 금지) ================= -->
+<div class="utility">
+  <div class="wrap">
+    <a href="customercenter.html">고객센터</a>
+    <a href="storeinfo.html">매장안내</a>
+    <a href="login.html" data-auth-guest>로그인</a>
+    <a href="signup.html" data-auth-guest>회원가입</a>
+    <a href="mypage.html" data-auth-member hidden>마이페이지</a>
+    <a href="#" data-auth-member data-logout hidden>로그아웃</a>
+  </div>
+</div>
+
+<header class="site">
+  <div class="wrap head-row">
+    <div class="head-left">
+      <form class="search" action="search.html" method="get" role="search">
+        <svg class="icn" viewBox="0 0 24 24" style="width:15px;height:15px"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg>
+        <input type="text" name="q" placeholder="찾으시는 상품이 있나요?" aria-label="상품 검색">
+      </form>
+    </div>
+    <a class="brand" href="index.html" aria-label="캐치캐치 메인 페이지">캐치캐치</a>
+    <div class="head-right">
+      <a href="mypage.html" id="mypageLink" aria-label="마이페이지"><svg class="icn" viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.6"/><path d="M5 20c1.2-3.6 3.8-5.4 7-5.4s5.8 1.8 7 5.4"/></svg></a>
+      <a href="wishlist.html" aria-label="위시리스트"><svg class="icn" viewBox="0 0 24 24"><path d="M12 20s-7-4.6-7-9.3A3.7 3.7 0 0 1 12 8a3.7 3.7 0 0 1 7 2.7C19 15.4 12 20 12 20Z"/></svg></a>
+      <a href="shoppingcart.html" aria-label="장바구니"><svg class="icn" viewBox="0 0 24 24"><path d="M6 7h12l-1.2 12.2a1 1 0 0 1-1 .8H8.2a1 1 0 0 1-1-.8L6 7Z"/><path d="M9 7a3 3 0 0 1 6 0"/></svg></a>
+    </div>
+  </div>
+</header>
+
+<nav class="cats">
+  <div class="wrap">
+    <a href="product-list.html">전체</a>
+    <a href="product-list.html?view=best">베스트</a>
+    <a href="brand.html">브랜드</a>
+    <a href="product-list.html?cat=outer">아우터</a>
+    <a href="product-list.html?cat=top">상의</a>
+    <a href="product-list.html?cat=shirts">셔츠</a>
+    <a href="product-list.html?cat=knit">니트</a>
+    <a href="product-list.html?cat=pants">팬츠</a>
+    <a href="product-list.html?cat=denim">데님</a>
+    <a href="product-list.html?cat=shoes">신발</a>
+    <a href="product-list.html?cat=bag">가방</a>
+    <a href="product-list.html?cat=acc">액세서리</a>
+    <a href="product-list.html?cat=underwear">언더웨어</a>
+  </div>
+</nav>
+<!-- ================= 공통 헤더 끝 ================= -->
+
+<main class="wrap checkout-page">
+  <nav class="breadcrumb" aria-label="현재 위치">
+    <a href="index.html">홈</a><span aria-hidden="true">/</span><span aria-current="page">주문/결제</span>
+  </nav>
+
+  <header class="checkout-heading">
+    <p class="kicker">Order</p>
+    <h1>주문/결제</h1>
+    <p>주문 상품과 결제 정보를 확인해 주세요.</p>
+  </header>
+
+  <p id="checkoutNotice" class="checkout-notice" role="alert" aria-live="assertive" hidden></p>
+
+  <div id="checkoutLoading" class="checkout-loading" aria-live="polite">
+    <span class="loading-dot" aria-hidden="true"></span>
+    주문 정보를 불러오고 있습니다.
+  </div>
+
+  <div id="checkoutContent" class="checkout-layout" hidden>
+    <div class="checkout-main">
+      <section class="checkout-section" aria-labelledby="itemsTitle">
+        <div class="section-title-row">
+          <h2 id="itemsTitle">주문 상품 <span id="itemCount" class="count"></span></h2>
+        </div>
+        <div id="orderItems" class="order-items"></div>
+        <div id="emptyCart" class="empty-cart" hidden>
+          <strong>주문할 상품이 없습니다.</strong>
+          <p>장바구니에서 주문할 상품을 선택해 주세요.</p>
+          <a href="shoppingcart.html" class="line-button">장바구니로 이동</a>
+        </div>
+      </section>
+
+      <section class="checkout-section" aria-labelledby="addressTitle">
+        <div class="section-title-row">
+          <h2 id="addressTitle">배송지</h2>
+          <button id="openAddressDialog" type="button" class="text-button">배송지 변경</button>
+        </div>
+        <div id="selectedAddress" class="selected-address" aria-live="polite"></div>
+      </section>
+
+      <section class="checkout-section benefits-section" aria-labelledby="benefitTitle">
+        <h2 id="benefitTitle">할인/포인트</h2>
+        <div class="benefit-row">
+          <label for="couponSelect">쿠폰</label>
+          <select id="couponSelect" disabled>
+            <option value="">쿠폰을 불러오는 중입니다.</option>
+          </select>
+        </div>
+        <div class="benefit-row point-row">
+          <label for="pointAmount">포인트</label>
+          <div class="point-control">
+            <input id="pointAmount" type="number" min="0" inputmode="numeric" placeholder="0" disabled>
+            <span id="availablePoints" class="point-balance">보유 포인트 0P</span>
+          </div>
+          <button id="applyPoints" type="button" class="line-button small" disabled>적용</button>
+        </div>
+        <p class="benefit-help">쿠폰과 포인트를 변경하면 최종 결제 금액이 다시 계산됩니다.</p>
+      </section>
+
+      <section class="checkout-section" aria-labelledby="paymentTitle">
+        <h2 id="paymentTitle">결제수단</h2>
+        <div id="paymentMethods" class="payment-methods" aria-label="결제수단 선택"></div>
+        <p id="paymentEmpty" class="section-empty" hidden></p>
+      </section>
+    </div>
+
+    <aside class="payment-summary" aria-labelledby="summaryTitle">
+      <h2 id="summaryTitle">결제 금액</h2>
+      <dl class="price-list">
+        <div><dt>상품 금액</dt><dd id="itemTotal">0원</dd></div>
+        <div><dt>배송비</dt><dd id="shippingFee">0원</dd></div>
+        <div class="discount"><dt>쿠폰 할인</dt><dd id="couponDiscount">-0원</dd></div>
+        <div class="discount"><dt>포인트 사용</dt><dd id="pointsUsed">-0원</dd></div>
+      </dl>
+      <div class="final-price"><span>최종 결제 금액</span><strong id="finalAmount">0원</strong></div>
+      <button id="payButton" type="button" class="pay-button" disabled>결제하기</button>
+      <p id="payHelp" class="pay-help" aria-live="polite">주문 정보를 불러오는 중입니다.</p>
+    </aside>
+  </div>
+</main>
+
+<dialog id="addressDialog" class="address-dialog" aria-labelledby="addressDialogTitle">
+  <form method="dialog" class="dialog-shell">
+    <div class="dialog-top">
+      <div>
+        <p class="dialog-kicker">DELIVERY ADDRESS</p>
+        <h2 id="addressDialogTitle">배송지 선택</h2>
+      </div>
+      <button id="closeAddressDialog" class="dialog-close" type="submit" aria-label="닫기">×</button>
+    </div>
+    <div id="addressOptions" class="address-options" role="radiogroup" aria-label="배송지 목록"></div>
+  </form>
+</dialog>
+
+<!-- ================= 공통 푸터 시작 (수정 금지) ================= -->
+<footer>
+  <div class="wrap">
+    <div class="foot-top">
+      <div class="foot-brand">
+        <div class="brand">캐치캐치</div>
+        <p>일상에 더 많은 캐치캐치</p>
+      </div>
+      <div class="foot-col">
+        <h5>Shop</h5>
+        <a href="product-list.html?view=best">베스트</a><a href="product-list.html?cat=outer">아우터</a>
+      </div>
+      <div class="foot-col">
+        <h5>Customer</h5>
+        <a href="notice.html">공지사항</a><a href="customercenter.html?tab=faq">자주 묻는 질문</a><a href="customercenter.html?tab=inquiry">1:1 문의</a><a href="customercenter.html?tab=guide">배송/반품</a>
+      </div>
+      <div class="foot-col">
+        <h5>About</h5>
+        <a href="brand.html">브랜드 스토리</a><a href="storeinfo.html">매장 안내</a><a href="careers.html">채용</a><a href="partnership.html">제휴 문의</a>
+      </div>
+    </div>
+    <div class="foot-bar">
+      <span>© 2026 CATCHCATCH STORE. 서울특별시 성동구 · 사업자등록 000-00-00000</span>
+      <div class="socials">
+        <a href="#" aria-label="Instagram"><svg viewBox="0 0 24 24"><rect x="3.5" y="3.5" width="17" height="17" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.2" cy="6.8" r="1" fill="currentColor" stroke="none"/></svg></a>
+        <a href="#" aria-label="YouTube"><svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="12" rx="3.5"/><path d="M11 9.5l4 2.5-4 2.5z" fill="currentColor" stroke="none"/></svg></a>
+        <a href="#" aria-label="X"><svg viewBox="0 0 24 24"><path d="M5 5l14 14M19 5L5 19"/></svg></a>
+      </div>
+    </div>
+  </div>
+</footer>
+<!-- ================= 공통 푸터 끝 ================= -->
+
+<script src="js/auth.js"></script>
+<script src="js/checkout.js"></script>
+<script src="js/navigation.js"></script>
+</body>
+</html>

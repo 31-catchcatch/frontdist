@@ -1,32 +1,13 @@
 <!doctype html>
 <html lang="ko">
-<!-- ============================================================
-     캐치캐치 페이지 템플릿 (_template.html)
-     ------------------------------------------------------------
-     ★ 새 페이지 만드는 법 ★
-     1. 이 파일을 복사해서 담당 파일명으로 저장하세요.
-        (파일명 규칙표는 README.md 참고: login.html, cart.html, ...)
-     2. <title>과 <main> 안의 내용만 작성하면 됩니다.
-     3. 헤더/푸터는 절대 수정하지 마세요! (전 페이지 공통)
-        수정 필요하면 리더에게 요청.
-     4. 페이지 전용 CSS가 필요하면 css/페이지명.css 를 만들어
-        아래 <link> 자리처럼 추가하세요. css/common.css 는 수정 금지!
-     ※ 메인 페이지는 index.html 입니다.
-     ※ 관리자 페이지는 _admin-template.html 을 쓰세요.
-     ============================================================ -->
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>페이지제목 — 캐치캐치</title>
+<title>상품목록 — 캐치캐치</title>
 <link rel="stylesheet" href="css/common.css">
-<!-- 페이지 전용 CSS가 있으면 여기에 추가:
-<link rel="stylesheet" href="css/페이지명.css">
--->
+<link rel="stylesheet" href="css/product-list.css">
 </head>
 <body>
-
-<!-- 상품 카드를 쓰는 페이지라면 index.html 상단의
-     SVG 실루엣 <defs> 블록을 여기에 복사하세요. -->
 
 <!-- ================= 공통 헤더 시작 (수정 금지) ================= -->
 <div class="utility">
@@ -43,12 +24,12 @@
 <header class="site">
   <div class="wrap head-row">
     <div class="head-left">
-      <form class="search" action="search.html" method="get" role="search">
+      <form class="search" action="product-list.html" method="get" role="search">
         <svg class="icn" viewBox="0 0 24 24" style="width:15px;height:15px"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg>
         <input type="text" name="q" placeholder="찾으시는 상품이 있나요?" aria-label="상품 검색">
       </form>
     </div>
-    <a class="brand" href="index.html" aria-label="캐치캐치 메인 페이지">캐치캐치</a>
+    <a class="brand" href="index.html">캐치캐치</a>
     <div class="head-right">
       <a href="mypage.html" id="mypageLink" aria-label="마이페이지"><svg class="icn" viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.6"/><path d="M5 20c1.2-3.6 3.8-5.4 7-5.4s5.8 1.8 7 5.4"/></svg></a>
       <a href="wishlist.html" aria-label="위시리스트"><svg class="icn" viewBox="0 0 24 24"><path d="M12 20s-7-4.6-7-9.3A3.7 3.7 0 0 1 12 8a3.7 3.7 0 0 1 7 2.7C19 15.4 12 20 12 20Z"/></svg></a>
@@ -76,21 +57,96 @@
 </nav>
 <!-- ================= 공통 헤더 끝 ================= -->
 
-<main class="wrap">
+<main class="wrap plist-page">
 
-  <!-- ▼▼▼ 여기부터 페이지 내용을 작성하세요 ▼▼▼ -->
+<!-- ▼▼▼ 상품목록 =====================================
+     기능정의서 매핑
+     - U-MAIN-001 상품 리스트·검색 결과 조회 → GET /api/v1/products
+     - U-MAIN-003 카테고리 목록 조회         → GET /api/v1/categories
+     받는 파라미터: ?cat=카테고리  ?q=검색어
+================================================================ -->
 
-  <section class="block">
-    <div class="sec-head">
-      <div>
-        <p class="kicker">Section</p>
-        <h3>섹션 제목</h3>
-      </div>
+  <!-- 페이지 제목 -->
+  <div class="plist-head">
+    <div>
+      <p class="kicker">Products</p>
+      <h3 data-role="page-title">전체 상품</h3>
     </div>
-    <p>내용...</p>
-  </section>
+    <span class="total-count">총 <b data-role="total">0</b>개</span>
+  </div>
 
-  <!-- ▲▲▲ 여기까지 ▲▲▲ -->
+  <div class="plist-body">
+
+    <!-- ===== 왼쪽 필터 ===== -->
+    <aside class="plist-filter">
+
+      <div class="filter-group">
+        <h5>카테고리</h5>
+        <label><input type="checkbox" data-filter="cat" value="outer"> 아우터</label>
+        <label><input type="checkbox" data-filter="cat" value="top"> 상의</label>
+        <label><input type="checkbox" data-filter="cat" value="shirts"> 셔츠</label>
+        <label><input type="checkbox" data-filter="cat" value="knit"> 니트</label>
+        <label><input type="checkbox" data-filter="cat" value="pants"> 팬츠</label>
+        <label><input type="checkbox" data-filter="cat" value="denim"> 데님</label>
+        <label><input type="checkbox" data-filter="cat" value="shoes"> 신발</label>
+        <label><input type="checkbox" data-filter="cat" value="bag"> 가방</label>
+        <label><input type="checkbox" data-filter="cat" value="acc"> 액세서리</label>
+      </div>
+
+      <div class="filter-group">
+        <h5>가격</h5>
+        <label><input type="checkbox" data-filter="price" value="0-30000"> 3만원 이하</label>
+        <label><input type="checkbox" data-filter="price" value="30000-50000"> 3~5만원</label>
+        <label><input type="checkbox" data-filter="price" value="50000-100000"> 5~10만원</label>
+        <label><input type="checkbox" data-filter="price" value="100000-"> 10만원 이상</label>
+      </div>
+
+      <div class="filter-group">
+        <h5>사이즈</h5>
+        <div class="size-chips">
+          <label><input type="checkbox" data-filter="size" value="S"><span>S</span></label>
+          <label><input type="checkbox" data-filter="size" value="M"><span>M</span></label>
+          <label><input type="checkbox" data-filter="size" value="L"><span>L</span></label>
+          <label><input type="checkbox" data-filter="size" value="XL"><span>XL</span></label>
+        </div>
+      </div>
+
+      <button type="button" class="btn-outline btn-reset" data-action="reset-filter">필터 초기화</button>
+    </aside>
+
+    <!-- ===== 오른쪽 상품 목록 ===== -->
+    <section class="plist-main">
+
+      <!-- 정렬 -->
+      <div class="plist-toolbar">
+        <select data-role="sort">
+          <option value="popular">인기순</option>
+          <option value="new">최신순</option>
+          <option value="low">낮은 가격순</option>
+          <option value="high">높은 가격순</option>
+          <option value="review">리뷰 많은순</option>
+        </select>
+      </div>
+
+      <!-- 상품 카드가 들어갈 자리 (JS가 채움) -->
+      <div class="product-grid" data-role="product-grid">
+        <!-- JS로 생성 -->
+      </div>
+
+      <!-- 결과 없을 때 -->
+      <div class="empty-msg" data-role="empty" hidden>
+        <p>검색 결과가 없습니다.</p>
+      </div>
+
+      <!-- 페이지네이션 -->
+      <nav class="pagination" data-role="pagination">
+        <!-- JS로 생성 -->
+      </nav>
+
+    </section>
+  </div>
+
+<!-- ▲▲▲ 여기까지 ▲▲▲ -->
 
 </main>
 
@@ -99,12 +155,12 @@
   <div class="wrap">
     <div class="foot-top">
       <div class="foot-brand">
-        <div class="brand">캐치캐치</div>
+    <a class="brand" href="index.html" aria-label="캐치캐치 메인 페이지">캐치캐치</a>
         <p>예쁜 옷 많이 캐치캐치</p>
       </div>
       <div class="foot-col">
         <h5>Shop</h5>
-        <a href="product-list.html?view=best">베스트</a><a href="product-list.html?cat=outer">아우터</a>
+        <a href="product-list.html">베스트</a><a href="product-list.html?cat=outer">아우터</a>
       </div>
       <div class="foot-col">
         <h5>Customer</h5>
@@ -127,9 +183,8 @@
 </footer>
 <!-- ================= 공통 푸터 끝 ================= -->
 
-<!-- 페이지 전용 스크립트가 있으면 여기에 추가 -->
 <script src="js/auth.js"></script>
-
+<script src="js/product-list.js"></script>
 <script src="js/navigation.js"></script>
 </body>
 </html>

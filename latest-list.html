@@ -11,7 +11,7 @@
         수정 필요하면 리더에게 요청.
      4. 페이지 전용 CSS가 필요하면 css/페이지명.css 를 만들어
         아래 <link> 자리처럼 추가하세요. css/common.css 는 수정 금지!
-     ※ 메인 페이지는 index.html 입니다.
+     ※ 메인 페이지는 main.html 입니다. (index.html 아님)
      ※ 관리자 페이지는 _admin-template.html 을 쓰세요.
      ============================================================ -->
 <head>
@@ -19,13 +19,11 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>페이지제목 — 캐치캐치</title>
 <link rel="stylesheet" href="css/common.css">
-<!-- 페이지 전용 CSS가 있으면 여기에 추가:
-<link rel="stylesheet" href="css/페이지명.css">
--->
+<link rel="stylesheet" href="css/latest-list.css">
 </head>
 <body>
 
-<!-- 상품 카드를 쓰는 페이지라면 index.html 상단의
+<!-- 상품 카드를 쓰는 페이지라면 main.html 상단의
      SVG 실루엣 <defs> 블록을 여기에 복사하세요. -->
 
 <!-- ================= 공통 헤더 시작 (수정 금지) ================= -->
@@ -80,15 +78,237 @@
 
   <!-- ▼▼▼ 여기부터 페이지 내용을 작성하세요 ▼▼▼ -->
 
-  <section class="block">
-    <div class="sec-head">
-      <div>
-        <p class="kicker">Section</p>
-        <h3>섹션 제목</h3>
-      </div>
-    </div>
-    <p>내용...</p>
-  </section>
+<section class="block recent-product">
+
+
+<div class="sec-head">
+
+<div>
+
+<p class="kicker">
+RECENT VIEW
+</p>
+
+<h3>
+최근 본 상품
+</h3>
+
+</div>
+
+
+</div>
+
+
+
+<p class="recent-desc">
+최근 방문한 상품을 확인할 수 있습니다.
+</p>
+
+
+
+
+
+<div class="product-list">
+
+
+
+<!-- 1. 최신 방문 상품 -->
+
+<div class="product-item">
+
+
+<div class="product-image">
+
+<img src="images/product01.jpg" alt="오버핏 데님 자켓">
+
+</div>
+
+
+
+<div class="product-info">
+
+
+<p class="brand-name">
+MANGO
+</p>
+
+
+<h4>
+오버핏 데님 자켓
+</h4>
+
+
+<p class="price">
+89,000원
+</p>
+
+
+<p class="view-time">
+방문일시 : 2026.07.15 09:32
+</p>
+
+
+
+</div>
+
+
+</div>
+
+
+
+
+
+
+
+<!-- 2 -->
+
+<div class="product-item">
+
+
+<div class="product-image">
+
+<img src="images/product02.jpg" alt="베이직 코튼 셔츠">
+
+</div>
+
+
+
+<div class="product-info">
+
+
+<p class="brand-name">
+CATCH BASIC
+</p>
+
+
+<h4>
+베이직 코튼 셔츠
+</h4>
+
+
+<p class="price">
+49,000원
+</p>
+
+
+<p class="view-time">
+방문일시 : 2026.07.14 18:20
+</p>
+
+
+
+</div>
+
+
+</div>
+
+
+
+
+
+
+
+<!-- 3 -->
+
+<div class="product-item">
+
+
+<div class="product-image">
+
+<img src="images/product03.jpg" alt="와이드 슬랙스 팬츠">
+
+</div>
+
+
+
+<div class="product-info">
+
+
+<p class="brand-name">
+URBAN STYLE
+</p>
+
+
+<h4>
+와이드 슬랙스 팬츠
+</h4>
+
+
+<p class="price">
+59,000원
+</p>
+
+
+<p class="view-time">
+방문일시 : 2026.07.13 15:10
+</p>
+
+
+
+</div>
+
+
+</div>
+
+
+
+
+
+
+
+<!-- 4 -->
+
+<div class="product-item">
+
+
+<div class="product-image">
+
+<img src="images/product04.jpg" alt="캐주얼 후드 집업">
+
+</div>
+
+
+
+<div class="product-info">
+
+
+<p class="brand-name">
+DAILY WEAR
+</p>
+
+
+<h4>
+캐주얼 후드 집업
+</h4>
+
+
+<p class="price">
+69,000원
+</p>
+
+
+<p class="view-time">
+방문일시 : 2026.07.12 11:45
+</p>
+
+
+
+</div>
+
+
+</div>
+
+
+
+
+
+
+</div>
+
+
+
+</section>
+
 
   <!-- ▲▲▲ 여기까지 ▲▲▲ -->
 

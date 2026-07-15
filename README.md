@@ -15,14 +15,14 @@ frontend/
 │   └── (페이지명).css   ← 자기 페이지 전용 CSS는 여기에 새로 만들기
 ├── js/
 │   └── auth.js         ← 공통 인증 모듈 (⚠️ 리더만 수정)
-├── main.html           ← ★ 메인페이지 (완성, 참고용). index.html 아님! ★
+├── index.html          ← ★ 메인페이지 (완성, 참고용) ★
 ├── _template.html      ← ★ 일반 페이지 만들 때 복사해서 시작 ★
 ├── _admin-template.html← ★ 관리자 페이지 만들 때 복사해서 시작 ★
 └── README.md           ← 이 문서
 ```
 
-> **메인페이지는 `main.html` 입니다.** (`index.html`은 옛 초안이라 저장소에 없음)
-> 홈/로고 링크는 전부 `main.html`로 연결하세요.
+> **메인페이지는 `index.html` 입니다.**
+> 홈/로고 링크는 전부 `index.html`로 연결하세요.
 
 ## 2. 페이지 담당 & 파일명 (변경 금지!)
 
@@ -33,7 +33,7 @@ frontend/
 
 | 담당 | 파일명 | 페이지 | 기능 ID | 받는 파라미터 |
 |------|--------|--------|---------|--------------|
-| Key | `main.html` | 메인/홈 ✅완성 | U-MAIN-001~006 | — |
+| Key | `index.html` | 메인/홈 ✅완성 | U-MAIN-001~006 | — |
 | Key | `js/auth.js` | 공통 인증 모듈(토큰 재발급) ✅완성 | U-AUTH-008 | — |
 | Key | `checkout.html` | 결제(주문서) | U-ORDER-001~004 | — |
 | Key | `orders.html` | 주문 내역/배송추적/구매확정/교환환불 | U-ORDER-005~010 | `?orderId=` |
@@ -81,7 +81,6 @@ frontend/
 | 담당 | 파일명 | 페이지 | 기능 ID |
 |------|--------|--------|---------|
 | C | `mypage.html` | 마이페이지 요약 | U-MY-001~003, 006, 008, 009
-| C | `payment-methods.html` | 결제수단 관리 | U-MY-004~005
 | C | `points.html` | 포인트 내역 | U-MY-007
 | C | `addresses.html` | 배송지 관리 | U-ADDR-001~004
 | C | `notifications.html` | 알림 센터 | U-NOTI-001

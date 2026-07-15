@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="캐치캐치 관리자 · 전체 Q&A 모니터링">
+  <title>Q&amp;A 모니터링 · 캐치캐치 관리자</title>
+  <link rel="stylesheet" href="css/common.css">
+  <link rel="stylesheet" href="css/admin.css">
+  <script src="js/admin-auth.js"></script>
+  <script>AdminAuth.requireLogin();</script>
+</head>
+<body>
+  <header class="admin-bar">
+    <a class="admin-brand" href="admin-dashboard.html">캐치캐치 <span>ADMIN</span></a>
+    <nav aria-label="관리자 메뉴">
+      <a href="admin-dashboard.html">대시보드</a>
+      <a href="admin-users.html">사용자</a>
+      <a href="admin-products.html">상품</a>
+      <a href="admin-seller-applications.html">입점심사</a>
+      <a href="admin-sellers.html">입점업체</a>
+      <a href="admin-coupons.html">쿠폰</a>
+      <a href="admin-points.html">포인트</a>
+      <a class="is-current" href="admin-qna.html">Q&amp;A</a>
+      <a href="admin-settlements.html">정산</a>
+    </nav>
+    <div class="admin-actions">
+      <a href="index.html">쇼핑몰 보기</a>
+      <a href="admin-login.html" data-admin-logout>로그아웃</a>
+    </div>
+  </header>
+
+  <main class="admin-page wrap">
+    <div class="page-head">
+      <div>
+        <p class="kicker">Q&amp;A MONITORING · A-QA-001</p>
+        <h1>전체 Q&amp;A 모니터링</h1>
+        <p class="desc">플랫폼 전체에서 발생하는 상품문의·1:1문의 내역을 모니터링하고 응대 흐름을 확인합니다.</p>
+      </div>
+      <span class="preview-badge">화면 미리보기 · GET /api/v1/admin/qna</span>
+    </div>
+
+    <div class="toolbar">
+      <label class="search-box">
+        <svg class="icn" viewBox="0 0 24 24" style="width:15px;height:15px"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg>
+        <input type="text" id="q" placeholder="제목·작성자·판매자 검색">
+      </label>
+      <select id="typeFilter">
+        <option value="">전체 유형</option>
+        <option value="product">상품문의</option>
+        <option value="direct">1:1문의</option>
+      </select>
+      <select id="statusFilter">
+        <option value="">전체 상태</option>
+        <option value="ok">답변완료</option>
+        <option value="wait">미답변</option>
+      </select>
+      <span class="count">총 <b id="count">0</b>건</span>
+    </div>
+
+    <div class="table-wrap">
+      <table class="data">
+        <thead>
+          <tr>
+            <th>문의ID</th>
+            <th>유형</th>
+            <th>제목</th>
+            <th>작성자</th>
+            <th>대상 판매자</th>
+            <th>상태</th>
+            <th>작성일</th>
+            <th>관리</th>
+          </tr>
+        </thead>
+        <tbody id="rows"></tbody>
+      </table>
+    </div>
+
+    <div class="pager">
+      <button type="button">‹</button>
+      <button type="button" class="on">1</button>
+      <button type="button">2</button>
+      <button type="button">›</button>
+    </div>
+  </main>
+
+  <script src="js/admin-ui.js?v=3"></script>
+  <script>
+    // ---------- 전체 Q&A 목록 (GET /api/v1/admin/qna) ----------
+    const QNA = [
+      { id: 'Q6001', type: 'product', title: '사이즈 문의드립니다', author: '홍길동', seller: 'STANDARD', status: 'ok',   created: '2026-07-11' },
+      { id: 'Q6002', type: 'product', title: '재입고 예정 있나요?', author: '김민지', seller: '데일리룩',  status: 'wait', created: '2026-07-11' },
+      { id: 'Q6003', type: 'direct',  title: '환불이 지연되고 있어요', author: '박영희', seller: '어반스타일', status: 'wait', created: '2026-07-12' },
+      { id: 'Q6004', type: 'product', title: '색상 실물과 동일한가요', author: '최수아', seller: 'STANDARD', status: 'ok',   created: '2026-07-12' },
+      { id: 'Q6005', type: 'direct',  title: '부적절한 답변 신고합니다', author: '강도현', seller: '무드서울',  status: 'wait', created: '2026-07-13' },
+      { id: 'Q6006', type: 'product', title: '배송 얼마나 걸리나요',   author: '정하준', seller: '데일리룩',  status: 'ok',   created: '2026-07-13' },
+    ];
+
+    const TYPE = { product: '상품문의', direct: '1:1문의' };
+    const STATUS = { ok: '답변완료', wait: '미답변' };
+
+    const rowsEl = document.getElementById('rows');
+    const countEl = document.getElementById('count');
+    const qEl = document.getElementById('q');
+    const typeEl = document.getElementById('typeFilter');
+    const statusEl = document.getElementById('statusFilter');
+
+    function render(list, total = list.length) {
+      if (!list.length) {
+        rowsEl.innerHTML = '<tr class="empty-row"><td colspan="8">조건에 맞는 문의가 없습니다.</td></tr>';
+        countEl.textContent = 0;
+        return;
+      }
+      rowsEl.innerHTML = list.map((q) => `
+        <tr data-id="${AdminUI.escape(q.id)}">
+          <td class="num">${AdminUI.escape(q.id)}</td>
+          <td><span class="tag ${q.type === 'direct' ? 'info' : 'role'}">${TYPE[q.type]}</span></td>
+          <td class="strong">${AdminUI.escape(q.title)}</td>
+          <td>${AdminUI.escape(q.author)}</td>
+          <td class="muted">${AdminUI.escape(q.seller)}</td>
+          <td><span class="tag ${q.status}">${STATUS[q.status]}</span></td>
+          <td class="muted">${AdminUI.escape(q.created)}</td>
+          <td><button class="btn sm" data-act="view">내용 보기</button></td>
+        </tr>`).join('');
+      countEl.textContent = total;
+    }
+
+    const listController = AdminUI.createListController({ pager: document.querySelector('.pager'), render });
+
+    function applyFilter() {
+      const q = qEl.value.trim().toLowerCase();
+      const type = typeEl.value;
+      const status = statusEl.value;
+      listController.setItems(QNA.filter((item) =>
+        (!type || item.type === type) &&
+        (!status || item.status === status) &&
+        (!q || item.title.toLowerCase().includes(q) || item.author.toLowerCase().includes(q) || item.seller.toLowerCase().includes(q))
+      ));
+    }
+    qEl.addEventListener('input', applyFilter);
+    typeEl.addEventListener('change', applyFilter);
+    statusEl.addEventListener('change', applyFilter);
+
+    rowsEl.addEventListener('click', (e) => {
+      const btn = e.target.closest('button[data-act="view"]');
+      if (!btn) return;
+      const id = btn.closest('tr').dataset.id;
+      const item = QNA.find((x) => x.id === id);
+      AdminUI.toast(`${item.id} '${item.title}' — 문의 상세 연동 예정`);
+    });
+
+    listController.setItems(QNA);
+  </script>
+</body>
+</html>

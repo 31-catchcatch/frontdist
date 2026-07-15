@@ -1,0 +1,104 @@
+/* my-reviews.css — 내 리뷰 목록 전용 스타일 */
+
+.myreview-page { max-width: 760px; margin: 0 auto; }
+
+/* ===== 제목 ===== */
+.myreview-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  padding-bottom: 20px;
+  border-bottom: 2px solid var(--ink, #222);
+  margin-bottom: 8px;
+}
+.myreview-head h3 { font-size: 24px; margin: 0; }
+.total-count { font-size: 13px; color: var(--mid, #888); }
+.total-count b { color: var(--point, #e02020); }
+
+/* ===== 리뷰 목록 ===== */
+.review-list { list-style: none; padding: 0; margin: 0; }
+
+.review-item {
+  display: grid;
+  grid-template-columns: 90px 1fr;
+  gap: 20px;
+  padding: 28px 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+/* 상품 썸네일 */
+.ri-thumb {
+  aspect-ratio: 3/4;
+  border-radius: 4px; overflow: hidden;
+  background: #f5f5f5;
+}
+.ri-thumb img { width: 100%; height: 100%; object-fit: cover; }
+
+/* 리뷰 본문 */
+.ri-body { min-width: 0; }
+
+.ri-product {
+  display: flex; align-items: baseline; gap: 8px;
+  margin-bottom: 10px;
+}
+.ri-brand { font-size: 12px; font-weight: 700; color: var(--mid, #888); }
+.ri-name {
+  font-size: 14px; color: var(--ink, #222);
+  text-decoration: none;
+}
+.ri-name:hover { text-decoration: underline; }
+.ri-option { font-size: 12px; color: #aaa; }
+
+.ri-meta {
+  display: flex; align-items: center; gap: 10px;
+  margin-bottom: 12px;
+}
+.ri-stars { color: #f5a623; font-size: 15px; letter-spacing: -1px; }
+.ri-date { font-size: 12px; color: #aaa; }
+
+.ri-text {
+  font-size: 14px; line-height: 1.7; color: #333;
+  margin: 0 0 14px;
+}
+
+/* 리뷰 사진 */
+.ri-photos { display: flex; gap: 8px; margin-bottom: 16px; }
+.ri-photos img {
+  width: 72px; height: 72px;
+  border-radius: 4px; object-fit: cover;
+  background: #f0f0f0;
+}
+
+/* 수정/삭제 버튼 */
+.ri-actions { display: flex; gap: 8px; }
+.ri-actions button {
+  height: 34px; padding: 0 16px;
+  border: 1px solid #ddd; background: #fff;
+  border-radius: 4px; font-size: 13px; cursor: pointer;
+}
+.ri-actions button:hover { border-color: #222; }
+.ri-actions .btn-delete:hover {
+  border-color: var(--point, #e02020);
+  color: var(--point, #e02020);
+}
+
+/* ===== 빈 화면 ===== */
+.review-empty { padding: 100px 0; text-align: center; }
+.review-empty p { color: var(--mid, #888); margin-bottom: 28px; }
+
+.btn-primary {
+  display: inline-block;
+  height: 52px; line-height: 52px; padding: 0 40px;
+  border: none; border-radius: 4px;
+  background: var(--point, #222); color: #fff;
+  font-size: 15px; font-weight: 700;
+  text-decoration: none; cursor: pointer;
+}
+.btn-primary:hover { opacity: .9; }
+
+[hidden] { display: none !important; }
+
+/* ===== 반응형 ===== */
+@media (max-width: 600px) {
+  .review-item { grid-template-columns: 70px 1fr; gap: 14px; }
+}

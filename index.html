@@ -40,8 +40,8 @@
 
 <div class="utility">
   <div class="wrap">
-    <a href="#">고객센터</a>
-    <a href="#">매장안내</a>
+    <a href="customercenter.html">고객센터</a>
+    <a href="storeinfo.html">매장안내</a>
     <a href="login.html" data-auth-guest>로그인</a>
     <a href="signup.html" data-auth-guest>회원가입</a>
     <a href="mypage.html" data-auth-member hidden>마이페이지</a>
@@ -52,34 +52,35 @@
 <header class="site">
   <div class="wrap head-row">
     <div class="head-left">
-      <label class="search">
+      <form class="search" action="search.html" method="get" role="search">
         <svg class="icn" viewBox="0 0 24 24" style="width:15px;height:15px"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg>
-        찾으시는 상품이 있나요?
-      </label>
+        <input type="text" name="q" placeholder="찾으시는 상품이 있나요?" aria-label="상품 검색">
+      </form>
     </div>
-    <div class="brand">캐치캐치</div>
+    <a class="brand" href="index.html" aria-label="캐치캐치 메인 페이지">캐치캐치</a>
     <div class="head-right">
       <a href="mypage.html" id="mypageLink" aria-label="마이페이지"><svg class="icn" viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.6"/><path d="M5 20c1.2-3.6 3.8-5.4 7-5.4s5.8 1.8 7 5.4"/></svg></a>
-      <a href="#" aria-label="위시리스트"><svg class="icn" viewBox="0 0 24 24"><path d="M12 20s-7-4.6-7-9.3A3.7 3.7 0 0 1 12 8a3.7 3.7 0 0 1 7 2.7C19 15.4 12 20 12 20Z"/></svg></a>
-      <a href="#" aria-label="장바구니"><svg class="icn" viewBox="0 0 24 24"><path d="M6 7h12l-1.2 12.2a1 1 0 0 1-1 .8H8.2a1 1 0 0 1-1-.8L6 7Z"/><path d="M9 7a3 3 0 0 1 6 0"/></svg></a>
+      <a href="wishlist.html" aria-label="위시리스트"><svg class="icn" viewBox="0 0 24 24"><path d="M12 20s-7-4.6-7-9.3A3.7 3.7 0 0 1 12 8a3.7 3.7 0 0 1 7 2.7C19 15.4 12 20 12 20Z"/></svg></a>
+      <a href="shoppingcart.html" aria-label="장바구니"><svg class="icn" viewBox="0 0 24 24"><path d="M6 7h12l-1.2 12.2a1 1 0 0 1-1 .8H8.2a1 1 0 0 1-1-.8L6 7Z"/><path d="M9 7a3 3 0 0 1 6 0"/></svg></a>
     </div>
   </div>
 </header>
 
 <nav class="cats">
   <div class="wrap">
-    <a href="#" class="on">베스트</a>
+    <a href="product-list.html">전체</a>
+    <a href="product-list.html?view=best">베스트</a>
     <a href="brand.html">브랜드</a>
-    <a href="#">아우터</a>
-    <a href="#">상의</a>
-    <a href="#">셔츠</a>
-    <a href="#">니트</a>
-    <a href="#">팬츠</a>
-    <a href="#">데님</a>
-    <a href="#">신발</a>
-    <a href="#">가방</a>
-    <a href="#">액세서리</a>
-    <a href="#">언더웨어</a>
+    <a href="product-list.html?cat=outer">아우터</a>
+    <a href="product-list.html?cat=top">상의</a>
+    <a href="product-list.html?cat=shirts">셔츠</a>
+    <a href="product-list.html?cat=knit">니트</a>
+    <a href="product-list.html?cat=pants">팬츠</a>
+    <a href="product-list.html?cat=denim">데님</a>
+    <a href="product-list.html?cat=shoes">신발</a>
+    <a href="product-list.html?cat=bag">가방</a>
+    <a href="product-list.html?cat=acc">액세서리</a>
+    <a href="product-list.html?cat=underwear">언더웨어</a>
   </div>
 </nav>
 
@@ -88,7 +89,7 @@
   <section class="hero" aria-label="프로모션 배너">
     <div class="ad-slider" id="adSlider">
       <div class="ad-track" id="adTrack">
-        <a class="ad-slide s1" href="#">
+        <a class="ad-slide s1" href="product-list.html?cat=outer">
           <svg class="ad-silo" viewBox="0 0 130 110" aria-hidden="true"><use href="#g-jacket"/></svg>
           <div class="ad-copy">
             <p class="eyebrow">CATCHCATCH SUMMER</p>
@@ -96,7 +97,7 @@
             <p>캐치캐치가 제안하는 이번 시즌 데일리 스타일을 만나보세요.</p>
           </div>
         </a>
-        <a class="ad-slide s2" href="#">
+        <a class="ad-slide s2" href="product-list.html?view=best">
           <svg class="ad-silo" viewBox="0 0 130 110" aria-hidden="true"><use href="#g-tee"/></svg>
           <div class="ad-copy">
             <p class="eyebrow">WEEKLY EVENT</p>
@@ -104,7 +105,7 @@
             <p>지금 가장 많이 선택받는 아이템을 한곳에서 확인해보세요.</p>
           </div>
         </a>
-        <a class="ad-slide s3" href="#">
+        <a class="ad-slide s3" href="product-list.html">
           <svg class="ad-silo" viewBox="0 0 130 110" aria-hidden="true"><use href="#g-pants"/></svg>
           <div class="ad-copy">
             <p class="eyebrow">SPECIAL PROMOTION</p>
@@ -128,7 +129,7 @@
         <p class="kicker">Ranking</p>
         <h3>베스트</h3>
       </div>
-      <a class="more" href="#">전체보기 →</a>
+      <a class="more" href="product-list.html?view=best">전체보기 →</a>
     </div>
     <div class="chips">
       <span class="chip on">전체</span>
@@ -152,15 +153,15 @@
       </div>
       <div class="foot-col">
         <h5>Shop</h5>
-        <a href="#">베스트</a><a href="#">아우터</a>
+        <a href="product-list.html?view=best">베스트</a><a href="product-list.html?cat=outer">아우터</a>
       </div>
       <div class="foot-col">
         <h5>Customer</h5>
-        <a href="#">공지사항</a><a href="#">자주 묻는 질문</a><a href="#">1:1 문의</a><a href="#">배송/반품</a>
+        <a href="notice.html">공지사항</a><a href="customercenter.html?tab=faq">자주 묻는 질문</a><a href="customercenter.html?tab=inquiry">1:1 문의</a><a href="customercenter.html?tab=guide">배송/반품</a>
       </div>
       <div class="foot-col">
         <h5>About</h5>
-        <a href="#">브랜드 스토리</a><a href="#">매장 안내</a><a href="#">채용</a><a href="#">제휴 문의</a>
+        <a href="brand.html">브랜드 스토리</a><a href="storeinfo.html">매장 안내</a><a href="careers.html">채용</a><a href="partnership.html">제휴 문의</a>
       </div>
     </div>
     <div class="foot-bar">
@@ -179,22 +180,20 @@
   const tiles = ['var(--tile-1)','var(--tile-2)','var(--tile-3)','var(--tile-4)'];
   const garments = ['g-tee','g-hoodie','g-pants','g-jacket','g-cap','g-bag'];
   const best = [
-    ['STANDARD','릴렉스 핏 쿨 코튼 반팔 티셔츠','19,900','29,000',32,'g-tee','4.8','2.1k'],
-    ['STANDARD','와이드 원턱 코튼 팬츠','39,900','49,000',18,'g-pants','4.7','1.4k'],
-    ['STANDARD','오버핏 후드 스웨트셔츠','44,900',null,null,'g-hoodie','4.9','980'],
-    ['STANDARD','베이식 볼캡','16,900','19,000',11,'g-cap','4.6','760'],
-    ['STANDARD','미니멀 데일리 크로스백','32,900',null,null,'g-bag','4.8','1.1k'],
-    ['STANDARD','린넨 블렌드 셔츠 자켓','69,900','89,000',22,'g-jacket','4.7','540'],
-    ['STANDARD','에센셜 5팩 크루넥 티셔츠','29,900','39,000',25,'g-tee','4.9','3.3k'],
-    ['STANDARD','테이퍼드 히든밴딩 슬랙스','36,900',null,null,'g-pants','4.6','870'],
+    ['STANDARD','릴렉스 핏 쿨 코튼 반팔 티셔츠','29,000','g-tee','4.8','2.1k'],
+    ['STANDARD','와이드 원턱 코튼 팬츠','49,000','g-pants','4.7','1.4k'],
+    ['STANDARD','오버핏 후드 스웨트셔츠','44,900','g-hoodie','4.9','980'],
+    ['STANDARD','베이식 볼캡','19,000','g-cap','4.6','760'],
+    ['STANDARD','미니멀 데일리 크로스백','32,900','g-bag','4.8','1.1k'],
+    ['STANDARD','린넨 블렌드 셔츠 자켓','89,000','g-jacket','4.7','540'],
+    ['STANDARD','에센셜 5팩 크루넥 티셔츠','39,000','g-tee','4.9','3.3k'],
+    ['STANDARD','테이퍼드 히든밴딩 슬랙스','36,900','g-pants','4.6','870'],
   ];
-  function card([brand,name,price,was,disc,g,rate,cnt], i, isNew){
+  function card([brand,name,price,g,rate,cnt], i, isNew){
     const badge = isNew
       ? '<span class="badge">NEW</span>'
-      : (disc ? '<span class="badge sale">'+disc+'%</span>' : (i===0?'<span class="badge">BEST</span>':''));
-    const priceRow = disc
-      ? '<span class="disc tnum">'+disc+'%</span><span class="price tnum">'+price+'원</span><span class="was tnum">'+was+'원</span>'
-      : '<span class="price tnum">'+price+'원</span>';
+      : (i===0?'<span class="badge">BEST</span>':'');
+    const priceRow = '<span class="price tnum">'+price+'원</span>';
     return `<article class="card" tabindex="0">
       <div class="thumb">
         <div class="art" style="background:${tiles[i % tiles.length]}"></div>
@@ -259,5 +258,6 @@
 
 <script src="js/auth.js"></script>
 
+<script src="js/navigation.js"></script>
 </body>
 </html>

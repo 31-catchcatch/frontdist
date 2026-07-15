@@ -1,0 +1,206 @@
+/* product-detail.css — 상품상세 페이지 전용 스타일 */
+
+.pdetail-top {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 48px;
+  padding-bottom: 60px;
+  border-bottom: 1px solid #eee;
+}
+
+/* ===== 갤러리 ===== */
+.gallery-main {
+  aspect-ratio: 3 / 4;
+  background: #f5f5f5;
+  border-radius: 6px;
+  overflow: hidden;
+  margin-bottom: 10px;
+}
+.gallery-main img { width: 100%; height: 100%; object-fit: cover; }
+
+.gallery-thumbs { display: flex; gap: 8px; }
+.gallery-thumbs button {
+  width: 70px; aspect-ratio: 3/4;
+  border: 2px solid transparent; border-radius: 4px;
+  padding: 0; overflow: hidden; cursor: pointer; background: none;
+}
+.gallery-thumbs button.is-active { border-color: var(--ink, #222); }
+.gallery-thumbs img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+/* ===== 구매정보 ===== */
+.pd-brand { font-size: 14px; font-weight: 700; color: var(--mid, #888); margin: 0 0 6px; }
+.pd-name { font-size: 22px; line-height: 1.4; margin: 0 0 14px; }
+
+.pd-rating {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 13px; margin-bottom: 20px;
+}
+.stars { color: #f5a623; letter-spacing: -1px; }
+.review-link { color: var(--mid, #888); text-decoration: underline; }
+
+.pd-price {
+  display: flex; align-items: baseline; gap: 10px;
+  padding-bottom: 20px; border-bottom: 1px solid #eee;
+  margin-bottom: 20px;
+}
+.pd-discount { font-size: 22px; font-weight: 700; color: var(--point, #e02020); }
+.pd-final { font-size: 24px; font-weight: 700; color: var(--ink, #222); }
+.pd-origin { font-size: 15px; color: #bbb; text-decoration: line-through; }
+
+.pd-meta {
+  display: grid; grid-template-columns: 80px 1fr;
+  gap: 8px 0; font-size: 13px;
+  margin: 0 0 24px; padding-bottom: 24px; border-bottom: 1px solid #eee;
+}
+.pd-meta dt { color: var(--mid, #888); }
+.pd-meta dd { margin: 0; color: #333; }
+
+/* 옵션 */
+.pd-option { margin-bottom: 20px; }
+.pd-option > label {
+  display: block; font-size: 13px; font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.size-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.size-chips button {
+  min-width: 52px; height: 40px;
+  border: 1px solid #ddd; background: #fff; border-radius: 4px;
+  font-size: 13px; cursor: pointer;
+}
+.size-chips button:hover { border-color: #222; }
+.size-chips button.is-selected {
+  background: var(--ink, #222); color: #fff; border-color: var(--ink, #222);
+}
+.size-chips button:disabled {
+  opacity: .35; cursor: not-allowed; text-decoration: line-through;
+}
+
+/* 수량 */
+.qty-box { display: inline-flex; border: 1px solid #ddd; border-radius: 4px; overflow: hidden; }
+.qty-box button {
+  width: 38px; height: 40px;
+  border: none; background: #fff; font-size: 16px; cursor: pointer;
+}
+.qty-box button:hover { background: #f5f5f5; }
+.qty-box input {
+  width: 50px; height: 40px;
+  border: none; border-left: 1px solid #eee; border-right: 1px solid #eee;
+  text-align: center; font-size: 14px;
+}
+
+/* 총 금액 */
+.pd-total {
+  display: flex; justify-content: space-between; align-items: baseline;
+  padding: 20px 0; border-top: 1px solid #eee;
+  margin-bottom: 16px;
+}
+.pd-total span { font-size: 14px; color: var(--mid, #888); }
+.pd-total b { font-size: 24px; color: var(--point, #e02020); }
+
+/* 구매 버튼 */
+.pd-actions { display: flex; gap: 8px; }
+.btn-like {
+  width: 52px; height: 52px;
+  display: flex; align-items: center; justify-content: center;
+  border: 1px solid #ddd; background: #fff; border-radius: 4px; cursor: pointer;
+}
+.btn-like svg { width: 22px; height: 22px; fill: none; stroke: #666; stroke-width: 1.6; }
+.btn-like.is-liked svg { fill: var(--point, #e02020); stroke: var(--point, #e02020); }
+
+.btn-cart, .btn-buy {
+  flex: 1; height: 52px;
+  border-radius: 4px; font-size: 15px; font-weight: 700; cursor: pointer;
+}
+.btn-cart { border: 1px solid var(--ink, #222); background: #fff; color: var(--ink, #222); }
+.btn-cart:hover { background: #f5f5f5; }
+.btn-buy { border: none; background: var(--point, #222); color: #fff; }
+.btn-buy:hover { opacity: .9; }
+
+/* ===== 탭 ===== */
+.pdetail-tabs { padding-top: 60px; }
+
+.tab-nav {
+  display: flex; border-bottom: 1px solid #eee;
+  margin-bottom: 40px;
+}
+.tab-nav button {
+  flex: 1; height: 52px;
+  border: none; background: none;
+  border-bottom: 2px solid transparent;
+  font-size: 14px; color: var(--mid, #888); cursor: pointer;
+}
+.tab-nav button.is-active {
+  color: var(--ink, #222); font-weight: 700;
+  border-bottom-color: var(--ink, #222);
+}
+
+.detail-desc { text-align: center; }
+.detail-desc img { max-width: 100%; margin-bottom: 8px; }
+.detail-desc p { font-size: 14px; line-height: 1.8; color: #555; }
+
+/* ===== 리뷰 ===== */
+.review-list { list-style: none; padding: 0; margin: 0; }
+.review-list li { padding: 24px 0; border-bottom: 1px solid #f0f0f0; }
+.review-head {
+  display: flex; align-items: center; gap: 10px;
+  font-size: 12px; color: var(--mid, #888); margin-bottom: 8px;
+}
+.review-head .stars { font-size: 13px; }
+.review-opt { font-size: 12px; color: #aaa; margin-bottom: 8px; }
+.review-body { font-size: 14px; line-height: 1.7; color: #333; }
+
+/* ===== Q&A ===== */
+.qna-write { display: flex; justify-content: flex-end; margin-bottom: 20px; }
+.btn-outline {
+  height: 40px; padding: 0 16px;
+  border: 1px solid #ccc; background: #fff; border-radius: 4px;
+  font-size: 13px; cursor: pointer;
+}
+.btn-outline:hover { border-color: #222; }
+
+.qna-form {
+  padding: 24px; background: #fafafa; border-radius: 6px;
+  margin-bottom: 24px;
+  display: flex; flex-direction: column; gap: 16px;
+}
+.qna-form .field { display: flex; flex-direction: column; gap: 6px; }
+.qna-form label { font-size: 13px; font-weight: 600; }
+.qna-form input[type=text], .qna-form textarea {
+  padding: 10px 12px;
+  border: 1px solid #ddd; border-radius: 4px; font-size: 14px;
+  font-family: inherit;
+}
+.qna-secret { display: flex; align-items: center; gap: 8px; font-size: 13px; }
+.qna-form-btns { display: flex; gap: 8px; justify-content: flex-end; }
+.btn-submit {
+  height: 40px; padding: 0 24px;
+  border: none; border-radius: 4px;
+  background: var(--point, #222); color: #fff;
+  font-size: 14px; font-weight: 700; cursor: pointer;
+}
+
+.qna-list { list-style: none; padding: 0; margin: 0; }
+.qna-list li { padding: 20px 0; border-bottom: 1px solid #f0f0f0; }
+.qna-q { display: flex; gap: 10px; align-items: flex-start; }
+.qna-q .badge {
+  flex-shrink: 0;
+  padding: 2px 7px; border-radius: 3px;
+  font-size: 11px; font-weight: 700;
+  background: #eee; color: #666;
+}
+.qna-q .badge.is-answered { background: var(--point, #e02020); color: #fff; }
+.qna-q-body { flex: 1; }
+.qna-title { font-size: 14px; font-weight: 600; margin: 0 0 4px; }
+.qna-date { font-size: 12px; color: #aaa; }
+.qna-a {
+  margin-top: 14px; padding: 14px 16px;
+  background: #fafafa; border-radius: 4px;
+  font-size: 13px; line-height: 1.7; color: #555;
+}
+.qna-a b { color: var(--ink, #222); }
+
+@media (max-width: 900px) {
+  .pdetail-top { grid-template-columns: 1fr; gap: 32px; }
+}
+

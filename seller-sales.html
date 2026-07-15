@@ -19,9 +19,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>페이지제목 — 캐치캐치</title>
 <link rel="stylesheet" href="css/common.css">
-<!-- 페이지 전용 CSS가 있으면 여기에 추가:
-<link rel="stylesheet" href="css/페이지명.css">
--->
+<link rel="stylesheet" href="css/seller-sales.css">
 </head>
 <body>
 
@@ -80,14 +78,240 @@
 
   <!-- ▼▼▼ 여기부터 페이지 내용을 작성하세요 ▼▼▼ -->
 
-  <section class="block">
+  <section class="block sales-page">
+
     <div class="sec-head">
       <div>
-        <p class="kicker">Section</p>
-        <h3>섹션 제목</h3>
+        <p class="kicker">Sales Management</p>
+        <h3>매출 / 정산 관리</h3>
       </div>
+      <a class="seller-dashboard-link" href="seller-dashboard.html">← 대시보드</a>
     </div>
-    <p>내용...</p>
+
+    <!-- 탭 -->
+    <div class="tab-menu">
+      <button type="button" class="tab-btn active" data-tab="sales">
+        매출 통계 조회
+      </button>
+      <button type="button" class="tab-btn" data-tab="settlement">
+        정산 내역 조회
+      </button>
+    </div>
+
+    <!-- ======================= -->
+    <!-- 매출 통계 -->
+    <!-- ======================= -->
+
+    <div class="tab-content active" id="sales">
+
+      <div class="filter-box">
+
+        <div class="filter-row">
+
+          <div class="input-group">
+            <label>조회 기간</label>
+            <input type="date" id="salesStartDate">
+          </div>
+
+          <span class="wave">~</span>
+
+          <div class="input-group">
+            <label>&nbsp;</label>
+            <input type="date" id="salesEndDate">
+          </div>
+
+          <button type="button" class="btn-search" data-search-target="sales">
+            조회
+          </button>
+
+        </div>
+
+      </div>
+
+      <p class="filter-message" id="salesFilterMessage" aria-live="polite"></p>
+      <p class="selected-period" id="salesPeriod" aria-live="polite" hidden></p>
+
+      <div class="summary-grid">
+
+        <div class="summary-card">
+          <p>총 매출</p>
+          <h2 id="salesTotal">₩10,580,000</h2>
+        </div>
+
+        <div class="summary-card">
+          <p>총 판매 건수</p>
+          <h2 id="salesQuantity">300건</h2>
+        </div>
+
+        <div class="summary-card">
+          <p>평균 주문 금액</p>
+          <h2 id="salesAverage">₩35,267</h2>
+        </div>
+
+      </div>
+
+      <div class="table-wrap">
+
+        <table class="data-table">
+
+          <thead>
+            <tr>
+              <th>판매일</th>
+              <th>상품명</th>
+              <th>판매 수량</th>
+              <th>매출액</th>
+              <th>판매 비율</th>
+            </tr>
+          </thead>
+
+          <tbody>
+
+            <tr data-date="2026-07-01" data-amount="2400000" data-quantity="120">
+              <td>2026-07-01</td>
+              <td>베이직 반팔 티셔츠</td>
+              <td>120개</td>
+              <td>₩2,400,000</td>
+              <td>13%</td>
+            </tr>
+
+            <tr data-date="2026-07-03" data-amount="3870000" data-quantity="86">
+              <td>2026-07-03</td>
+              <td>와이드 데님 팬츠</td>
+              <td>86개</td>
+              <td>₩3,870,000</td>
+              <td>21%</td>
+            </tr>
+
+            <tr data-date="2026-07-05" data-amount="2750000" data-quantity="55">
+              <td>2026-07-05</td>
+              <td>오버핏 후드집업</td>
+              <td>55개</td>
+              <td>₩2,750,000</td>
+              <td>15%</td>
+            </tr>
+
+            <tr data-date="2026-07-12" data-amount="1560000" data-quantity="39">
+              <td>2026-07-12</td>
+              <td>코튼 셔츠</td>
+              <td>39개</td>
+              <td>₩1,560,000</td>
+              <td>8%</td>
+            </tr>
+
+          </tbody>
+
+        </table>
+
+      </div>
+
+    </div>
+
+    <!-- ======================= -->
+    <!-- 정산 -->
+    <!-- ======================= -->
+
+    <div class="tab-content" id="settlement">
+
+      <div class="filter-box">
+
+        <div class="filter-row">
+
+          <div class="input-group">
+            <label>조회 기간</label>
+            <input type="date" id="settlementStartDate">
+          </div>
+
+          <span class="wave">~</span>
+
+          <div class="input-group">
+            <label>&nbsp;</label>
+            <input type="date" id="settlementEndDate">
+          </div>
+
+          <button type="button" class="btn-search" data-search-target="settlement">
+            조회
+          </button>
+
+        </div>
+
+      </div>
+
+      <p class="filter-message" id="settlementFilterMessage" aria-live="polite"></p>
+      <p class="selected-period" id="settlementPeriod" aria-live="polite" hidden></p>
+
+      <div class="summary-grid">
+
+        <div class="summary-card">
+          <p>정산 예정 금액</p>
+          <h2>₩3,280,000</h2>
+        </div>
+
+        <div class="summary-card">
+          <p>정산 완료 금액</p>
+          <h2>₩15,240,000</h2>
+        </div>
+
+        <div class="summary-card">
+          <p>구매 확정 건수</p>
+          <h2>489건</h2>
+        </div>
+
+      </div>
+
+      <div class="table-wrap">
+
+        <table class="data-table">
+
+          <thead>
+
+            <tr>
+              <th>정산일</th>
+              <th>주문번호</th>
+              <th>상품명</th>
+              <th>판매금액</th>
+              <th>정산금액</th>
+              <th>상태</th>
+            </tr>
+
+          </thead>
+
+          <tbody>
+
+            <tr data-date="2026-07-01">
+              <td>2026-07-01</td>
+              <td>202607010001</td>
+              <td>와이드 데님 팬츠</td>
+              <td>₩45,000</td>
+              <td>₩40,500</td>
+              <td><span class="status done">완료</span></td>
+            </tr>
+
+            <tr data-date="2026-07-03">
+              <td>2026-07-03</td>
+              <td>202607030215</td>
+              <td>베이직 티셔츠</td>
+              <td>₩20,000</td>
+              <td>₩18,000</td>
+              <td><span class="status wait">예정</span></td>
+            </tr>
+
+            <tr data-date="2026-07-05">
+              <td>2026-07-05</td>
+              <td>202607050091</td>
+              <td>코튼 셔츠</td>
+              <td>₩39,000</td>
+              <td>₩35,100</td>
+              <td><span class="status done">완료</span></td>
+            </tr>
+
+          </tbody>
+
+        </table>
+
+      </div>
+
+    </div>
+
   </section>
 
   <!-- ▲▲▲ 여기까지 ▲▲▲ -->
@@ -129,7 +353,7 @@
 
 <!-- 페이지 전용 스크립트가 있으면 여기에 추가 -->
 <script src="js/auth.js"></script>
-
+<script src="js/seller-sales.js"></script>
 <script src="js/navigation.js"></script>
 </body>
 </html>

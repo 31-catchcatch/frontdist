@@ -1,32 +1,13 @@
 <!doctype html>
 <html lang="ko">
-<!-- ============================================================
-     캐치캐치 페이지 템플릿 (_template.html)
-     ------------------------------------------------------------
-     ★ 새 페이지 만드는 법 ★
-     1. 이 파일을 복사해서 담당 파일명으로 저장하세요.
-        (파일명 규칙표는 README.md 참고: login.html, cart.html, ...)
-     2. <title>과 <main> 안의 내용만 작성하면 됩니다.
-     3. 헤더/푸터는 절대 수정하지 마세요! (전 페이지 공통)
-        수정 필요하면 리더에게 요청.
-     4. 페이지 전용 CSS가 필요하면 css/페이지명.css 를 만들어
-        아래 <link> 자리처럼 추가하세요. css/common.css 는 수정 금지!
-     ※ 메인 페이지는 index.html 입니다.
-     ※ 관리자 페이지는 _admin-template.html 을 쓰세요.
-     ============================================================ -->
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>페이지제목 — 캐치캐치</title>
+<title>리뷰 작성 — 캐치캐치</title>
 <link rel="stylesheet" href="css/common.css">
-<!-- 페이지 전용 CSS가 있으면 여기에 추가:
-<link rel="stylesheet" href="css/페이지명.css">
--->
+<link rel="stylesheet" href="css/review-write.css">
 </head>
 <body>
-
-<!-- 상품 카드를 쓰는 페이지라면 index.html 상단의
-     SVG 실루엣 <defs> 블록을 여기에 복사하세요. -->
 
 <!-- ================= 공통 헤더 시작 (수정 금지) ================= -->
 <div class="utility">
@@ -43,12 +24,12 @@
 <header class="site">
   <div class="wrap head-row">
     <div class="head-left">
-      <form class="search" action="search.html" method="get" role="search">
+      <form class="search" action="product-list.html" method="get" role="search">
         <svg class="icn" viewBox="0 0 24 24" style="width:15px;height:15px"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg>
         <input type="text" name="q" placeholder="찾으시는 상품이 있나요?" aria-label="상품 검색">
       </form>
     </div>
-    <a class="brand" href="index.html" aria-label="캐치캐치 메인 페이지">캐치캐치</a>
+    <a class="brand" href="index.html">캐치캐치</a>
     <div class="head-right">
       <a href="mypage.html" id="mypageLink" aria-label="마이페이지"><svg class="icn" viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.6"/><path d="M5 20c1.2-3.6 3.8-5.4 7-5.4s5.8 1.8 7 5.4"/></svg></a>
       <a href="wishlist.html" aria-label="위시리스트"><svg class="icn" viewBox="0 0 24 24"><path d="M12 20s-7-4.6-7-9.3A3.7 3.7 0 0 1 12 8a3.7 3.7 0 0 1 7 2.7C19 15.4 12 20 12 20Z"/></svg></a>
@@ -76,21 +57,93 @@
 </nav>
 <!-- ================= 공통 헤더 끝 ================= -->
 
-<main class="wrap">
+<main class="wrap review-page">
 
-  <!-- ▼▼▼ 여기부터 페이지 내용을 작성하세요 ▼▼▼ -->
+<!-- ▼▼▼ 리뷰 작성 =====================================
+     기능정의서 매핑
+     - U-REVIEW-001 리뷰 작성
+       → POST /api/v1/products/{productId}/reviews
+       ※ 구매확정한 주문에 대해서만 작성 가능
+     받는 파라미터: ?orderId=주문번호
+================================================================ -->
 
-  <section class="block">
-    <div class="sec-head">
-      <div>
-        <p class="kicker">Section</p>
-        <h3>섹션 제목</h3>
+  <div class="review-head">
+    <div>
+      <p class="kicker">Review</p>
+      <h3>리뷰 작성</h3>
+    </div>
+  </div>
+
+  <!-- 대상 상품 정보 -->
+  <div class="review-product">
+    <div class="rp-thumb">
+      <img data-role="product-image" src="" alt="상품 이미지">
+    </div>
+    <div class="rp-info">
+      <p class="rp-brand" data-role="product-brand">브랜드</p>
+      <p class="rp-name" data-role="product-name">상품명</p>
+      <p class="rp-option" data-role="product-option">사이즈 · 가격</p>
+    </div>
+  </div>
+
+  <form id="reviewForm" class="review-form" novalidate>
+
+    <!-- 별점 -->
+    <div class="form-block">
+      <label class="block-label">별점 <span class="req">*</span></label>
+      <div class="star-rating" data-role="star-rating">
+        <button type="button" data-star="1" aria-label="1점">★</button>
+        <button type="button" data-star="2" aria-label="2점">★</button>
+        <button type="button" data-star="3" aria-label="3점">★</button>
+        <button type="button" data-star="4" aria-label="4점">★</button>
+        <button type="button" data-star="5" aria-label="5점">★</button>
+        <span class="star-text" data-role="star-text">별점을 선택해 주세요</span>
       </div>
     </div>
-    <p>내용...</p>
-  </section>
 
-  <!-- ▲▲▲ 여기까지 ▲▲▲ -->
+    <!-- 사이즈 평가 -->
+    <div class="form-block">
+      <label class="block-label">사이즈는 어떠셨나요?</label>
+      <div class="chip-group" data-role="size-fit">
+        <button type="button" data-fit="small">작아요</button>
+        <button type="button" data-fit="normal">정사이즈</button>
+        <button type="button" data-fit="large">커요</button>
+      </div>
+    </div>
+
+    <!-- 리뷰 내용 -->
+    <div class="form-block">
+      <label class="block-label" for="reviewBody">리뷰 내용 <span class="req">*</span></label>
+      <textarea id="reviewBody" rows="8"
+                placeholder="상품은 어떠셨나요? 다른 고객님께 도움이 되도록 솔직한 후기를 남겨주세요. (최소 10자)"
+                maxlength="500"></textarea>
+      <div class="char-count">
+        <span data-role="char-now">0</span>/500
+      </div>
+    </div>
+
+    <!-- 사진 첨부 -->
+    <div class="form-block">
+      <label class="block-label">사진 첨부 <span class="optional">(선택 · 최대 5장)</span></label>
+      <div class="photo-area">
+        <label class="photo-add" data-role="photo-add">
+          <input type="file" accept="image/*" multiple hidden data-role="photo-input">
+          <span>＋</span>
+          <small>사진 추가</small>
+        </label>
+        <div class="photo-list" data-role="photo-list"></div>
+      </div>
+    </div>
+
+    <!-- 버튼 -->
+    <div class="form-actions">
+      <button type="button" class="btn-cancel" data-action="cancel">취소</button>
+      <button type="submit" class="btn-submit">등록하기</button>
+    </div>
+
+  </form>
+
+<!-- ▲▲▲ 여기까지 ▲▲▲ -->
 
 </main>
 
@@ -99,12 +152,12 @@
   <div class="wrap">
     <div class="foot-top">
       <div class="foot-brand">
-        <div class="brand">캐치캐치</div>
+    <a class="brand" href="index.html" aria-label="캐치캐치 메인 페이지">캐치캐치</a>
         <p>예쁜 옷 많이 캐치캐치</p>
       </div>
       <div class="foot-col">
         <h5>Shop</h5>
-        <a href="product-list.html?view=best">베스트</a><a href="product-list.html?cat=outer">아우터</a>
+        <a href="product-list.html">베스트</a><a href="brand.html">브랜드</a>
       </div>
       <div class="foot-col">
         <h5>Customer</h5>
@@ -127,9 +180,8 @@
 </footer>
 <!-- ================= 공통 푸터 끝 ================= -->
 
-<!-- 페이지 전용 스크립트가 있으면 여기에 추가 -->
 <script src="js/auth.js"></script>
-
+<script src="js/review-write.js"></script>
 <script src="js/navigation.js"></script>
 </body>
 </html>

@@ -19,9 +19,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>페이지제목 — 캐치캐치</title>
 <link rel="stylesheet" href="css/common.css">
-<!-- 페이지 전용 CSS가 있으면 여기에 추가:
-<link rel="stylesheet" href="css/페이지명.css">
--->
+<link rel="stylesheet" href="css/seller-dashboard.css">
 </head>
 <body>
 
@@ -80,14 +78,175 @@
 
   <!-- ▼▼▼ 여기부터 페이지 내용을 작성하세요 ▼▼▼ -->
 
+  <!-- ================= 판매자 대시보드 ================= -->
   <section class="block">
+
     <div class="sec-head">
       <div>
-        <p class="kicker">Section</p>
-        <h3>섹션 제목</h3>
+        <p class="kicker">Seller Dashboard</p>
+        <h3>판매자 대시보드</h3>
       </div>
     </div>
-    <p>내용...</p>
+
+    <nav class="seller-page-links" aria-label="판매자 관리 메뉴">
+      <a class="active" href="seller-dashboard.html">대시보드</a>
+      <a href="seller-sales.html?tab=sales">매출·정산</a>
+      <a href="seller-qna.html?status=wait">Q&amp;A 관리</a>
+      <a href="seller-claims.html?status=검토중">교환·환불</a>
+    </nav>
+
+    <div class="dashboard-panel">
+
+      <div class="dashboard-header">
+        <div>
+          <h4>오늘의 판매 현황</h4>
+          <p>오늘 판매 활동과 운영 현황을 한눈에 확인할 수 있습니다.</p>
+        </div>
+
+        <span class="dashboard-date">
+          2026.07.14 기준
+        </span>
+      </div>
+
+      <div class="dashboard-summary">
+
+        <a class="summary-card summary-link" href="seller-sales.html?tab=sales">
+          <span>오늘 매출</span>
+          <strong>₩2,540,000</strong>
+          <small>전일 대비 +12%</small>
+        </a>
+
+        <a class="summary-card summary-link" href="seller-sales.html?tab=sales">
+          <span>신규 주문</span>
+          <strong>34건</strong>
+          <small>결제 완료 주문</small>
+        </a>
+
+        <a class="summary-card summary-link" href="seller-qna.html?status=wait">
+          <span>미답변 Q&A</span>
+          <strong>5건</strong>
+          <small>빠른 답변이 필요합니다.</small>
+        </a>
+
+        <a class="summary-card summary-link" href="#couponRequestForm">
+          <span>승인 대기 쿠폰</span>
+          <strong id="pendingCouponCount">2건</strong>
+          <small>관리자 승인 대기</small>
+        </a>
+
+      </div>
+
+    </div>
+
+  </section>
+
+
+  <!-- ================= 쿠폰 발행 요청 ================= -->
+  <section class="block">
+
+    <div class="sec-head">
+      <div>
+        <p class="kicker">Promotion</p>
+        <h3>쿠폰 발행 요청</h3>
+      </div>
+    </div>
+
+    <form class="coupon-form" id="couponRequestForm">
+
+      <div class="form-grid">
+
+        <div class="form-group">
+          <label for="couponName">쿠폰명</label>
+          <input
+            type="text"
+            id="couponName"
+            placeholder="예) 여름 시즌 10% 할인">
+        </div>
+
+        <div class="form-group">
+          <label for="couponType">할인 유형</label>
+          <select id="couponType">
+            <option>정률 할인 (%)</option>
+            <option>정액 할인 (원)</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="discount">할인 금액 / 할인율</label>
+          <input
+            type="number"
+            id="discount"
+            placeholder="10">
+        </div>
+
+        <div class="form-group">
+          <label for="minPrice">최소 주문금액</label>
+          <input
+            type="number"
+            id="minPrice"
+            placeholder="30000">
+        </div>
+
+        <div class="form-group">
+          <label for="maxDiscount">최대 할인금액</label>
+          <input
+            type="number"
+            id="maxDiscount"
+            placeholder="10000">
+        </div>
+
+        <div class="form-group">
+          <label for="quantity">발급 수량</label>
+          <input
+            type="number"
+            id="quantity"
+            placeholder="100">
+        </div>
+
+        <div class="form-group">
+          <label for="startDate">사용 시작일</label>
+          <input
+            type="date"
+            id="startDate">
+        </div>
+
+        <div class="form-group">
+          <label for="endDate">사용 종료일</label>
+          <input
+            type="date"
+            id="endDate">
+        </div>
+
+      </div>
+
+      <div class="form-group">
+        <label for="reason">요청 사유</label>
+        <textarea
+          id="reason"
+          rows="5"
+          placeholder="쿠폰 발행 목적 및 프로모션 내용을 입력해주세요."></textarea>
+      </div>
+
+      <div class="request-box">
+
+        <div>
+          <h4>관리자 승인 안내</h4>
+          <p>
+            쿠폰은 관리자 승인 후 발행됩니다.<br>
+            승인 결과는 알림센터에서 확인할 수 있습니다.
+          </p>
+        </div>
+
+        <button type="submit" class="btn-primary">
+          쿠폰 발행 승인 요청
+        </button>
+
+      </div>
+
+      <p class="coupon-message" id="couponMessage" aria-live="polite"></p>
+
+    </form>
+
   </section>
 
   <!-- ▲▲▲ 여기까지 ▲▲▲ -->
@@ -129,6 +288,7 @@
 
 <!-- 페이지 전용 스크립트가 있으면 여기에 추가 -->
 <script src="js/auth.js"></script>
+<script src="js/seller-dashboard.js"></script>
 
 <script src="js/navigation.js"></script>
 </body>

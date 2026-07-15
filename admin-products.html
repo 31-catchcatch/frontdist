@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="캐치캐치 관리자 · 전체 상품 관리">
+  <title>상품 관리 · 캐치캐치 관리자</title>
+  <link rel="stylesheet" href="css/common.css">
+  <link rel="stylesheet" href="css/admin.css">
+  <script src="js/admin-auth.js"></script>
+  <script>AdminAuth.requireLogin();</script>
+</head>
+<body>
+  <header class="admin-bar">
+    <a class="admin-brand" href="admin-dashboard.html">캐치캐치 <span>ADMIN</span></a>
+    <nav aria-label="관리자 메뉴">
+      <a href="admin-dashboard.html">대시보드</a>
+      <a href="admin-users.html">사용자</a>
+      <a class="is-current" href="admin-products.html">상품</a>
+      <a href="admin-seller-applications.html">입점심사</a>
+      <a href="admin-sellers.html">입점업체</a>
+      <a href="admin-coupons.html">쿠폰</a>
+      <a href="admin-points.html">포인트</a>
+      <a href="admin-qna.html">Q&amp;A</a>
+      <a href="admin-settlements.html">정산</a>
+    </nav>
+    <div class="admin-actions">
+      <a href="index.html">쇼핑몰 보기</a>
+      <a href="admin-login.html" data-admin-logout>로그아웃</a>
+    </div>
+  </header>
+
+  <main class="admin-page wrap">
+    <div class="page-head">
+      <div>
+        <p class="kicker">PRODUCT MODERATION · A-PROD-001~002</p>
+        <h1>전체 상품 관리</h1>
+        <p class="desc">등록된 전체 상품을 조회하고, 불법·위험·신고 상품을 강제로 노출 중지 또는 삭제합니다.</p>
+      </div>
+      <span class="preview-badge">화면 미리보기 · GET/DELETE /api/v1/admin/products</span>
+    </div>
+
+    <div class="toolbar">
+      <label class="search-box">
+        <svg class="icn" viewBox="0 0 24 24" style="width:15px;height:15px"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg>
+        <input type="text" id="q" placeholder="상품명·판매자·ID 검색">
+      </label>
+      <select id="statusFilter">
+        <option value="">전체 상태</option>
+        <option value="ok">판매중</option>
+        <option value="wait">신고접수</option>
+        <option value="stop">노출중지</option>
+      </select>
+      <span class="count">총 <b id="count">0</b>건</span>
+    </div>
+
+    <div class="table-wrap">
+      <table class="data">
+        <thead>
+          <tr>
+            <th class="chk"><input type="checkbox" id="checkAll" aria-label="전체 선택"></th>
+            <th>상품ID</th>
+            <th>상품명</th>
+            <th>판매자</th>
+            <th class="num">가격</th>
+            <th>상태</th>
+            <th>신고</th>
+            <th>등록일</th>
+            <th>관리</th>
+          </tr>
+        </thead>
+        <tbody id="rows"></tbody>
+      </table>
+    </div>
+
+    <div class="pager">
+      <button type="button">‹</button>
+      <button type="button" class="on">1</button>
+      <button type="button">2</button>
+      <button type="button">›</button>
+    </div>
+  </main>
+
+  <script src="js/admin-ui.js?v=3"></script>
+  <script>
+    // ---------- 상품 목록 (임시 mock — GET /api/v1/admin/products 로 교체) ----------
+    const PRODUCTS = [
+      { id: 'P2001', name: '릴렉스 핏 쿨 코튼 반팔 티셔츠', seller: 'STANDARD', price: 19900, status: 'ok',   reports: 0, created: '2026-05-30' },
+      { id: 'P2002', name: '오버핏 후드 스웨트셔츠',        seller: 'STANDARD', price: 44900, status: 'wait', reports: 3, created: '2026-06-04' },
+      { id: 'P2003', name: '가품 의심 명품 로고 팬츠',       seller: '데일리룩',  price: 89000, status: 'wait', reports: 7, created: '2026-06-11' },
+      { id: 'P2004', name: '린넨 블렌드 셔츠 자켓',          seller: 'STANDARD', price: 69900, status: 'ok',   reports: 0, created: '2026-06-18' },
+      { id: 'P2005', name: '미인증 화장품 세트',            seller: '뷰티샵',    price: 32000, status: 'stop', reports: 12, created: '2026-06-25' },
+      { id: 'P2006', name: '베이식 볼캡',                  seller: '데일리룩',  price: 16900, status: 'ok',   reports: 1, created: '2026-07-02' },
+    ];
+
+    const STATUS = { ok: '판매중', wait: '신고접수', stop: '노출중지' };
+
+    const rowsEl = document.getElementById('rows');
+    const countEl = document.getElementById('count');
+    const qEl = document.getElementById('q');
+    const statusEl = document.getElementById('statusFilter');
+
+    function render(list, total = list.length) {
+      if (!list.length) {
+        rowsEl.innerHTML = '<tr class="empty-row"><td colspan="9">조건에 맞는 상품이 없습니다.</td></tr>';
+        countEl.textContent = 0;
+        return;
+      }
+      rowsEl.innerHTML = list.map((p) => `
+        <tr data-id="${AdminUI.escape(p.id)}">
+          <td class="chk"><input type="checkbox" aria-label="${AdminUI.escape(p.name)} 선택"></td>
+          <td class="num">${AdminUI.escape(p.id)}</td>
+          <td class="strong">${AdminUI.escape(p.name)}</td>
+          <td class="muted">${AdminUI.escape(p.seller)}</td>
+          <td class="num">${AdminUI.won(p.price)}</td>
+          <td><span class="tag ${p.status}">${STATUS[p.status]}</span></td>
+          <td class="num ${p.reports > 0 ? 'strong' : 'muted'}">${p.reports}</td>
+          <td class="muted">${AdminUI.escape(p.created)}</td>
+          <td>
+            <div class="row-actions">
+              <button class="btn sm" data-act="detail">상세</button>
+              ${p.status === 'stop'
+                ? '<button class="btn sm ok" data-act="restore">노출복구</button>'
+                : '<button class="btn sm" data-act="suspend">노출중지</button>'}
+              <button class="btn sm danger" data-act="delete">삭제</button>
+            </div>
+          </td>
+        </tr>`).join('');
+      countEl.textContent = total;
+    }
+
+    const listController = AdminUI.createListController({ pager: document.querySelector('.pager'), render });
+
+    function applyFilter() {
+      const q = qEl.value.trim().toLowerCase();
+      const status = statusEl.value;
+      listController.setItems(PRODUCTS.filter((p) =>
+        (!status || p.status === status) &&
+        (!q || p.name.toLowerCase().includes(q) || p.seller.toLowerCase().includes(q) || p.id.toLowerCase().includes(q))
+      ));
+    }
+    qEl.addEventListener('input', applyFilter);
+    statusEl.addEventListener('change', applyFilter);
+    statusEl.addEventListener('input', applyFilter);
+
+    document.getElementById('checkAll').addEventListener('change', (e) => {
+      rowsEl.querySelectorAll('input[type="checkbox"]').forEach((c) => (c.checked = e.target.checked));
+    });
+
+    rowsEl.addEventListener('click', async (e) => {
+      const btn = e.target.closest('button[data-act]');
+      if (!btn) return;
+      const id = btn.closest('tr').dataset.id;
+      const p = PRODUCTS.find((x) => x.id === id);
+      const act = btn.dataset.act;
+
+      if (act === 'detail') { AdminUI.toast(`${p.name} 상세 — 상품 상세 연동 예정`); return; }
+
+      if (act === 'delete') {
+        // DELETE /api/v1/admin/products/{productId}
+        const ok = await AdminUI.confirm({
+          title: '상품 강제 삭제',
+          message: `[${p.name}]을(를) 영구 삭제합니다. 되돌릴 수 없습니다. 진행하시겠습니까?`,
+          okText: '삭제', danger: true,
+        });
+        if (!ok) return;
+        const idx = PRODUCTS.findIndex((x) => x.id === id);
+        PRODUCTS.splice(idx, 1);
+        applyFilter();
+        AdminUI.toast('상품이 삭제되었습니다.');
+        return;
+      }
+
+      // 노출중지 / 노출복구
+      const suspend = act === 'suspend';
+      const ok = await AdminUI.confirm({
+        title: suspend ? '상품 노출 중지' : '상품 노출 복구',
+        message: `[${p.name}]을(를) ${suspend ? '노출 중지' : '판매중으로 복구'}하시겠습니까?`,
+        okText: suspend ? '노출중지' : '복구', danger: suspend,
+      });
+      if (!ok) return;
+      p.status = suspend ? 'stop' : 'ok';
+      applyFilter();
+      AdminUI.toast(suspend ? '노출이 중지되었습니다.' : '노출이 복구되었습니다.');
+    });
+
+    listController.setItems(PRODUCTS);
+  </script>
+</body>
+</html>

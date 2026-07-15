@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="캐치캐치 관리자 전용 로그인">
+  <title>관리자 로그인 · 캐치캐치</title>
+  <link rel="stylesheet" href="css/common.css">
+  <link rel="stylesheet" href="css/admin-login.css">
+  <script src="js/admin-auth.js" defer></script>
+  <script src="js/admin-login.js" defer></script>
+</head>
+<body>
+  <main class="admin-login-wrap">
+    <section class="admin-login-card" aria-labelledby="admin-login-title">
+      <a class="admin-login-brand" href="index.html" aria-label="캐치캐치 메인으로">
+        캐치캐치 <span>ADMIN</span>
+      </a>
+      <div class="admin-login-heading">
+        <p class="eyebrow">RESTRICTED ACCESS</p>
+        <h1 id="admin-login-title">관리자 로그인</h1>
+        <p>등록된 관리자 비밀번호를 입력해 주세요.</p>
+      </div>
+
+      <form id="adminLoginForm" novalidate>
+        <div class="admin-field">
+          <label for="adminPassword">관리자 비밀번호</label>
+          <div class="password-control">
+            <input id="adminPassword" name="password" type="password" autocomplete="current-password" required minlength="1" placeholder="비밀번호 입력">
+            <button id="passwordToggle" type="button" aria-label="비밀번호 보기" aria-pressed="false">보기</button>
+          </div>
+        </div>
+        <p id="loginMessage" class="login-message" role="alert" aria-live="polite" hidden></p>
+        <button id="loginSubmit" class="admin-login-submit" type="submit">관리자 화면으로 이동</button>
+        <button id="previewAccess" class="admin-preview-access" type="button">비밀번호 없이 화면 미리보기</button>
+      </form>
+
+      <p class="admin-login-note">미리보기는 화면 구성 확인용이며, 실제 관리자 인증을 대체하지 않습니다.</p>
+    </section>
+  </main>
+</body>
+</html>

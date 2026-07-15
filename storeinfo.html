@@ -1,32 +1,13 @@
 <!doctype html>
 <html lang="ko">
-<!-- ============================================================
-     캐치캐치 페이지 템플릿 (_template.html)
-     ------------------------------------------------------------
-     ★ 새 페이지 만드는 법 ★
-     1. 이 파일을 복사해서 담당 파일명으로 저장하세요.
-        (파일명 규칙표는 README.md 참고: login.html, cart.html, ...)
-     2. <title>과 <main> 안의 내용만 작성하면 됩니다.
-     3. 헤더/푸터는 절대 수정하지 마세요! (전 페이지 공통)
-        수정 필요하면 리더에게 요청.
-     4. 페이지 전용 CSS가 필요하면 css/페이지명.css 를 만들어
-        아래 <link> 자리처럼 추가하세요. css/common.css 는 수정 금지!
-     ※ 메인 페이지는 index.html 입니다.
-     ※ 관리자 페이지는 _admin-template.html 을 쓰세요.
-     ============================================================ -->
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>페이지제목 — 캐치캐치</title>
+<title>매장안내 — 캐치캐치</title>
 <link rel="stylesheet" href="css/common.css">
-<!-- 페이지 전용 CSS가 있으면 여기에 추가:
-<link rel="stylesheet" href="css/페이지명.css">
--->
+<link rel="stylesheet" href="css/storeinfo.css">
 </head>
 <body>
-
-<!-- 상품 카드를 쓰는 페이지라면 index.html 상단의
-     SVG 실루엣 <defs> 블록을 여기에 복사하세요. -->
 
 <!-- ================= 공통 헤더 시작 (수정 금지) ================= -->
 <div class="utility">
@@ -77,21 +58,110 @@
 <!-- ================= 공통 헤더 끝 ================= -->
 
 <main class="wrap">
-
-  <!-- ▼▼▼ 여기부터 페이지 내용을 작성하세요 ▼▼▼ -->
-
-  <section class="block">
-    <div class="sec-head">
-      <div>
-        <p class="kicker">Section</p>
-        <h3>섹션 제목</h3>
-      </div>
+  <section class="store-page">
+    <div class="page-head">
+      <p class="page-kicker">Offline store</p>
+      <h1>매장안내</h1>
+      <p>캐치캐치 오프라인 매장의 위치와 운영 정보를 확인하세요.</p>
     </div>
-    <p>내용...</p>
+
+    <div class="store-layout">
+      <section class="store-list" aria-label="매장 목록">
+        <button class="store-card on" type="button" data-store-id="seongsu">
+          <span class="store-badge">Flagship</span>
+          <h2>캐치캐치 성수점</h2>
+          <p>서울특별시 성동구 연무장길 00</p>
+          <dl>
+            <div><dt>운영시간</dt><dd>11:00–21:00</dd></div>
+            <div><dt>연락처</dt><dd>02-000-0001</dd></div>
+          </dl>
+        </button>
+
+        <button class="store-card" type="button" data-store-id="hongdae">
+          <span class="store-badge">Store</span>
+          <h2>캐치캐치 홍대점</h2>
+          <p>서울특별시 마포구 양화로 00</p>
+          <dl>
+            <div><dt>운영시간</dt><dd>11:30–22:00</dd></div>
+            <div><dt>연락처</dt><dd>02-000-0002</dd></div>
+          </dl>
+        </button>
+
+        <button class="store-card" type="button" data-store-id="suwon">
+          <span class="store-badge">Store</span>
+          <h2>캐치캐치 수원점</h2>
+          <p>경기도 수원시 팔달구 덕영대로 00</p>
+          <dl>
+            <div><dt>운영시간</dt><dd>10:30–20:30</dd></div>
+            <div><dt>연락처</dt><dd>031-000-0003</dd></div>
+          </dl>
+        </button>
+      </section>
+
+      <section class="store-detail" id="storeDetail" aria-live="polite">
+        <div class="map-placeholder">
+          <div>
+            <span>MAP</span>
+            <strong id="mapStoreName">캐치캐치 성수점</strong>
+            <p id="mapAddress">서울특별시 성동구 연무장길 00</p>
+          </div>
+        </div>
+
+        <div class="detail-copy">
+          <div>
+            <p class="detail-kicker">Selected store</p>
+            <h2 id="detailStoreName">캐치캐치 성수점</h2>
+          </div>
+
+          <dl>
+            <div>
+              <dt>주소</dt>
+              <dd id="detailAddress">서울특별시 성동구 연무장길 00</dd>
+            </div>
+            <div>
+              <dt>운영시간</dt>
+              <dd id="detailHours">매일 11:00–21:00</dd>
+            </div>
+            <div>
+              <dt>휴무일</dt>
+              <dd id="detailClosed">설날·추석 당일</dd>
+            </div>
+            <div>
+              <dt>연락처</dt>
+              <dd id="detailPhone">02-000-0001</dd>
+            </div>
+            <div>
+              <dt>주차</dt>
+              <dd id="detailParking">인근 유료 주차장 이용</dd>
+            </div>
+          </dl>
+
+          <div class="detail-actions">
+            <a id="phoneLink" href="tel:020000001">전화하기</a>
+            <a id="mapLink" href="#" target="_blank" rel="noopener">지도에서 보기</a>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <section class="store-notice">
+      <h2>방문 전 확인</h2>
+      <div>
+        <article>
+          <strong>상품 재고</strong>
+          <p>온라인과 오프라인 매장의 재고는 다를 수 있습니다.</p>
+        </article>
+        <article>
+          <strong>교환 및 반품</strong>
+          <p>온라인 주문 상품의 매장 교환·반품 가능 여부는 고객센터에 문의해 주세요.</p>
+        </article>
+        <article>
+          <strong>운영시간 변경</strong>
+          <p>공휴일과 매장 사정에 따라 운영시간이 변경될 수 있습니다.</p>
+        </article>
+      </div>
+    </section>
   </section>
-
-  <!-- ▲▲▲ 여기까지 ▲▲▲ -->
-
 </main>
 
 <!-- ================= 공통 푸터 시작 (수정 금지) ================= -->
@@ -127,9 +197,8 @@
 </footer>
 <!-- ================= 공통 푸터 끝 ================= -->
 
-<!-- 페이지 전용 스크립트가 있으면 여기에 추가 -->
 <script src="js/auth.js"></script>
-
+<script src="js/storeinfo.js"></script>
 <script src="js/navigation.js"></script>
 </body>
 </html>

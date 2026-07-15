@@ -1,0 +1,195 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="캐치캐치 관리자 · 플랫폼 정산 대시보드">
+  <title>플랫폼 정산 · 캐치캐치 관리자</title>
+  <link rel="stylesheet" href="css/common.css">
+  <link rel="stylesheet" href="css/admin.css">
+  <script src="js/admin-auth.js"></script>
+  <script>AdminAuth.requireLogin();</script>
+</head>
+<body>
+  <header class="admin-bar">
+    <a class="admin-brand" href="admin-dashboard.html">캐치캐치 <span>ADMIN</span></a>
+    <nav aria-label="관리자 메뉴">
+      <a href="admin-dashboard.html">대시보드</a>
+      <a href="admin-users.html">사용자</a>
+      <a href="admin-products.html">상품</a>
+      <a href="admin-seller-applications.html">입점심사</a>
+      <a href="admin-sellers.html">입점업체</a>
+      <a href="admin-coupons.html">쿠폰</a>
+      <a href="admin-points.html">포인트</a>
+      <a href="admin-qna.html">Q&amp;A</a>
+      <a class="is-current" href="admin-settlements.html">정산</a>
+    </nav>
+    <div class="admin-actions">
+      <a href="index.html">쇼핑몰 보기</a>
+      <a href="admin-login.html" data-admin-logout>로그아웃</a>
+    </div>
+  </header>
+
+  <main class="admin-page wrap">
+    <div class="page-head">
+      <div>
+        <p class="kicker">PLATFORM SETTLEMENT · A-SETTLE-001</p>
+        <h1>플랫폼 정산 대시보드</h1>
+        <p class="desc">전체 거래액과 수수료 수익, 업체별 정산 주기 및 정산 예정 금액을 관리합니다.</p>
+      </div>
+      <span class="preview-badge">화면 미리보기 · GET /api/v1/admin/settlements</span>
+    </div>
+
+    <!-- 요약 통계 -->
+    <div class="stat-grid">
+      <div class="stat alert">
+        <p class="label">이달 총 거래액</p>
+        <b class="value tnum" id="stTotal">—</b>
+        <span class="sub">2026년 7월 기준</span>
+      </div>
+      <div class="stat">
+        <p class="label">수수료 수익</p>
+        <b class="value tnum" id="stFee">—</b>
+        <span class="sub">플랫폼 수수료 합계</span>
+      </div>
+      <div class="stat">
+        <p class="label">정산 예정</p>
+        <b class="value tnum" id="stPending">—</b>
+        <span class="sub">지급 대기 금액</span>
+      </div>
+      <div class="stat">
+        <p class="label">정산 완료</p>
+        <b class="value tnum" id="stDone">—</b>
+        <span class="sub">이달 지급 완료</span>
+      </div>
+    </div>
+
+    <div class="toolbar">
+      <label class="search-box">
+        <svg class="icn" viewBox="0 0 24 24" style="width:15px;height:15px"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg>
+        <input type="text" id="q" placeholder="업체명 검색">
+      </label>
+      <select id="statusFilter">
+        <option value="">전체 상태</option>
+        <option value="wait">정산대기</option>
+        <option value="ok">정산완료</option>
+      </select>
+      <span class="count">총 <b id="count">0</b>개 업체</span>
+    </div>
+
+    <div class="table-wrap">
+      <table class="data">
+        <thead>
+          <tr>
+            <th>업체</th>
+            <th class="num">거래액</th>
+            <th class="num">수수료(10%)</th>
+            <th class="num">정산 예정액</th>
+            <th>정산 주기</th>
+            <th>상태</th>
+            <th>관리</th>
+          </tr>
+        </thead>
+        <tbody id="rows"></tbody>
+      </table>
+    </div>
+
+    <div class="pager">
+      <button type="button">‹</button>
+      <button type="button" class="on">1</button>
+      <button type="button">›</button>
+    </div>
+  </main>
+
+  <script src="js/admin-ui.js?v=3"></script>
+  <script>
+    // ---------- 플랫폼 정산 데이터 (GET /api/v1/admin/settlements) ----------
+    const FEE_RATE = 0.10; // 플랫폼 수수료 10%
+    const SETTLEMENTS = [
+      { id: 'S4001', company: 'STANDARD', sales: 24800000, cycle: '주간', status: 'ok' },
+      { id: 'S4002', company: '데일리룩',  sales: 9120000,  cycle: '주간', status: 'wait' },
+      { id: 'S4003', company: '어반스타일', sales: 5340000,  cycle: '월간', status: 'wait' },
+      { id: 'S4004', company: '뷰티샵',    sales: 1280000,  cycle: '월간', status: 'ok' },
+      { id: 'S4005', company: '무드서울',  sales: 4610000,  cycle: '주간', status: 'wait' },
+    ];
+
+    const STATUS = { wait: '정산대기', ok: '정산완료' };
+    const fee = (sales) => Math.round(sales * FEE_RATE);
+    const payout = (sales) => sales - fee(sales);
+
+    const rowsEl = document.getElementById('rows');
+    const countEl = document.getElementById('count');
+    const qEl = document.getElementById('q');
+    const statusEl = document.getElementById('statusFilter');
+
+    // 상단 요약 통계 계산
+    (function summary() {
+      const total = SETTLEMENTS.reduce((s, x) => s + x.sales, 0);
+      const feeSum = SETTLEMENTS.reduce((s, x) => s + fee(x.sales), 0);
+      const pending = SETTLEMENTS.filter((x) => x.status === 'wait').reduce((s, x) => s + payout(x.sales), 0);
+      const done = SETTLEMENTS.filter((x) => x.status === 'ok').reduce((s, x) => s + payout(x.sales), 0);
+      document.getElementById('stTotal').textContent = AdminUI.won(total);
+      document.getElementById('stFee').textContent = AdminUI.won(feeSum);
+      document.getElementById('stPending').textContent = AdminUI.won(pending);
+      document.getElementById('stDone').textContent = AdminUI.won(done);
+    })();
+
+    function render(list, total = list.length) {
+      if (!list.length) {
+        rowsEl.innerHTML = '<tr class="empty-row"><td colspan="7">조건에 맞는 업체가 없습니다.</td></tr>';
+        countEl.textContent = 0;
+        return;
+      }
+      rowsEl.innerHTML = list.map((s) => `
+        <tr data-id="${AdminUI.escape(s.id)}">
+          <td class="strong">${AdminUI.escape(s.company)}</td>
+          <td class="num">${AdminUI.won(s.sales)}</td>
+          <td class="num muted">${AdminUI.won(fee(s.sales))}</td>
+          <td class="num strong">${AdminUI.won(payout(s.sales))}</td>
+          <td class="muted">${AdminUI.escape(s.cycle)}</td>
+          <td><span class="tag ${s.status}">${STATUS[s.status]}</span></td>
+          <td>
+            ${s.status === 'wait'
+              ? '<button class="btn sm primary" data-act="pay">정산 실행</button>'
+              : '<button class="btn sm" data-act="receipt">명세 보기</button>'}
+          </td>
+        </tr>`).join('');
+      countEl.textContent = total;
+    }
+
+    const listController = AdminUI.createListController({ pager: document.querySelector('.pager'), render });
+
+    function applyFilter() {
+      const q = qEl.value.trim().toLowerCase();
+      const status = statusEl.value;
+      listController.setItems(SETTLEMENTS.filter((s) =>
+        (!status || s.status === status) &&
+        (!q || s.company.toLowerCase().includes(q))
+      ));
+    }
+    qEl.addEventListener('input', applyFilter);
+    statusEl.addEventListener('change', applyFilter);
+
+    rowsEl.addEventListener('click', async (e) => {
+      const btn = e.target.closest('button[data-act]');
+      if (!btn) return;
+      const id = btn.closest('tr').dataset.id;
+      const s = SETTLEMENTS.find((x) => x.id === id);
+
+      if (btn.dataset.act === 'receipt') { AdminUI.toast(`${s.company} 정산 명세 — 상세 연동 예정`); return; }
+
+      const ok = await AdminUI.confirm({
+        title: '정산 실행',
+        message: `[${s.company}]에 정산 예정액 ${AdminUI.won(payout(s.sales))}을 지급 처리하시겠습니까?`,
+        okText: '정산 실행',
+      });
+      if (!ok) return;
+      s.status = 'ok';
+      applyFilter();
+      AdminUI.toast('정산이 실행되었습니다.');
+    });
+
+    listController.setItems(SETTLEMENTS);
+  </script>
+</body>
+</html>

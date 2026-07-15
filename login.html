@@ -1,42 +1,20 @@
 <!doctype html>
 <html lang="ko">
-<!-- ============================================================
-     캐치캐치 페이지 템플릿 (_template.html)
-     ------------------------------------------------------------
-     ★ 새 페이지 만드는 법 ★
-     1. 이 파일을 복사해서 담당 파일명으로 저장하세요.
-        (파일명 규칙표는 README.md 참고: login.html, cart.html, ...)
-     2. <title>과 <main> 안의 내용만 작성하면 됩니다.
-     3. 헤더/푸터는 절대 수정하지 마세요! (전 페이지 공통)
-        수정 필요하면 리더에게 요청.
-     4. 페이지 전용 CSS가 필요하면 css/페이지명.css 를 만들어
-        아래 <link> 자리처럼 추가하세요. css/common.css 는 수정 금지!
-     ※ 메인 페이지는 index.html 입니다.
-     ※ 관리자 페이지는 _admin-template.html 을 쓰세요.
-     ============================================================ -->
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>페이지제목 — 캐치캐치</title>
+<title>로그인 — 캐치캐치</title>
 <link rel="stylesheet" href="css/common.css">
-<!-- 페이지 전용 CSS가 있으면 여기에 추가:
-<link rel="stylesheet" href="css/페이지명.css">
--->
+<link rel="stylesheet" href="css/login.css">
 </head>
 <body>
 
-<!-- 상품 카드를 쓰는 페이지라면 index.html 상단의
-     SVG 실루엣 <defs> 블록을 여기에 복사하세요. -->
-
-<!-- ================= 공통 헤더 시작 (수정 금지) ================= -->
 <div class="utility">
   <div class="wrap">
     <a href="customercenter.html">고객센터</a>
     <a href="storeinfo.html">매장안내</a>
-    <a href="login.html" data-auth-guest>로그인</a>
-    <a href="signup.html" data-auth-guest>회원가입</a>
-    <a href="mypage.html" data-auth-member hidden>마이페이지</a>
-    <a href="#" data-auth-member data-logout hidden>로그아웃</a>
+    <a href="login.html">로그인</a>
+    <a href="signup.html">회원가입</a>
   </div>
 </div>
 
@@ -48,9 +26,9 @@
         <input type="text" name="q" placeholder="찾으시는 상품이 있나요?" aria-label="상품 검색">
       </form>
     </div>
-    <a class="brand" href="index.html" aria-label="캐치캐치 메인 페이지">캐치캐치</a>
+    <a class="brand" href="index.html">캐치캐치</a>
     <div class="head-right">
-      <a href="mypage.html" id="mypageLink" aria-label="마이페이지"><svg class="icn" viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.6"/><path d="M5 20c1.2-3.6 3.8-5.4 7-5.4s5.8 1.8 7 5.4"/></svg></a>
+      <a href="mypage.html" aria-label="마이페이지"><svg class="icn" viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.6"/><path d="M5 20c1.2-3.6 3.8-5.4 7-5.4s5.8 1.8 7 5.4"/></svg></a>
       <a href="wishlist.html" aria-label="위시리스트"><svg class="icn" viewBox="0 0 24 24"><path d="M12 20s-7-4.6-7-9.3A3.7 3.7 0 0 1 12 8a3.7 3.7 0 0 1 7 2.7C19 15.4 12 20 12 20Z"/></svg></a>
       <a href="shoppingcart.html" aria-label="장바구니"><svg class="icn" viewBox="0 0 24 24"><path d="M6 7h12l-1.2 12.2a1 1 0 0 1-1 .8H8.2a1 1 0 0 1-1-.8L6 7Z"/><path d="M9 7a3 3 0 0 1 6 0"/></svg></a>
     </div>
@@ -74,28 +52,60 @@
     <a href="product-list.html?cat=underwear">언더웨어</a>
   </div>
 </nav>
-<!-- ================= 공통 헤더 끝 ================= -->
 
 <main class="wrap">
-
-  <!-- ▼▼▼ 여기부터 페이지 내용을 작성하세요 ▼▼▼ -->
-
-  <section class="block">
-    <div class="sec-head">
-      <div>
-        <p class="kicker">Section</p>
-        <h3>섹션 제목</h3>
-      </div>
+  <section class="login-wrap">
+    <div class="login-head">
+      <p class="kicker">Welcome back</p>
+      <h1>로그인</h1>
+      <p>일반 사용자 또는 판매자 유형을 선택해 로그인하세요.</p>
     </div>
-    <p>내용...</p>
+
+    <div class="login-tabs" role="tablist" aria-label="로그인 유형">
+      <button class="login-tab on" type="button" data-type="user">일반 사용자</button>
+      <button class="login-tab" type="button" data-type="seller">판매자</button>
+    </div>
+
+    <p class="login-notice" id="loginNotice">일반 사용자 계정으로 로그인합니다.</p>
+
+    <form id="loginForm" novalidate>
+      <input type="hidden" id="loginType" value="user">
+
+      <div class="form-row">
+        <label for="username">아이디</label>
+        <input type="text" id="username" autocomplete="username" placeholder="아이디를 입력하세요">
+        <p class="error-text" id="usernameError"></p>
+      </div>
+
+      <div class="form-row">
+        <label for="password">비밀번호</label>
+        <div class="password-box">
+          <input type="password" id="password" autocomplete="current-password" placeholder="비밀번호를 입력하세요">
+          <button class="password-toggle" id="passwordToggle" type="button">보기</button>
+        </div>
+        <p class="error-text" id="passwordError"></p>
+      </div>
+
+      <div class="login-options">
+        <label class="save-id">
+          <input type="checkbox" id="saveId">
+          <span>아이디 저장</span>
+        </label>
+        <a id="findAccountLink" href="find-account.html?type=user">아이디/비밀번호 찾기</a>
+      </div>
+
+      <div class="login-message" id="loginMessage" role="alert"></div>
+      <button class="login-submit" type="submit">로그인</button>
+    </form>
+
+    <div class="signup-row">
+      <span id="signupText">아직 캐치캐치 회원이 아니신가요?</span>
+      <a id="signupLink" href="signup.html">회원가입</a>
+    </div>
   </section>
-
-  <!-- ▲▲▲ 여기까지 ▲▲▲ -->
-
 </main>
 
-<!-- ================= 공통 푸터 시작 (수정 금지) ================= -->
-<footer>
+<footer class="site-foot">
   <div class="wrap">
     <div class="foot-top">
       <div class="foot-brand">
@@ -104,7 +114,7 @@
       </div>
       <div class="foot-col">
         <h5>Shop</h5>
-        <a href="product-list.html?view=best">베스트</a><a href="product-list.html?cat=outer">아우터</a>
+        <a href="product-list.html">베스트</a><a href="product-list.html?cat=outer">아우터</a>
       </div>
       <div class="foot-col">
         <h5>Customer</h5>
@@ -125,10 +135,8 @@
     </div>
   </div>
 </footer>
-<!-- ================= 공통 푸터 끝 ================= -->
 
-<!-- 페이지 전용 스크립트가 있으면 여기에 추가 -->
-<script src="js/auth.js"></script>
+<script src="js/login.js"></script>
 
 <script src="js/navigation.js"></script>
 </body>
