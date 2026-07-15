@@ -17,11 +17,9 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>페이지제목 — 캐치캐치</title>
+<title>마이페이지 — 캐치캐치</title>
 <link rel="stylesheet" href="css/common.css">
-<!-- 페이지 전용 CSS가 있으면 여기에 추가:
-<link rel="stylesheet" href="css/페이지명.css">
--->
+<link rel="stylesheet" href="css/mypage.css">
 </head>
 <body>
 
@@ -78,17 +76,68 @@
 <main class="wrap">
 
   <!-- ▼▼▼ 여기부터 페이지 내용을 작성하세요 ▼▼▼ -->
+    <!-- 페이지 제목 -->
+    <section class="mypage-header">
+        <p class="kicker">MY PAGE</p>
+        <h2>마이페이지</h2>
+        <p class="desc">안녕하세요, 홍길동님.</p>
+    </section>
 
-  <section class="block">
-    <div class="sec-head">
-      <div>
-        <p class="kicker">Section</p>
-        <h3>섹션 제목</h3>
-      </div>
+    <div class="mypage-layout">
+
+        <!-- 좌측 메뉴 -->
+        <aside class="mypage-menu">
+
+            <h3>마이페이지</h3>
+
+            <ul>
+                <li><a href="member-edit.html">회원정보 수정</a></li>
+                <li><a href="order-list.html">주문목록 조회</a></li>
+                <li><a href="payment-list.html">결제수단 목록 조회</a></li>
+                <li><a href="coupon-list.html">보유 쿠폰 목록 조회</a></li>
+                <li><a href="recent-view.html">최근 본 상품 조회</a></li>
+                <li><a href="review-list.html">내 리뷰 목록 조회</a></li>
+            </ul>
+
+        </aside>
+
+        <!-- 우측 콘텐츠 -->
+        <section class="mypage-content">
+
+            <div class="sec-head">
+                <div>
+                    <p class="kicker">Summary</p>
+                    <h3>나의 쇼핑 정보</h3>
+                </div>
+            </div>
+
+            <div class="summary-grid">
+
+                <a href="coupon-list.html" class="summary-card">
+                    <span class="summary-label">보유 쿠폰</span>
+                    <strong>3장</strong>
+                </a>
+
+                <a href="payment-list.html" class="summary-card">
+                    <span class="summary-label">결제수단</span>
+                    <strong>2개</strong>
+                </a>
+
+                <a href="recent-view.html" class="summary-card">
+                    <span class="summary-label">최근 본 상품</span>
+                    <strong>8개</strong>
+                </a>
+
+                <a href="review-list.html" class="summary-card">
+                    <span class="summary-label">내 리뷰</span>
+                    <strong>12개</strong>
+                </a>
+
+            </div>
+
+        </section>
+
     </div>
-    <p>내용...</p>
-  </section>
-
   <!-- ▲▲▲ 여기까지 ▲▲▲ -->
 
 </main>

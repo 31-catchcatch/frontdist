@@ -19,9 +19,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>페이지제목 — 캐치캐치</title>
 <link rel="stylesheet" href="css/common.css">
-<!-- 페이지 전용 CSS가 있으면 여기에 추가:
-<link rel="stylesheet" href="css/페이지명.css">
--->
+<link rel="stylesheet" href="css/points.css">
 </head>
 <body>
 
@@ -33,10 +31,8 @@
   <div class="wrap">
     <a href="#">고객센터</a>
     <a href="#">매장안내</a>
-    <a href="login.html" data-auth-guest>로그인</a>
-    <a href="signup.html" data-auth-guest>회원가입</a>
-    <a href="mypage.html" data-auth-member hidden>마이페이지</a>
-    <a href="#" data-auth-member data-logout hidden>로그아웃</a>
+    <a href="mypage.html">마이페이지</a>
+    <a href="#">로그아웃</a>
   </div>
 </div>
 
@@ -79,14 +75,102 @@
 
   <!-- ▼▼▼ 여기부터 페이지 내용을 작성하세요 ▼▼▼ -->
 
+  <!-- 현재 포인트 -->
   <section class="block">
     <div class="sec-head">
       <div>
-        <p class="kicker">Section</p>
-        <h3>섹션 제목</h3>
+        <p class="kicker">My Point</p>
+        <h3>현재 포인트</h3>
       </div>
     </div>
-    <p>내용...</p>
+
+    <table class="point-table point-overview">
+      <thead>
+        <tr>
+          <th>보유 포인트</th>
+          <th>이번 달 적립</th>
+          <th>이번 달 사용</th>
+          <th>소멸 예정</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        <tr>
+          <td><strong>12,350 P</strong></td>
+          <td class="plus">+2,500 P</td>
+          <td class="minus">-1,200 P</td>
+          <td>500 P<br><small>(2026-12-31)</small></td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+
+  <!-- 이용 내역 -->
+  <section class="block">
+    <div class="sec-head">
+      <div>
+        <p class="kicker">History</p>
+        <h3>포인트 이용 내역</h3>
+      </div>
+    </div>
+
+    <table class="point-table">
+      <thead>
+        <tr>
+          <th>일시</th>
+          <th>내용</th>
+          <th>구분</th>
+          <th>변동 포인트</th>
+          <th>잔액</th>
+        </tr>
+      </thead>
+
+      <tbody>
+
+        <tr>
+          <td>2026-07-14</td>
+          <td>상품 구매 적립</td>
+          <td>적립</td>
+          <td class="plus">+1,200 P</td>
+          <td>12,350 P</td>
+        </tr>
+
+        <tr>
+          <td>2026-07-10</td>
+          <td>상품 결제 사용</td>
+          <td>사용</td>
+          <td class="minus">-800 P</td>
+          <td>11,150 P</td>
+        </tr>
+
+        <tr>
+          <td>2026-07-05</td>
+          <td>회원가입 축하 포인트</td>
+          <td>적립</td>
+          <td class="plus">+5,000 P</td>
+          <td>11,950 P</td>
+        </tr>
+
+        <tr>
+          <td>2026-06-28</td>
+          <td>리뷰 작성 적립</td>
+          <td>적립</td>
+          <td class="plus">+500 P</td>
+          <td>6,950 P</td>
+        </tr>
+
+        <tr>
+          <td>2026-06-25</td>
+          <td>상품 결제 사용</td>
+          <td>사용</td>
+          <td class="minus">-2,000 P</td>
+          <td>6,450 P</td>
+        </tr>
+
+      </tbody>
+    </table>
+
   </section>
 
   <!-- ▲▲▲ 여기까지 ▲▲▲ -->
@@ -127,7 +211,6 @@
 <!-- ================= 공통 푸터 끝 ================= -->
 
 <!-- 페이지 전용 스크립트가 있으면 여기에 추가 -->
-<script src="js/auth.js"></script>
 
 </body>
 </html>

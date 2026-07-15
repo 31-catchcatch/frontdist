@@ -1,0 +1,165 @@
+/* wishlist.css — 위시리스트 페이지 전용 스타일 */
+
+/* ===== 제목 ===== */
+.wish-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  padding-bottom: 20px;
+  border-bottom: 2px solid var(--ink, #222);
+  margin-bottom: 24px;
+}
+.wish-head h3 { font-size: 24px; margin: 0; }
+.total-count { font-size: 13px; color: var(--mid, #888); }
+.total-count b { color: var(--point, #e02020); }
+
+/* ===== 툴바 ===== */
+.wish-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 14px;
+  border-bottom: 1px solid #eee;
+  margin-bottom: 28px;
+}
+.check-all {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 14px; cursor: pointer;
+}
+.check-all b { color: var(--point, #e02020); }
+
+.toolbar-btns { display: flex; align-items: center; gap: 12px; }
+
+.btn-outline {
+  height: 36px; padding: 0 14px;
+  border: 1px solid #ccc; background: #fff; border-radius: 4px;
+  font-size: 13px; cursor: pointer;
+}
+.btn-outline:hover { border-color: #222; }
+
+.btn-text {
+  border: none; background: none;
+  font-size: 13px; color: var(--mid, #888);
+  text-decoration: underline; cursor: pointer;
+}
+.btn-text:hover { color: var(--point, #e02020); }
+
+/* ===== 상품 그리드 ===== */
+.wish-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 32px 16px;
+}
+
+/* ===== 상품 카드 ===== */
+.wish-card { position: relative; }
+
+.wish-thumb {
+  position: relative;
+  aspect-ratio: 3/4;
+  border-radius: 4px; overflow: hidden;
+  background: #f5f5f5;
+  margin-bottom: 10px;
+  display: block;
+}
+.wish-thumb img { width: 100%; height: 100%; object-fit: cover; }
+
+/* 체크박스 */
+.wish-check {
+  position: absolute; top: 8px; left: 8px;
+  z-index: 2;
+}
+
+/* 찜 해제 (X) 버튼 */
+.wish-remove {
+  position: absolute; top: 8px; right: 8px;
+  width: 28px; height: 28px;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(255,255,255,.9);
+  border: none; border-radius: 50%;
+  font-size: 14px; color: #666; cursor: pointer;
+  z-index: 2;
+}
+.wish-remove:hover { color: var(--point, #e02020); }
+
+/* 세일 뱃지 */
+.wish-badge {
+  position: absolute; bottom: 8px; left: 8px;
+  padding: 3px 7px;
+  background: var(--point, #e02020); color: #fff;
+  font-size: 11px; font-weight: 700; border-radius: 3px;
+}
+
+/* 품절 오버레이 */
+.wish-soldout {
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(255,255,255,.7);
+  font-size: 14px; font-weight: 700; color: #666;
+}
+
+/* 정보 */
+.wish-brand { font-size: 12px; font-weight: 700; color: var(--ink, #222); margin: 0 0 4px; }
+.wish-name {
+  font-size: 13px; color: #555; line-height: 1.4;
+  margin: 0 0 8px;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-decoration: none;
+}
+.wish-name:hover { text-decoration: underline; }
+
+.wish-price { display: flex; align-items: baseline; gap: 6px; margin-bottom: 12px; }
+.wish-sale { font-size: 14px; font-weight: 700; color: var(--point, #e02020); }
+.wish-final { font-size: 15px; font-weight: 700; color: var(--ink, #222); }
+.wish-origin { font-size: 12px; color: #bbb; text-decoration: line-through; }
+
+/* 장바구니 버튼 */
+.btn-add-cart {
+  width: 100%; height: 40px;
+  border: 1px solid var(--ink, #222); background: #fff;
+  border-radius: 4px;
+  font-size: 13px; font-weight: 600; cursor: pointer;
+}
+.btn-add-cart:hover { background: var(--ink, #222); color: #fff; }
+.btn-add-cart:disabled {
+  border-color: #ddd; color: #bbb;
+  background: #f8f8f8; cursor: not-allowed;
+}
+
+/* ===== 빈 위시리스트 ===== */
+.wish-empty { padding: 100px 0; text-align: center; }
+.wish-empty p { color: var(--mid, #888); margin-bottom: 28px; }
+
+.btn-primary {
+  display: inline-block;
+  height: 52px; line-height: 52px; padding: 0 40px;
+  border: none; border-radius: 4px;
+  background: var(--point, #222); color: #fff;
+  font-size: 15px; font-weight: 700;
+  text-decoration: none; cursor: pointer;
+}
+.btn-primary:hover { opacity: .9; }
+
+/* ===== 반응형 ===== */
+@media (max-width: 1024px) {
+  .wish-grid { grid-template-columns: repeat(3, 1fr); }
+}
+@media (max-width: 768px) {
+  .wish-grid { grid-template-columns: repeat(2, 1fr); }
+  .wish-toolbar { flex-direction: column; gap: 12px; align-items: flex-start; }
+}
+
+/* ===== 헤더 검색창 input 스타일 (common.css의 .search 보완) ===== */
+.search input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  background: none;
+  padding: 0;
+  font-family: inherit;
+  font-size: 12px;
+  color: var(--ink);
+}
+.search input::placeholder { color: var(--mid); }
+.search input:focus { outline: none; }

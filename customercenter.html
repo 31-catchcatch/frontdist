@@ -1,0 +1,404 @@
+<!doctype html>
+<html lang="ko">
+<!-- ============================================================
+     캐치캐치 고객센터 페이지
+     제안 기능 ID:
+     U-HEAD-005, U-CS-001 ~ U-CS-003
+     ============================================================ -->
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>고객센터 — 캐치캐치</title>
+<link rel="stylesheet" href="css/common.css">
+<link rel="stylesheet" href="css/customercenter.css">
+</head>
+<body>
+
+<!-- ================= 공통 헤더 시작 (수정 금지) ================= -->
+<div class="utility">
+  <div class="wrap">
+    <a href="customercenter.html">고객센터</a>
+    <a href="storeinfo.html">매장안내</a>
+    <a href="login.html" data-auth-guest>로그인</a>
+    <a href="signup.html" data-auth-guest>회원가입</a>
+    <a href="mypage.html" data-auth-member hidden>마이페이지</a>
+    <a href="#" data-auth-member data-logout hidden>로그아웃</a>
+  </div>
+</div>
+
+<header class="site">
+  <div class="wrap head-row">
+    <div class="head-left">
+      <label class="search">
+        <svg class="icn" viewBox="0 0 24 24" style="width:15px;height:15px">
+          <circle cx="11" cy="11" r="7"/>
+          <path d="M21 21l-4-4"/>
+        </svg>
+        찾으시는 상품이 있나요?
+      </label>
+    </div>
+
+    <div class="brand">캐치캐치</div>
+
+    <div class="head-right">
+      <a href="mypage.html" id="mypageLink" aria-label="마이페이지">
+        <svg class="icn" viewBox="0 0 24 24">
+          <circle cx="12" cy="8" r="3.6"/>
+          <path d="M5 20c1.2-3.6 3.8-5.4 7-5.4s5.8 1.8 7 5.4"/>
+        </svg>
+      </a>
+      <a href="#" aria-label="위시리스트">
+        <svg class="icn" viewBox="0 0 24 24">
+          <path d="M12 20s-7-4.6-7-9.3A3.7 3.7 0 0 1 12 8a3.7 3.7 0 0 1 7 2.7C19 15.4 12 20 12 20Z"/>
+        </svg>
+      </a>
+      <a href="shoppingcart.html" aria-label="장바구니">
+        <svg class="icn" viewBox="0 0 24 24">
+          <path d="M6 7h12l-1.2 12.2a1 1 0 0 1-1 .8H8.2a1 1 0 0 1-1-.8L6 7Z"/>
+          <path d="M9 7a3 3 0 0 1 6 0"/>
+        </svg>
+      </a>
+    </div>
+  </div>
+</header>
+
+<nav class="cats">
+  <div class="wrap">
+    <a href="#" class="on">베스트</a>
+    <a href="brand.html">브랜드</a>
+    <a href="#">아우터</a>
+    <a href="#">상의</a>
+    <a href="#">셔츠</a>
+    <a href="#">니트</a>
+    <a href="#">팬츠</a>
+    <a href="#">데님</a>
+    <a href="#">신발</a>
+    <a href="#">가방</a>
+    <a href="#">액세서리</a>
+    <a href="#">언더웨어</a>
+  </div>
+</nav>
+<!-- ================= 공통 헤더 끝 ================= -->
+
+<main class="wrap">
+  <section class="customer-page">
+    <div class="customer-head">
+      <p class="page-kicker">Customer center</p>
+      <h1>고객센터</h1>
+      <p>원하는 메뉴를 선택해 필요한 내용을 확인하세요.</p>
+    </div>
+
+    <div class="customer-tabs" role="tablist" aria-label="고객센터 메뉴">
+      <button
+        class="customer-tab on"
+        id="faqTab"
+        type="button"
+        role="tab"
+        aria-selected="true"
+        aria-controls="faqPanel"
+        data-tab="faqPanel"
+      >
+        <span>01</span>
+        <strong>자주 묻는 질문</strong>
+        <small>주문·결제·배송 관련 답변 확인</small>
+      </button>
+
+      <button
+        class="customer-tab"
+        id="guideTab"
+        type="button"
+        role="tab"
+        aria-selected="false"
+        aria-controls="guidePanel"
+        data-tab="guidePanel"
+      >
+        <span>02</span>
+        <strong>배송·교환·반품</strong>
+        <small>처리 기준과 절차 확인</small>
+      </button>
+
+      <button
+        class="customer-tab"
+        id="inquiryTab"
+        type="button"
+        role="tab"
+        aria-selected="false"
+        aria-controls="inquiryPanel"
+        data-tab="inquiryPanel"
+      >
+        <span>03</span>
+        <strong>1:1 문의</strong>
+        <small>로그인 후 문의 접수</small>
+      </button>
+    </div>
+
+    <div class="tab-panels">
+      <!-- 자주 묻는 질문 -->
+      <section
+        class="tab-panel on"
+        id="faqPanel"
+        role="tabpanel"
+        aria-labelledby="faqTab"
+      >
+        <div class="panel-head">
+          <div>
+            <p class="panel-kicker">FAQ</p>
+            <h2>자주 묻는 질문</h2>
+            <p>검색어나 분류를 선택해 필요한 답변을 확인하세요.</p>
+          </div>
+
+          <form id="helpSearchForm" class="help-search" role="search">
+            <label class="sr-only" for="helpKeyword">고객센터 검색</label>
+            <svg class="icn" viewBox="0 0 24 24" aria-hidden="true">
+              <circle cx="11" cy="11" r="7"/>
+              <path d="M21 21l-4-4"/>
+            </svg>
+            <input
+              id="helpKeyword"
+              type="search"
+              placeholder="예: 배송 조회, 반품, 쿠폰, 결제"
+              autocomplete="off"
+            >
+            <button type="submit">검색</button>
+          </form>
+        </div>
+
+        <div class="faq-filters" id="faqFilters">
+          <button class="on" type="button" data-category="all">전체</button>
+          <button type="button" data-category="order">주문·결제</button>
+          <button type="button" data-category="delivery">배송</button>
+          <button type="button" data-category="claim">교환·반품</button>
+          <button type="button" data-category="member">회원·혜택</button>
+        </div>
+
+        <div class="faq-list" id="faqList"></div>
+        <p class="empty-result" id="faqEmpty" hidden>
+          검색 조건에 맞는 질문이 없습니다.
+        </p>
+      </section>
+
+      <!-- 배송·교환·반품 -->
+      <section
+        class="tab-panel"
+        id="guidePanel"
+        role="tabpanel"
+        aria-labelledby="guideTab"
+        hidden
+      >
+        <div class="panel-head simple">
+          <div>
+            <p class="panel-kicker">Delivery & return</p>
+            <h2>배송·교환·반품 안내</h2>
+            <p>상품 수령 전후 필요한 처리 기준과 절차를 확인하세요.</p>
+          </div>
+        </div>
+
+        <div class="guide-grid">
+          <article>
+            <span>01</span>
+            <h3>배송 안내</h3>
+            <ul>
+              <li>결제 완료 후 평균 2–5영업일 이내 출고</li>
+              <li>5만원 이상 구매 시 기본 배송비 무료</li>
+              <li>도서·산간 지역은 추가 배송비 발생 가능</li>
+              <li>출고 후 마이페이지에서 운송장 확인 가능</li>
+            </ul>
+          </article>
+
+          <article>
+            <span>02</span>
+            <h3>교환 신청</h3>
+            <ul>
+              <li>상품 수령 후 7일 이내 신청</li>
+              <li>마이페이지 주문내역에서 교환 사유 선택</li>
+              <li>단순 변심 시 왕복 배송비 고객 부담</li>
+              <li>교환 상품 입고 및 검수 후 재배송</li>
+            </ul>
+          </article>
+
+          <article>
+            <span>03</span>
+            <h3>반품·환불</h3>
+            <ul>
+              <li>반품 상품 검수 완료 후 환불 진행</li>
+              <li>결제수단에 따라 환불 완료 시점 상이</li>
+              <li>착용 흔적·오염·택 제거 상품은 반품 제한</li>
+              <li>상품 불량·오배송 시 배송비 판매자 부담</li>
+            </ul>
+          </article>
+        </div>
+
+        <div class="claim-process">
+          <h3>교환·반품 진행 순서</h3>
+          <ol>
+            <li><span>1</span><strong>마이페이지 신청</strong><p>주문내역에서 교환 또는 반품 사유 선택</p></li>
+            <li><span>2</span><strong>상품 회수</strong><p>접수된 주소로 택배 기사 방문 또는 직접 발송</p></li>
+            <li><span>3</span><strong>상품 검수</strong><p>판매자가 상품 상태와 신청 사유 확인</p></li>
+            <li><span>4</span><strong>교환·환불 처리</strong><p>재배송 또는 결제수단별 환불 진행</p></li>
+          </ol>
+        </div>
+      </section>
+
+      <!-- 1:1 문의 -->
+      <section
+        class="tab-panel"
+        id="inquiryPanel"
+        role="tabpanel"
+        aria-labelledby="inquiryTab"
+        hidden
+      >
+        <div class="inquiry-layout">
+          <div class="inquiry-main">
+            <div class="panel-head simple">
+              <div>
+                <p class="panel-kicker">1:1 inquiry</p>
+                <h2>1:1 문의</h2>
+                <p>문의 등록은 로그인이 필요하며 답변은 마이페이지에서 확인할 수 있습니다.</p>
+              </div>
+            </div>
+
+            <form id="inquiryForm" class="inquiry-form" novalidate>
+              <div class="form-grid">
+                <div class="field">
+                  <label for="inquiryCategory">문의 유형 <strong>*</strong></label>
+                  <select id="inquiryCategory" required>
+                    <option value="">문의 유형 선택</option>
+                    <option value="ORDER">주문·결제</option>
+                    <option value="DELIVERY">배송</option>
+                    <option value="EXCHANGE">교환·반품</option>
+                    <option value="PRODUCT">상품</option>
+                    <option value="MEMBER">회원·혜택</option>
+                    <option value="ETC">기타</option>
+                  </select>
+                </div>
+
+                <div class="field">
+                  <label for="orderNumber">주문번호</label>
+                  <input
+                    id="orderNumber"
+                    type="text"
+                    maxlength="30"
+                    placeholder="주문 관련 문의일 때 입력하세요"
+                  >
+                </div>
+
+                <div class="field field-full">
+                  <label for="inquiryTitle">제목 <strong>*</strong></label>
+                  <input
+                    id="inquiryTitle"
+                    type="text"
+                    maxlength="100"
+                    placeholder="문의 제목을 입력하세요"
+                    required
+                  >
+                </div>
+
+                <div class="field field-full">
+                  <label for="inquiryContent">문의 내용 <strong>*</strong></label>
+                  <textarea
+                    id="inquiryContent"
+                    rows="8"
+                    maxlength="2000"
+                    placeholder="문의 내용을 자세히 입력하세요"
+                    required
+                  ></textarea>
+                  <p class="text-count">
+                    <span id="inquiryContentCount">0</span>/2000
+                  </p>
+                </div>
+              </div>
+
+              <label class="privacy-check">
+                <input id="privacyAgreement" type="checkbox" required>
+                <span>문의 처리를 위한 개인정보 수집 및 이용에 동의합니다.</span>
+              </label>
+
+              <div class="form-message" id="formMessage" role="alert"></div>
+
+              <div class="form-actions">
+                <button class="reset-button" id="resetButton" type="button">초기화</button>
+                <button class="submit-button" id="submitButton" type="submit">문의 등록</button>
+              </div>
+            </form>
+          </div>
+
+          <aside class="support-card">
+            <p>Customer service</p>
+            <strong>1588-0000</strong>
+            <dl>
+              <div><dt>평일</dt><dd>10:00–18:00</dd></div>
+              <div><dt>점심</dt><dd>12:00–13:00</dd></div>
+              <div><dt>휴무</dt><dd>주말·공휴일</dd></div>
+            </dl>
+            <p class="support-note">
+              상담량이 많을 경우 연결이 지연될 수 있습니다.
+            </p>
+          </aside>
+        </div>
+      </section>
+    </div>
+  </section>
+</main>
+
+<!-- ================= 공통 푸터 시작 (수정 금지) ================= -->
+<footer>
+  <div class="wrap">
+    <div class="foot-top">
+      <div class="foot-brand">
+        <div class="brand">캐치캐치</div>
+        <p>예쁜 옷 많이 캐치캐치</p>
+      </div>
+
+      <div class="foot-col">
+        <h5>Shop</h5>
+        <a href="#">베스트</a>
+        <a href="#">아우터</a>
+      </div>
+
+      <div class="foot-col">
+        <h5>Customer</h5>
+        <a href="customercenter.html?tab=faq">자주 묻는 질문</a>
+        <a href="customercenter.html?tab=guide">배송/반품</a>
+        <a href="customercenter.html?tab=inquiry">1:1 문의</a>
+      </div>
+
+      <div class="foot-col">
+        <h5>About</h5>
+        <a href="#">브랜드 스토리</a>
+        <a href="storeinfo.html">매장 안내</a>
+        <a href="#">채용</a>
+        <a href="#">제휴 문의</a>
+      </div>
+    </div>
+
+    <div class="foot-bar">
+      <span>© 2026 CATCHCATCH STORE. 서울특별시 성동구 · 사업자등록 000-00-00000</span>
+      <div class="socials">
+        <a href="#" aria-label="Instagram">
+          <svg viewBox="0 0 24 24">
+            <rect x="3.5" y="3.5" width="17" height="17" rx="5"/>
+            <circle cx="12" cy="12" r="4"/>
+            <circle cx="17.2" cy="6.8" r="1" fill="currentColor" stroke="none"/>
+          </svg>
+        </a>
+        <a href="#" aria-label="YouTube">
+          <svg viewBox="0 0 24 24">
+            <rect x="3" y="6" width="18" height="12" rx="3.5"/>
+            <path d="M11 9.5l4 2.5-4 2.5z" fill="currentColor" stroke="none"/>
+          </svg>
+        </a>
+        <a href="#" aria-label="X">
+          <svg viewBox="0 0 24 24">
+            <path d="M5 5l14 14M19 5L5 19"/>
+          </svg>
+        </a>
+      </div>
+    </div>
+  </div>
+</footer>
+<!-- ================= 공통 푸터 끝 ================= -->
+
+<script src="js/auth.js"></script>
+<script src="js/customercenter.js"></script>
+</body>
+</html>

@@ -19,9 +19,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>페이지제목 — 캐치캐치</title>
 <link rel="stylesheet" href="css/common.css">
-<!-- 페이지 전용 CSS가 있으면 여기에 추가:
-<link rel="stylesheet" href="css/페이지명.css">
--->
+<link rel="stylesheet" href="css/seller-claims.css">
 </head>
 <body>
 
@@ -79,15 +77,335 @@
 
   <!-- ▼▼▼ 여기부터 페이지 내용을 작성하세요 ▼▼▼ -->
 
-  <section class="block">
-    <div class="sec-head">
-      <div>
-        <p class="kicker">Section</p>
-        <h3>섹션 제목</h3>
-      </div>
+<section class="block claim-dashboard">
+
+
+<div class="sec-head">
+  <div>
+    <p class="kicker">Claim Management</p>
+    <h3>교환 / 환불 관리</h3>
+  </div>
+  <a class="seller-dashboard-link" href="seller-dashboard.html">← 대시보드</a>
+</div>
+
+
+<!-- 검색 영역 -->
+
+<div class="filter-box">
+
+  <div class="filter-row">
+
+    <div class="input-group">
+      <label>조회 기간</label>
+      <input type="date" id="claimStartDate">
     </div>
-    <p>내용...</p>
-  </section>
+
+    <span class="wave">~</span>
+
+    <div class="input-group">
+      <label>&nbsp;</label>
+      <input type="date" id="claimEndDate">
+    </div>
+
+
+    <div class="input-group">
+
+      <label>상태</label>
+
+      <select id="claimStatusFilter">
+        <option value="all">전체</option>
+        <option value="접수">접수</option>
+        <option value="검토중">검토중</option>
+        <option value="승인">승인</option>
+        <option value="반려">반려</option>
+        <option value="완료">완료</option>
+      </select>
+
+    </div>
+
+
+    <button type="button" class="btn-search" id="claimSearchButton">
+      조회
+    </button>
+
+
+  </div>
+
+  <p class="filter-message" id="claimFilterMessage" aria-live="polite"></p>
+
+</div>
+
+
+
+
+<!-- ===========================
+     클레임 대시보드
+=========================== -->
+
+
+<div class="claim-dashboard-layout">
+
+
+
+<!-- 요청 목록 -->
+
+<div class="claim-list">
+
+
+<h4>
+클레임 요청 목록
+</h4>
+
+
+<table class="data-table">
+
+<thead>
+
+<tr>
+<th>번호</th>
+<th>상품</th>
+<th>유형</th>
+<th>상태</th>
+</tr>
+
+</thead>
+
+
+<tbody>
+
+
+<tr class="claim-item active" data-id="C001" data-product="와이드 데님 팬츠" data-type="교환" data-reason="사이즈 변경" data-amount="45,000원" data-status="검토중" data-date="2026-07-14">
+
+<td>C001</td>
+<td>와이드 데님</td>
+<td>교환</td>
+<td>
+<span class="status wait">
+검토중
+</span>
+</td>
+
+</tr>
+
+
+
+<tr class="claim-item" data-id="C002" data-product="오버핏 셔츠" data-type="환불" data-reason="상품 불량" data-amount="32,000원" data-status="접수" data-date="2026-07-13">
+
+<td>C002</td>
+<td>오버핏 셔츠</td>
+<td>환불</td>
+<td>
+<span class="status">
+접수
+</span>
+</td>
+
+</tr>
+
+
+
+<tr class="claim-item" data-id="C003" data-product="코튼 니트" data-type="환불" data-reason="단순 변심" data-amount="29,000원" data-status="완료" data-date="2026-07-10">
+
+<td>C003</td>
+<td>코튼 니트</td>
+<td>환불</td>
+<td>
+<span class="status done">
+완료
+</span>
+</td>
+
+</tr>
+
+
+</tbody>
+
+</table>
+
+
+</div>
+
+
+
+
+
+
+<!-- 상세 처리 영역 -->
+
+<div class="claim-detail">
+
+
+<h4>
+클레임 상세 처리
+</h4>
+
+
+
+<div class="detail-box">
+
+
+<div class="detail-row">
+
+<label>요청번호</label>
+
+<p id="claimId">C001</p>
+
+</div>
+
+
+<div class="detail-row">
+
+<label>상품명</label>
+
+<p id="claimProduct">와이드 데님 팬츠</p>
+
+</div>
+
+
+
+<div class="detail-row">
+
+<label>요청 유형</label>
+
+<p id="claimType">교환</p>
+
+</div>
+
+
+
+<div class="detail-row">
+
+<label>요청 사유</label>
+
+<p id="claimReason">사이즈 변경</p>
+
+</div>
+
+
+
+<div class="detail-row">
+
+<label>환불 금액</label>
+
+<p id="claimAmount">45,000원</p>
+
+</div>
+
+
+</div>
+
+
+
+
+
+<!-- 상태 변경 -->
+
+
+<div class="action-section">
+
+
+<h5>
+클레임 상태 변경
+</h5>
+
+
+<div class="action-row">
+
+
+<select id="claimStatusSelect">
+
+<option>
+접수
+</option>
+
+<option>
+검토중
+</option>
+
+<option>
+승인
+</option>
+
+<option>
+반려
+</option>
+
+<option>
+완료
+</option>
+
+</select>
+
+
+<button type="button" class="btn-primary" id="updateClaimStatusButton">
+상태 변경
+</button>
+
+
+</div>
+
+
+</div>
+
+
+
+
+
+
+<!-- 최종 환불 -->
+
+<div class="action-section">
+
+
+<h5>
+최종 환불 처리
+</h5>
+
+
+<div class="refund-check">
+
+
+<p>
+✓ PG 결제 취소
+</p>
+
+
+<p>
+✓ 사용 포인트 회수
+</p>
+
+
+<p>
+✓ 환불 금액 : 45,000원
+</p>
+
+
+</div>
+
+
+
+<button type="button" class="btn-danger" id="completeRefundButton">
+
+환불 완료 처리
+
+</button>
+
+
+</div>
+
+
+
+
+</div>
+
+
+
+</div>
+
+
+
+</section>
+
 
   <!-- ▲▲▲ 여기까지 ▲▲▲ -->
 
@@ -128,6 +446,6 @@
 
 <!-- 페이지 전용 스크립트가 있으면 여기에 추가 -->
 <script src="js/auth.js"></script>
-
+<script src="js/seller-claims.js"></script>
 </body>
 </html>

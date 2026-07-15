@@ -1,0 +1,180 @@
+/* =========================
+   My Page
+========================= */
+
+/* 상단 제목 */
+.mypage-header{
+    text-align:center;
+    padding:56px 0;
+}
+
+.mypage-header h2{
+    margin:8px 0 10px;
+    font-size:42px;
+    font-weight:800;
+    letter-spacing:-0.02em;
+}
+
+.mypage-header .desc{
+    margin:0;
+    color:var(--mid);
+    font-size:14px;
+}
+
+/* 전체 레이아웃 */
+.mypage-layout{
+    display:grid;
+    grid-template-columns:220px 1fr;
+    gap:60px;
+    align-items:start;
+    padding-bottom:80px;
+}
+
+/* =========================
+   좌측 메뉴
+========================= */
+
+.mypage-menu{
+    position:sticky;
+    top:120px;
+}
+
+.mypage-menu h3{
+    margin:0 0 24px;
+    font-size:22px;
+    font-weight:800;
+}
+
+.mypage-menu ul{
+    margin:0;
+    padding:0;
+    list-style:none;
+}
+
+.mypage-menu li{
+    border-bottom:1px solid var(--hairline);
+}
+
+.mypage-menu a{
+    display:block;
+    padding:16px 0;
+    color:var(--ink-soft);
+    font-size:14px;
+    font-weight:500;
+    transition:.2s;
+}
+
+.mypage-menu a:hover{
+    color:var(--ink);
+    padding-left:8px;
+}
+
+.mypage-menu a.active{
+    color:var(--ink);
+    font-weight:700;
+}
+
+/* =========================
+   우측 컨텐츠
+========================= */
+
+.mypage-content{
+    min-width:0;
+}
+
+/* 요약 카드 */
+
+.summary-grid{
+    display:grid;
+    grid-template-columns:repeat(2,minmax(220px,1fr));
+    gap:24px;
+}
+
+.summary-card{
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+
+    min-height:170px;
+
+    background:var(--surface);
+    border:1px solid var(--hairline);
+    border-radius:2px;
+
+    padding:32px;
+
+    transition:.2s;
+}
+
+.summary-card:hover{
+    border-color:var(--ink);
+    transform:translateY(-2px);
+}
+
+.summary-label{
+    color:var(--mid);
+    font-size:12px;
+    letter-spacing:.12em;
+    text-transform:uppercase;
+}
+
+.summary-card strong{
+    margin-top:18px;
+    font-size:34px;
+    font-weight:800;
+    color:var(--ink);
+}
+
+/* =========================
+   모바일
+========================= */
+
+@media (max-width:900px){
+
+    .mypage-layout{
+        grid-template-columns:1fr;
+        gap:40px;
+    }
+
+    .mypage-menu{
+        position:static;
+    }
+
+    .mypage-menu ul{
+        display:flex;
+        overflow-x:auto;
+        gap:24px;
+        border-bottom:1px solid var(--hairline);
+    }
+
+    .mypage-menu li{
+        border:none;
+        white-space:nowrap;
+    }
+
+    .summary-grid{
+        grid-template-columns:1fr;
+    }
+
+}
+
+@media (max-width:680px){
+
+    .mypage-header{
+        padding:40px 0;
+    }
+
+    .mypage-header h2{
+        font-size:32px;
+    }
+
+    .summary-card{
+        min-height:140px;
+        padding:24px;
+    }
+
+    .summary-card strong{
+        font-size:28px;
+    }
+
+}

@@ -1,0 +1,161 @@
+/* review-write.css — 리뷰 작성 페이지 전용 스타일 */
+
+.review-page { max-width: 700px; margin: 0 auto; }
+
+/* ===== 제목 ===== */
+.review-head {
+  padding-bottom: 20px;
+  border-bottom: 2px solid var(--ink, #222);
+  margin-bottom: 32px;
+}
+.review-head h3 { font-size: 24px; margin: 0; }
+
+/* ===== 대상 상품 ===== */
+.review-product {
+  display: flex; gap: 16px; align-items: center;
+  padding: 20px;
+  background: #fafafa; border-radius: 6px;
+  margin-bottom: 40px;
+}
+.rp-thumb {
+  width: 80px; aspect-ratio: 3/4;
+  border-radius: 4px; overflow: hidden;
+  background: #f0f0f0; flex-shrink: 0;
+}
+.rp-thumb img { width: 100%; height: 100%; object-fit: cover; }
+
+.rp-brand { font-size: 12px; font-weight: 700; color: var(--mid, #888); margin: 0 0 4px; }
+.rp-name { font-size: 15px; color: var(--ink, #222); margin: 0 0 6px; }
+.rp-option { font-size: 13px; color: #999; margin: 0; }
+
+/* ===== 폼 ===== */
+.review-form { display: flex; flex-direction: column; gap: 36px; }
+
+.form-block { display: flex; flex-direction: column; gap: 12px; }
+.block-label { font-size: 14px; font-weight: 700; color: var(--ink, #222); }
+.req { color: var(--point, #e02020); }
+.optional { font-size: 12px; font-weight: 400; color: #aaa; }
+
+/* ===== 별점 ===== */
+.star-rating { display: flex; align-items: center; gap: 4px; }
+.star-rating button {
+  border: none; background: none;
+  font-size: 32px; line-height: 1;
+  color: #ddd; cursor: pointer;
+  padding: 0 2px;
+  transition: color .1s;
+}
+.star-rating button.is-on { color: #f5a623; }
+.star-rating button:hover { color: #f5a623; }
+
+.star-text {
+  margin-left: 12px;
+  font-size: 13px; color: var(--mid, #888);
+}
+.star-text.is-selected { color: var(--ink, #222); font-weight: 600; }
+
+/* ===== 사이즈 평가 칩 ===== */
+.chip-group { display: flex; gap: 8px; }
+.chip-group button {
+  height: 40px; padding: 0 20px;
+  border: 1px solid #ddd; background: #fff;
+  border-radius: 20px;
+  font-size: 13px; cursor: pointer;
+}
+.chip-group button:hover { border-color: #222; }
+.chip-group button.is-selected {
+  background: var(--ink, #222); color: #fff; border-color: var(--ink, #222);
+}
+
+/* ===== 텍스트 영역 ===== */
+.review-form textarea {
+  width: 100%;
+  padding: 16px;
+  border: 1px solid #ddd; border-radius: 6px;
+  font-size: 14px; line-height: 1.7;
+  font-family: inherit;
+  resize: vertical;
+  box-sizing: border-box;
+}
+.review-form textarea:focus {
+  outline: none; border-color: var(--ink, #222);
+}
+
+.char-count {
+  text-align: right;
+  font-size: 12px; color: #aaa;
+  margin-top: -4px;
+}
+
+/* ===== 사진 첨부 ===== */
+.photo-area { display: flex; gap: 10px; flex-wrap: wrap; }
+
+.photo-add {
+  width: 90px; height: 90px;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 4px;
+  border: 1px dashed #ccc; border-radius: 6px;
+  cursor: pointer;
+  color: #aaa;
+}
+.photo-add:hover { border-color: #222; color: #222; }
+.photo-add span { font-size: 24px; line-height: 1; }
+.photo-add small { font-size: 11px; }
+
+.photo-list { display: flex; gap: 10px; flex-wrap: wrap; }
+.photo-item {
+  position: relative;
+  width: 90px; height: 90px;
+  border-radius: 6px; overflow: hidden;
+  background: #f5f5f5;
+}
+.photo-item img { width: 100%; height: 100%; object-fit: cover; }
+.photo-item button {
+  position: absolute; top: 4px; right: 4px;
+  width: 20px; height: 20px;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(0,0,0,.55); color: #fff;
+  border: none; border-radius: 50%;
+  font-size: 11px; cursor: pointer;
+}
+
+/* ===== 버튼 ===== */
+.form-actions {
+  display: flex; gap: 10px;
+  padding-top: 12px;
+}
+.btn-cancel, .btn-submit {
+  flex: 1; height: 52px;
+  border-radius: 4px;
+  font-size: 15px; font-weight: 700; cursor: pointer;
+}
+.btn-cancel {
+  border: 1px solid #ddd; background: #fff; color: #666;
+}
+.btn-cancel:hover { border-color: #222; color: #222; }
+
+.btn-submit {
+  border: none;
+  background: var(--point, #222); color: #fff;
+}
+.btn-submit:hover { opacity: .9; }
+
+/* ===== 반응형 ===== */
+@media (max-width: 600px) {
+  .star-rating button { font-size: 28px; }
+  .star-text { display: block; margin-left: 0; }
+}
+
+/* ===== 헤더 검색창 input 스타일 (common.css의 .search 보완) ===== */
+.search input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  background: none;
+  padding: 0;
+  font-family: inherit;
+  font-size: 12px;
+  color: var(--ink);
+}
+.search input::placeholder { color: var(--mid); }
+.search input:focus { outline: none; }

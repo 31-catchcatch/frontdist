@@ -1,0 +1,218 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>상품상세 — 캐치캐치</title>
+<link rel="stylesheet" href="css/common.css">
+<link rel="stylesheet" href="css/product-detail.css">
+</head>
+<body>
+
+<!-- ================= 공통 헤더 시작 (수정 금지) ================= -->
+<div class="utility">
+  <div class="wrap">
+    <a href="#">고객센터</a>
+    <a href="#">매장안내</a>
+    <a href="login.html" data-auth-guest>로그인</a>
+    <a href="signup.html" data-auth-guest>회원가입</a>
+    <a href="mypage.html" data-auth-member hidden>마이페이지</a>
+    <a href="#" data-auth-member data-logout hidden>로그아웃</a>
+  </div>
+</div>
+
+<header class="site">
+  <div class="wrap head-row">
+    <div class="head-left">
+      <form class="search" action="product-list.html" method="get" role="search">
+        <svg class="icn" viewBox="0 0 24 24" style="width:15px;height:15px"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg>
+        <input type="text" name="q" placeholder="찾으시는 상품이 있나요?" aria-label="상품 검색">
+      </form>
+    </div>
+    <a class="brand" href="index.html">캐치캐치</a>
+    <div class="head-right">
+      <a href="mypage.html" id="mypageLink" aria-label="마이페이지"><svg class="icn" viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.6"/><path d="M5 20c1.2-3.6 3.8-5.4 7-5.4s5.8 1.8 7 5.4"/></svg></a>
+      <a href="wishlist.html" aria-label="위시리스트"><svg class="icn" viewBox="0 0 24 24"><path d="M12 20s-7-4.6-7-9.3A3.7 3.7 0 0 1 12 8a3.7 3.7 0 0 1 7 2.7C19 15.4 12 20 12 20Z"/></svg></a>
+      <a href="shoppingcart.html" aria-label="장바구니"><svg class="icn" viewBox="0 0 24 24"><path d="M6 7h12l-1.2 12.2a1 1 0 0 1-1 .8H8.2a1 1 0 0 1-1-.8L6 7Z"/><path d="M9 7a3 3 0 0 1 6 0"/></svg></a>
+    </div>
+  </div>
+</header>
+
+<nav class="cats">
+  <div class="wrap">
+    <a href="product-list.html">베스트</a>
+    <a href="brand.html">브랜드</a>
+    <a href="product-list.html?cat=outer">아우터</a>
+    <a href="product-list.html?cat=top">상의</a>
+    <a href="product-list.html?cat=shirts">셔츠</a>
+    <a href="product-list.html?cat=knit">니트</a>
+    <a href="product-list.html?cat=pants">팬츠</a>
+    <a href="product-list.html?cat=denim">데님</a>
+    <a href="product-list.html?cat=shoes">신발</a>
+    <a href="product-list.html?cat=bag">가방</a>
+    <a href="product-list.html?cat=acc">액세서리</a>
+    <a href="product-list.html?cat=underwear">언더웨어</a>
+  </div>
+</nav>
+<!-- ================= 공통 헤더 끝 ================= -->
+
+<main class="wrap pdetail-page">
+
+<!-- ▼▼▼ 상품상세 =====================================
+     기능정의서 매핑
+     - U-PROD-001 상품 상세·옵션 조회 → GET /api/v1/products/{productId}
+     - U-PROD-002 장바구니 담기       → POST /api/v1/carts
+     - U-PROD-003 즉시구매            → GET /api/v1/orders/checkout
+     - U-PROD-004 상품 좋아요         → POST /api/v1/products/{productId}/like
+     - U-PROD-005 리뷰 조회           → GET /api/v1/products/{productId}/reviews
+     - U-PROD-006 Q&A 조회            → GET /api/v1/products/{productId}/qna
+     - U-PROD-007 Q&A 등록            → POST /api/v1/products/{productId}/qna
+     받는 파라미터: ?id=상품번호
+================================================================ -->
+
+  <div class="pdetail-top">
+
+    <!-- 왼쪽: 사진 -->
+    <div class="pdetail-gallery">
+      <div class="gallery-main">
+        <img data-role="main-image" src="" alt="상품 이미지">
+      </div>
+      <div class="gallery-thumbs" data-role="thumbs"></div>
+    </div>
+
+    <!-- 오른쪽: 구매 정보 -->
+    <div class="pdetail-info">
+      <p class="pd-brand" data-role="brand">브랜드</p>
+      <h3 class="pd-name" data-role="name">상품명</h3>
+
+      <div class="pd-rating">
+        <span class="stars">★★★★★</span>
+        <b data-role="rating">0.0</b>
+        <a href="#tab-review" class="review-link">리뷰 <span data-role="review-count">0</span>개</a>
+      </div>
+
+      <div class="pd-price">
+        <span class="pd-discount" data-role="discount" hidden></span>
+        <span class="pd-final" data-role="final-price">0원</span>
+        <span class="pd-origin" data-role="origin-price" hidden></span>
+      </div>
+
+      <dl class="pd-meta">
+        <dt>배송비</dt><dd>무료배송 (50,000원 이상 구매 시)</dd>
+        <dt>적립금</dt><dd><span data-role="point">0</span>P (1%)</dd>
+      </dl>
+
+      <div class="pd-option">
+        <label>사이즈</label>
+        <div class="size-chips" data-role="size-chips"></div>
+      </div>
+
+      <div class="pd-option">
+        <label>수량</label>
+        <div class="qty-box">
+          <button type="button" data-action="qty-minus">−</button>
+          <input type="text" data-role="qty" value="1" readonly>
+          <button type="button" data-action="qty-plus">+</button>
+        </div>
+      </div>
+
+      <div class="pd-total">
+        <span>총 상품금액</span>
+        <b data-role="total-price">0원</b>
+      </div>
+
+      <div class="pd-actions">
+        <button type="button" class="btn-like" data-action="like" aria-label="찜하기">
+          <svg viewBox="0 0 24 24"><path d="M12 20s-7-4.6-7-9.3A3.7 3.7 0 0 1 12 8a3.7 3.7 0 0 1 7 2.7C19 15.4 12 20 12 20Z"/></svg>
+        </button>
+        <button type="button" class="btn-cart" data-action="add-cart">장바구니</button>
+        <button type="button" class="btn-buy" data-action="buy-now">바로구매</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 탭 ===== -->
+  <div class="pdetail-tabs">
+    <nav class="tab-nav">
+      <button type="button" class="is-active" data-tab="detail">상품정보</button>
+      <button type="button" data-tab="review">리뷰 <span data-role="review-count">0</span></button>
+      <button type="button" data-tab="qna">Q&amp;A <span data-role="qna-count">0</span></button>
+    </nav>
+
+    <section class="tab-panel" data-panel="detail">
+      <div class="detail-desc" data-role="description"></div>
+    </section>
+
+    <section class="tab-panel" data-panel="review" hidden id="tab-review">
+      <ul class="review-list" data-role="review-list"></ul>
+    </section>
+
+    <section class="tab-panel" data-panel="qna" hidden>
+      <div class="qna-write">
+        <button type="button" class="btn-outline" data-action="open-qna">문의하기</button>
+      </div>
+
+      <form class="qna-form" data-role="qna-form" hidden>
+        <div class="field">
+          <label for="qnaTitle">제목</label>
+          <input type="text" id="qnaTitle" placeholder="문의 제목을 입력하세요">
+        </div>
+        <div class="field">
+          <label for="qnaBody">내용</label>
+          <textarea id="qnaBody" rows="4" placeholder="문의 내용을 입력하세요"></textarea>
+        </div>
+        <label class="qna-secret">
+          <input type="checkbox" id="qnaSecret">
+          <span>비공개 문의 (판매자만 볼 수 있어요)</span>
+        </label>
+        <div class="qna-form-btns">
+          <button type="button" class="btn-outline" data-action="cancel-qna">취소</button>
+          <button type="submit" class="btn-submit">등록</button>
+        </div>
+      </form>
+
+      <ul class="qna-list" data-role="qna-list"></ul>
+    </section>
+  </div>
+
+<!-- ▲▲▲ 여기까지 ▲▲▲ -->
+
+</main>
+
+<!-- ================= 공통 푸터 시작 (수정 금지) ================= -->
+<footer>
+  <div class="wrap">
+    <div class="foot-top">
+      <div class="foot-brand">
+    <a class="brand" href="index.html" aria-label="캐치캐치 메인 페이지">캐치캐치</a>
+        <p>예쁜 옷 많이 캐치캐치</p>
+      </div>
+      <div class="foot-col">
+        <h5>Shop</h5>
+        <a href="product-list.html">베스트</a><a href="product-list.html?cat=outer">아우터</a>
+      </div>
+      <div class="foot-col">
+        <h5>Customer</h5>
+        <a href="#">공지사항</a><a href="faq.html">자주 묻는 질문</a><a href="#">1:1 문의</a><a href="#">배송/반품</a>
+      </div>
+      <div class="foot-col">
+        <h5>About</h5>
+        <a href="#">브랜드 스토리</a><a href="#">매장 안내</a><a href="#">채용</a><a href="#">제휴 문의</a>
+      </div>
+    </div>
+    <div class="foot-bar">
+      <span>© 2026 CATCHCATCH STORE. 서울특별시 성동구 · 사업자등록 000-00-00000</span>
+      <div class="socials">
+        <a href="#" aria-label="Instagram"><svg viewBox="0 0 24 24"><rect x="3.5" y="3.5" width="17" height="17" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.2" cy="6.8" r="1" fill="currentColor" stroke="none"/></svg></a>
+        <a href="#" aria-label="YouTube"><svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="12" rx="3.5"/><path d="M11 9.5l4 2.5-4 2.5z" fill="currentColor" stroke="none"/></svg></a>
+        <a href="#" aria-label="X"><svg viewBox="0 0 24 24"><path d="M5 5l14 14M19 5L5 19"/></svg></a>
+      </div>
+    </div>
+  </div>
+</footer>
+<!-- ================= 공통 푸터 끝 ================= -->
+
+<script src="js/auth.js"></script>
+<script src="js/product-detail.js"></script>
+</body>
+</html>

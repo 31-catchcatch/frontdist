@@ -1,0 +1,357 @@
+<!doctype html>
+<html lang="ko">
+<!-- ============================================================
+     캐치캐치 페이지 템플릿 (_template.html)
+     ------------------------------------------------------------
+     ★ 새 페이지 만드는 법 ★
+     1. 이 파일을 복사해서 담당 파일명으로 저장하세요.
+        (파일명 규칙표는 README.md 참고: login.html, cart.html, ...)
+     2. <title>과 <main> 안의 내용만 작성하면 됩니다.
+     3. 헤더/푸터는 절대 수정하지 마세요! (전 페이지 공통)
+        수정 필요하면 리더에게 요청.
+     4. 페이지 전용 CSS가 필요하면 css/페이지명.css 를 만들어
+        아래 <link> 자리처럼 추가하세요. css/common.css 는 수정 금지!
+     ※ 메인 페이지는 index.html 입니다.
+     ※ 관리자 페이지는 _admin-template.html 을 쓰세요.
+     ============================================================ -->
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>페이지제목 — 캐치캐치</title>
+<link rel="stylesheet" href="css/common.css">
+<link rel="stylesheet" href="css/seller-sales.css">
+</head>
+<body>
+
+<!-- 상품 카드를 쓰는 페이지라면 index.html 상단의
+     SVG 실루엣 <defs> 블록을 여기에 복사하세요. -->
+
+<!-- ================= 공통 헤더 시작 (수정 금지) ================= -->
+<div class="utility">
+  <div class="wrap">
+    <a href="#">고객센터</a>
+    <a href="#">매장안내</a>
+    <a href="login.html" data-auth-guest>로그인</a>
+    <a href="signup.html" data-auth-guest>회원가입</a>
+    <a href="mypage.html" data-auth-member hidden>마이페이지</a>
+    <a href="#" data-auth-member data-logout hidden>로그아웃</a>
+  </div>
+</div>
+
+<header class="site">
+  <div class="wrap head-row">
+    <div class="head-left">
+      <label class="search">
+        <svg class="icn" viewBox="0 0 24 24" style="width:15px;height:15px"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg>
+        찾으시는 상품이 있나요?
+      </label>
+    </div>
+    <a class="brand" href="index.html" aria-label="캐치캐치 메인 페이지">캐치캐치</a>
+    <div class="head-right">
+      <a href="mypage.html" id="mypageLink" aria-label="마이페이지"><svg class="icn" viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.6"/><path d="M5 20c1.2-3.6 3.8-5.4 7-5.4s5.8 1.8 7 5.4"/></svg></a>
+      <a href="#" aria-label="위시리스트"><svg class="icn" viewBox="0 0 24 24"><path d="M12 20s-7-4.6-7-9.3A3.7 3.7 0 0 1 12 8a3.7 3.7 0 0 1 7 2.7C19 15.4 12 20 12 20Z"/></svg></a>
+      <a href="#" aria-label="장바구니"><svg class="icn" viewBox="0 0 24 24"><path d="M6 7h12l-1.2 12.2a1 1 0 0 1-1 .8H8.2a1 1 0 0 1-1-.8L6 7Z"/><path d="M9 7a3 3 0 0 1 6 0"/></svg></a>
+    </div>
+  </div>
+</header>
+
+<nav class="cats">
+  <div class="wrap">
+    <a href="#" class="on">베스트</a>
+    <a href="brand.html">브랜드</a>
+    <a href="#">아우터</a>
+    <a href="#">상의</a>
+    <a href="#">셔츠</a>
+    <a href="#">니트</a>
+    <a href="#">팬츠</a>
+    <a href="#">데님</a>
+    <a href="#">신발</a>
+    <a href="#">가방</a>
+    <a href="#">액세서리</a>
+    <a href="#">언더웨어</a>
+  </div>
+</nav>
+<!-- ================= 공통 헤더 끝 ================= -->
+
+<main class="wrap">
+
+  <!-- ▼▼▼ 여기부터 페이지 내용을 작성하세요 ▼▼▼ -->
+
+  <section class="block sales-page">
+
+    <div class="sec-head">
+      <div>
+        <p class="kicker">Sales Management</p>
+        <h3>매출 / 정산 관리</h3>
+      </div>
+      <a class="seller-dashboard-link" href="seller-dashboard.html">← 대시보드</a>
+    </div>
+
+    <!-- 탭 -->
+    <div class="tab-menu">
+      <button type="button" class="tab-btn active" data-tab="sales">
+        매출 통계 조회
+      </button>
+      <button type="button" class="tab-btn" data-tab="settlement">
+        정산 내역 조회
+      </button>
+    </div>
+
+    <!-- ======================= -->
+    <!-- 매출 통계 -->
+    <!-- ======================= -->
+
+    <div class="tab-content active" id="sales">
+
+      <div class="filter-box">
+
+        <div class="filter-row">
+
+          <div class="input-group">
+            <label>조회 기간</label>
+            <input type="date" id="salesStartDate">
+          </div>
+
+          <span class="wave">~</span>
+
+          <div class="input-group">
+            <label>&nbsp;</label>
+            <input type="date" id="salesEndDate">
+          </div>
+
+          <button type="button" class="btn-search" data-search-target="sales">
+            조회
+          </button>
+
+        </div>
+
+      </div>
+
+      <p class="filter-message" id="salesFilterMessage" aria-live="polite"></p>
+      <p class="selected-period" id="salesPeriod" aria-live="polite" hidden></p>
+
+      <div class="summary-grid">
+
+        <div class="summary-card">
+          <p>총 매출</p>
+          <h2 id="salesTotal">₩10,580,000</h2>
+        </div>
+
+        <div class="summary-card">
+          <p>총 판매 건수</p>
+          <h2 id="salesQuantity">300건</h2>
+        </div>
+
+        <div class="summary-card">
+          <p>평균 주문 금액</p>
+          <h2 id="salesAverage">₩35,267</h2>
+        </div>
+
+      </div>
+
+      <div class="table-wrap">
+
+        <table class="data-table">
+
+          <thead>
+            <tr>
+              <th>판매일</th>
+              <th>상품명</th>
+              <th>판매 수량</th>
+              <th>매출액</th>
+              <th>판매 비율</th>
+            </tr>
+          </thead>
+
+          <tbody>
+
+            <tr data-date="2026-07-01" data-amount="2400000" data-quantity="120">
+              <td>2026-07-01</td>
+              <td>베이직 반팔 티셔츠</td>
+              <td>120개</td>
+              <td>₩2,400,000</td>
+              <td>13%</td>
+            </tr>
+
+            <tr data-date="2026-07-03" data-amount="3870000" data-quantity="86">
+              <td>2026-07-03</td>
+              <td>와이드 데님 팬츠</td>
+              <td>86개</td>
+              <td>₩3,870,000</td>
+              <td>21%</td>
+            </tr>
+
+            <tr data-date="2026-07-05" data-amount="2750000" data-quantity="55">
+              <td>2026-07-05</td>
+              <td>오버핏 후드집업</td>
+              <td>55개</td>
+              <td>₩2,750,000</td>
+              <td>15%</td>
+            </tr>
+
+            <tr data-date="2026-07-12" data-amount="1560000" data-quantity="39">
+              <td>2026-07-12</td>
+              <td>코튼 셔츠</td>
+              <td>39개</td>
+              <td>₩1,560,000</td>
+              <td>8%</td>
+            </tr>
+
+          </tbody>
+
+        </table>
+
+      </div>
+
+    </div>
+
+    <!-- ======================= -->
+    <!-- 정산 -->
+    <!-- ======================= -->
+
+    <div class="tab-content" id="settlement">
+
+      <div class="filter-box">
+
+        <div class="filter-row">
+
+          <div class="input-group">
+            <label>조회 기간</label>
+            <input type="date" id="settlementStartDate">
+          </div>
+
+          <span class="wave">~</span>
+
+          <div class="input-group">
+            <label>&nbsp;</label>
+            <input type="date" id="settlementEndDate">
+          </div>
+
+          <button type="button" class="btn-search" data-search-target="settlement">
+            조회
+          </button>
+
+        </div>
+
+      </div>
+
+      <p class="filter-message" id="settlementFilterMessage" aria-live="polite"></p>
+      <p class="selected-period" id="settlementPeriod" aria-live="polite" hidden></p>
+
+      <div class="summary-grid">
+
+        <div class="summary-card">
+          <p>정산 예정 금액</p>
+          <h2>₩3,280,000</h2>
+        </div>
+
+        <div class="summary-card">
+          <p>정산 완료 금액</p>
+          <h2>₩15,240,000</h2>
+        </div>
+
+        <div class="summary-card">
+          <p>구매 확정 건수</p>
+          <h2>489건</h2>
+        </div>
+
+      </div>
+
+      <div class="table-wrap">
+
+        <table class="data-table">
+
+          <thead>
+
+            <tr>
+              <th>정산일</th>
+              <th>주문번호</th>
+              <th>상품명</th>
+              <th>판매금액</th>
+              <th>정산금액</th>
+              <th>상태</th>
+            </tr>
+
+          </thead>
+
+          <tbody>
+
+            <tr data-date="2026-07-01">
+              <td>2026-07-01</td>
+              <td>202607010001</td>
+              <td>와이드 데님 팬츠</td>
+              <td>₩45,000</td>
+              <td>₩40,500</td>
+              <td><span class="status done">완료</span></td>
+            </tr>
+
+            <tr data-date="2026-07-03">
+              <td>2026-07-03</td>
+              <td>202607030215</td>
+              <td>베이직 티셔츠</td>
+              <td>₩20,000</td>
+              <td>₩18,000</td>
+              <td><span class="status wait">예정</span></td>
+            </tr>
+
+            <tr data-date="2026-07-05">
+              <td>2026-07-05</td>
+              <td>202607050091</td>
+              <td>코튼 셔츠</td>
+              <td>₩39,000</td>
+              <td>₩35,100</td>
+              <td><span class="status done">완료</span></td>
+            </tr>
+
+          </tbody>
+
+        </table>
+
+      </div>
+
+    </div>
+
+  </section>
+
+  <!-- ▲▲▲ 여기까지 ▲▲▲ -->
+
+</main>
+
+<!-- ================= 공통 푸터 시작 (수정 금지) ================= -->
+<footer>
+  <div class="wrap">
+    <div class="foot-top">
+      <div class="foot-brand">
+        <div class="brand">캐치캐치</div>
+        <p>예쁜 옷 많이 캐치캐치</p>
+      </div>
+      <div class="foot-col">
+        <h5>Shop</h5>
+        <a href="#">베스트</a><a href="#">아우터</a>
+      </div>
+      <div class="foot-col">
+        <h5>Customer</h5>
+        <a href="#">공지사항</a><a href="#">자주 묻는 질문</a><a href="#">1:1 문의</a><a href="#">배송/반품</a>
+      </div>
+      <div class="foot-col">
+        <h5>About</h5>
+        <a href="#">브랜드 스토리</a><a href="#">매장 안내</a><a href="#">채용</a><a href="#">제휴 문의</a>
+      </div>
+    </div>
+    <div class="foot-bar">
+      <span>© 2026 CATCHCATCH STORE. 서울특별시 성동구 · 사업자등록 000-00-00000</span>
+      <div class="socials">
+        <a href="#" aria-label="Instagram"><svg viewBox="0 0 24 24"><rect x="3.5" y="3.5" width="17" height="17" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.2" cy="6.8" r="1" fill="currentColor" stroke="none"/></svg></a>
+        <a href="#" aria-label="YouTube"><svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="12" rx="3.5"/><path d="M11 9.5l4 2.5-4 2.5z" fill="currentColor" stroke="none"/></svg></a>
+        <a href="#" aria-label="X"><svg viewBox="0 0 24 24"><path d="M5 5l14 14M19 5L5 19"/></svg></a>
+      </div>
+    </div>
+  </div>
+</footer>
+<!-- ================= 공통 푸터 끝 ================= -->
+
+<!-- 페이지 전용 스크립트가 있으면 여기에 추가 -->
+<script src="js/auth.js"></script>
+<script src="js/seller-sales.js"></script>
+</body>
+</html>

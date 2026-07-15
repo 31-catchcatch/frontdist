@@ -1,38 +1,19 @@
 <!doctype html>
 <html lang="ko">
-<!-- ============================================================
-     캐치캐치 페이지 템플릿 (_template.html)
-     ------------------------------------------------------------
-     ★ 새 페이지 만드는 법 ★
-     1. 이 파일을 복사해서 담당 파일명으로 저장하세요.
-        (파일명 규칙표는 README.md 참고: login.html, cart.html, ...)
-     2. <title>과 <main> 안의 내용만 작성하면 됩니다.
-     3. 헤더/푸터는 절대 수정하지 마세요! (전 페이지 공통)
-        수정 필요하면 리더에게 요청.
-     4. 페이지 전용 CSS가 필요하면 css/페이지명.css 를 만들어
-        아래 <link> 자리처럼 추가하세요. css/common.css 는 수정 금지!
-     ※ 메인 페이지는 index.html 입니다.
-     ※ 관리자 페이지는 _admin-template.html 을 쓰세요.
-     ============================================================ -->
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>페이지제목 — 캐치캐치</title>
+<title>장바구니 — 캐치캐치</title>
 <link rel="stylesheet" href="css/common.css">
-<!-- 페이지 전용 CSS가 있으면 여기에 추가:
-<link rel="stylesheet" href="css/페이지명.css">
--->
+<link rel="stylesheet" href="css/shoppingcart.css">
 </head>
 <body>
-
-<!-- 상품 카드를 쓰는 페이지라면 index.html 상단의
-     SVG 실루엣 <defs> 블록을 여기에 복사하세요. -->
 
 <!-- ================= 공통 헤더 시작 (수정 금지) ================= -->
 <div class="utility">
   <div class="wrap">
     <a href="#">고객센터</a>
-    <a href="#">매장안내</a>
+    <a href="storeinfo.html">매장안내</a>
     <a href="login.html" data-auth-guest>로그인</a>
     <a href="signup.html" data-auth-guest>회원가입</a>
     <a href="mypage.html" data-auth-member hidden>마이페이지</a>
@@ -48,11 +29,11 @@
         찾으시는 상품이 있나요?
       </label>
     </div>
-    <a class="brand" href="index.html" aria-label="캐치캐치 메인 페이지">캐치캐치</a>
+    <div class="brand">캐치캐치</div>
     <div class="head-right">
       <a href="mypage.html" id="mypageLink" aria-label="마이페이지"><svg class="icn" viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.6"/><path d="M5 20c1.2-3.6 3.8-5.4 7-5.4s5.8 1.8 7 5.4"/></svg></a>
       <a href="#" aria-label="위시리스트"><svg class="icn" viewBox="0 0 24 24"><path d="M12 20s-7-4.6-7-9.3A3.7 3.7 0 0 1 12 8a3.7 3.7 0 0 1 7 2.7C19 15.4 12 20 12 20Z"/></svg></a>
-      <a href="#" aria-label="장바구니"><svg class="icn" viewBox="0 0 24 24"><path d="M6 7h12l-1.2 12.2a1 1 0 0 1-1 .8H8.2a1 1 0 0 1-1-.8L6 7Z"/><path d="M9 7a3 3 0 0 1 6 0"/></svg></a>
+      <a href="shoppingcart.html" aria-label="장바구니"><svg class="icn" viewBox="0 0 24 24"><path d="M6 7h12l-1.2 12.2a1 1 0 0 1-1 .8H8.2a1 1 0 0 1-1-.8L6 7Z"/><path d="M9 7a3 3 0 0 1 6 0"/></svg></a>
     </div>
   </div>
 </header>
@@ -76,21 +57,58 @@
 <!-- ================= 공통 헤더 끝 ================= -->
 
 <main class="wrap">
-
-  <!-- ▼▼▼ 여기부터 페이지 내용을 작성하세요 ▼▼▼ -->
-
-  <section class="block">
-    <div class="sec-head">
-      <div>
-        <p class="kicker">Section</p>
-        <h3>섹션 제목</h3>
-      </div>
+  <section class="cart-page">
+    <div class="page-head">
+      <p class="page-kicker">Shopping cart</p>
+      <h1>장바구니</h1>
+      <p>구매할 상품의 옵션과 수량을 확인하세요.</p>
     </div>
-    <p>내용...</p>
+
+    <div class="cart-layout">
+      <section class="cart-panel">
+        <div class="cart-toolbar">
+          <label class="select-all">
+            <input type="checkbox" id="selectAll" checked>
+            <span>전체 선택</span>
+          </label>
+          <button id="deleteSelectedButton" type="button">선택 삭제</button>
+        </div>
+
+        <div id="cartList" class="cart-list" aria-live="polite">
+          <p class="cart-state">장바구니를 불러오는 중입니다.</p>
+        </div>
+      </section>
+
+      <aside class="order-summary">
+        <h2>결제 예정 금액</h2>
+        <dl>
+          <div>
+            <dt>상품 금액</dt>
+            <dd id="productAmount">0원</dd>
+          </div>
+          <div>
+            <dt>할인 금액</dt>
+            <dd id="discountAmount">0원</dd>
+          </div>
+          <div>
+            <dt>배송비</dt>
+            <dd id="deliveryAmount">0원</dd>
+          </div>
+          <div class="summary-total">
+            <dt>총 결제 금액</dt>
+            <dd id="totalAmount">0원</dd>
+          </div>
+        </dl>
+
+        <button class="checkout-button" id="checkoutButton" type="button">
+          선택 상품 주문하기
+        </button>
+        <a class="continue-link" href="index.html">쇼핑 계속하기</a>
+      </aside>
+    </div>
+
+    <div class="page-message" id="pageMessage" role="alert"></div>
   </section>
-
-  <!-- ▲▲▲ 여기까지 ▲▲▲ -->
-
 </main>
 
 <!-- ================= 공통 푸터 시작 (수정 금지) ================= -->
@@ -111,7 +129,7 @@
       </div>
       <div class="foot-col">
         <h5>About</h5>
-        <a href="#">브랜드 스토리</a><a href="#">매장 안내</a><a href="#">채용</a><a href="#">제휴 문의</a>
+        <a href="#">브랜드 스토리</a><a href="storeinfo.html">매장 안내</a><a href="#">채용</a><a href="#">제휴 문의</a>
       </div>
     </div>
     <div class="foot-bar">
@@ -126,8 +144,7 @@
 </footer>
 <!-- ================= 공통 푸터 끝 ================= -->
 
-<!-- 페이지 전용 스크립트가 있으면 여기에 추가 -->
 <script src="js/auth.js"></script>
-
+<script src="js/shoppingcart.js"></script>
 </body>
 </html>

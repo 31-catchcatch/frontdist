@@ -1,0 +1,112 @@
+/* find-account.css — 아이디·비밀번호 찾기 전용 스타일 */
+
+.find-block { max-width: 480px; margin: 0 auto; }
+
+/* ===== 탭 ===== */
+.find-tabs {
+  display: flex;
+  border-bottom: 1px solid #eee;
+  margin-bottom: 32px;
+}
+.find-tabs button {
+  flex: 1; height: 52px;
+  border: none; background: none;
+  border-bottom: 2px solid transparent;
+  font-size: 15px; color: var(--mid, #888); cursor: pointer;
+}
+.find-tabs button.is-active {
+  color: var(--ink, #222); font-weight: 700;
+  border-bottom-color: var(--ink, #222);
+}
+
+/* ===== 폼 ===== */
+.find-form { display: flex; flex-direction: column; gap: 20px; }
+
+.field { display: flex; flex-direction: column; gap: 6px; }
+.field label { font-size: 13px; font-weight: 600; color: #333; }
+.req { color: var(--point, #e02020); }
+
+.field input {
+  height: 44px; padding: 0 12px;
+  border: 1px solid #ddd; border-radius: 4px; font-size: 14px;
+}
+.field input:focus { outline: none; border-color: var(--ink, #222); }
+
+.field-row { display: flex; gap: 8px; align-items: center; }
+.field-row input { flex: 1; }
+
+.btn-outline {
+  height: 44px; padding: 0 14px; white-space: nowrap;
+  border: 1px solid #ccc; background: #fff; border-radius: 4px;
+  font-size: 13px; cursor: pointer;
+}
+.btn-outline:hover { border-color: #222; }
+
+.field-msg { font-size: 12px; min-height: 14px; margin: 0; }
+.field-msg.ok { color: #1a8f4c; }
+.field-msg.error { color: #e02020; }
+
+.timer { font-size: 13px; color: var(--point, #e02020); min-width: 44px; }
+
+.btn-submit {
+  height: 52px; margin-top: 8px;
+  border: none; border-radius: 4px;
+  background: var(--point, #222); color: #fff;
+  font-size: 15px; font-weight: 700; cursor: pointer;
+  text-align: center; text-decoration: none;
+  line-height: 52px; display: block;
+}
+.btn-submit:hover { opacity: .9; }
+
+/* ===== 결과 ===== */
+.find-result {
+  display: flex; flex-direction: column; gap: 16px;
+  padding: 32px 24px;
+  background: #fafafa; border-radius: 8px;
+  text-align: center;
+}
+.result-label { font-size: 14px; color: var(--mid, #888); margin: 0; }
+.result-value {
+  font-size: 22px; font-weight: 700; color: var(--ink, #222);
+  margin: 0;
+}
+.result-actions { display: flex; gap: 10px; margin-top: 8px; }
+.result-actions .btn-submit,
+.result-actions .btn-outline { flex: 1; margin-top: 0; }
+.result-actions .btn-outline { height: 52px; }
+
+/* hidden 속성이 display보다 우선하도록 */
+[hidden] { display: none !important; }
+
+/* 헤더 검색창 input 스타일 (common.css의 .search 보완) */
+.search input {
+  flex: 1; min-width: 0;
+  border: none; background: none; padding: 0;
+  font-family: inherit; font-size: 12px; color: var(--ink);
+}
+.search input::placeholder { color: var(--mid); }
+.search input:focus { outline: none; }
+
+@media (max-width: 640px) {
+  .find-block { max-width: 100%; }
+}
+
+/* ===== 인증 방법 탭 (이메일/휴대폰) ===== */
+.method-tabs { display: flex; gap: 8px; }
+.method-tabs button {
+  flex: 1; height: 42px;
+  border: 1px solid #ddd; background: #fff;
+  border-radius: 4px; font-size: 13px; cursor: pointer;
+}
+.method-tabs button.is-active {
+  border-color: var(--ink, #222);
+  background: var(--ink, #222);
+  color: #fff; font-weight: 600;
+}
+.method-panel { display: flex; flex-direction: column; gap: 20px; }
+.field select {
+  height: 44px; padding: 0 12px;
+  border: 1px solid #ddd; border-radius: 4px;
+  font-size: 14px; background: #fff;
+}
+.field select:focus { outline: none; border-color: var(--ink, #222); }

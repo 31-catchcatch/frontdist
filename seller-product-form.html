@@ -1,0 +1,269 @@
+<!doctype html>
+<html lang="ko">
+<!-- ============================================================
+     캐치캐치 판매자 상품 등록/수정 페이지
+     기능 ID: S-PROD-002 ~ S-PROD-004
+
+     등록 모드:
+       seller-product-form.html
+
+     수정 모드:
+       seller-product-form.html?id=상품번호
+     ============================================================ -->
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>상품 등록/수정 — 캐치캐치</title>
+<link rel="stylesheet" href="css/common.css">
+<link rel="stylesheet" href="css/seller-product-form.css">
+</head>
+<body>
+
+<!-- ================= 공통 헤더 시작 (수정 금지) ================= -->
+<div class="utility">
+  <div class="wrap">
+    <a href="#">고객센터</a>
+    <a href="#">매장안내</a>
+    <a href="login.html" data-auth-guest>로그인</a>
+    <a href="signup.html" data-auth-guest>회원가입</a>
+    <a href="mypage.html" data-auth-member hidden>마이페이지</a>
+    <a href="#" data-auth-member data-logout hidden>로그아웃</a>
+  </div>
+</div>
+
+<header class="site">
+  <div class="wrap head-row">
+    <div class="head-left">
+      <label class="search">
+        <svg class="icn" viewBox="0 0 24 24" style="width:15px;height:15px"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg>
+        찾으시는 상품이 있나요?
+      </label>
+    </div>
+    <div class="brand">캐치캐치</div>
+    <div class="head-right">
+      <a href="mypage.html" id="mypageLink" aria-label="마이페이지"><svg class="icn" viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.6"/><path d="M5 20c1.2-3.6 3.8-5.4 7-5.4s5.8 1.8 7 5.4"/></svg></a>
+      <a href="#" aria-label="위시리스트"><svg class="icn" viewBox="0 0 24 24"><path d="M12 20s-7-4.6-7-9.3A3.7 3.7 0 0 1 12 8a3.7 3.7 0 0 1 7 2.7C19 15.4 12 20 12 20Z"/></svg></a>
+      <a href="#" aria-label="장바구니"><svg class="icn" viewBox="0 0 24 24"><path d="M6 7h12l-1.2 12.2a1 1 0 0 1-1 .8H8.2a1 1 0 0 1-1-.8L6 7Z"/><path d="M9 7a3 3 0 0 1 6 0"/></svg></a>
+    </div>
+  </div>
+</header>
+
+<nav class="cats">
+  <div class="wrap">
+    <a href="#" class="on">베스트</a>
+    <a href="brand.html">브랜드</a>
+    <a href="#">아우터</a>
+    <a href="#">상의</a>
+    <a href="#">셔츠</a>
+    <a href="#">니트</a>
+    <a href="#">팬츠</a>
+    <a href="#">데님</a>
+    <a href="#">신발</a>
+    <a href="#">가방</a>
+    <a href="#">액세서리</a>
+    <a href="#">언더웨어</a>
+  </div>
+</nav>
+<!-- ================= 공통 헤더 끝 ================= -->
+
+<main class="wrap">
+  <section class="product-form-page">
+    <div class="page-head">
+      <div>
+        <p class="page-kicker">Seller product</p>
+        <h1 id="pageTitle">상품 등록</h1>
+        <p id="pageDescription">판매할 상품의 기본 정보와 이미지를 등록합니다.</p>
+      </div>
+      <div class="head-links">
+        <a class="list-link" href="seller-orders.html">주문 관리</a>
+        <a class="list-link" href="seller-products.html">내 상품 목록</a>
+      </div>
+    </div>
+
+    <form id="productForm" novalidate>
+      <section class="form-card" aria-labelledby="basicInfoTitle">
+        <div class="card-head">
+          <div>
+            <span class="section-number">01</span>
+            <h2 id="basicInfoTitle">기본 정보</h2>
+          </div>
+          <p><strong>*</strong> 필수 입력 항목</p>
+        </div>
+
+        <div class="form-grid">
+          <div class="field field-full">
+            <label for="productName">상품명 <strong>*</strong></label>
+            <input id="productName" name="productName" type="text" maxlength="100" placeholder="상품명을 입력하세요" required>
+          </div>
+
+          <div class="field">
+            <label for="categoryId">카테고리 <strong>*</strong></label>
+            <select id="categoryId" name="categoryId" required>
+              <option value="">카테고리 선택</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label for="brandName">브랜드명 <strong>*</strong></label>
+            <input id="brandName" name="brandName" type="text" maxlength="50" placeholder="브랜드명을 입력하세요" required>
+          </div>
+
+          <div class="field">
+            <label for="price">정상가 <strong>*</strong></label>
+            <div class="input-unit">
+              <input id="price" name="price" type="number" min="0" step="100" placeholder="0" required>
+              <span>원</span>
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="discountRate">할인율</label>
+            <div class="input-unit">
+              <input id="discountRate" name="discountRate" type="number" min="0" max="100" step="1" value="0">
+              <span>%</span>
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="stock">재고 수량 <strong>*</strong></label>
+            <div class="input-unit">
+              <input id="stock" name="stock" type="number" min="0" step="1" placeholder="0" required>
+              <span>개</span>
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="salesStatus">판매 상태 <strong>*</strong></label>
+            <select id="salesStatus" name="salesStatus" required>
+              <option value="SELLING">판매 중</option>
+              <option value="STOPPED">판매 중지</option>
+              <option value="SOLD_OUT">품절</option>
+            </select>
+          </div>
+
+          <div class="field field-full">
+            <label for="description">상품 설명 <strong>*</strong></label>
+            <textarea id="description" name="description" rows="8" maxlength="3000" placeholder="소재, 핏, 세탁 방법 등 상품 정보를 입력하세요" required></textarea>
+            <div class="text-count"><span id="descriptionCount">0</span>/3000</div>
+          </div>
+        </div>
+      </section>
+
+      <section class="form-card" aria-labelledby="optionTitle">
+        <div class="card-head">
+          <div>
+            <span class="section-number">02</span>
+            <h2 id="optionTitle">상품 옵션</h2>
+          </div>
+          <p>쉼표로 여러 값을 구분하세요.</p>
+        </div>
+
+        <div class="form-grid">
+          <div class="field">
+            <label for="sizes">사이즈</label>
+            <input id="sizes" name="sizes" type="text" placeholder="예: S, M, L, XL">
+          </div>
+
+          <div class="field">
+            <label for="colors">색상</label>
+            <input id="colors" name="colors" type="text" placeholder="예: 블랙, 화이트, 네이비">
+          </div>
+        </div>
+      </section>
+
+      <section class="form-card" aria-labelledby="imageTitle">
+        <div class="card-head">
+          <div>
+            <span class="section-number">03</span>
+            <h2 id="imageTitle">상품 이미지</h2>
+          </div>
+          <p>JPG, JPEG, PNG, WEBP / 파일당 최대 10MB</p>
+        </div>
+
+        <div class="image-upload-area">
+          <label class="image-picker" for="productImages">
+            <span class="picker-icon" aria-hidden="true">＋</span>
+            <strong>상품 이미지 선택</strong>
+            <span>첫 번째 이미지가 대표 이미지로 사용됩니다.</span>
+            <input id="productImages" name="productImages" type="file" accept=".jpg,.jpeg,.png,.webp" multiple>
+          </label>
+
+          <div class="image-preview-list" id="imagePreviewList">
+            <p class="empty-preview">선택된 이미지가 없습니다.</p>
+          </div>
+        </div>
+
+        <input id="existingImageUrls" type="hidden">
+      </section>
+
+      <section class="form-card" aria-labelledby="pricePreviewTitle">
+        <div class="card-head">
+          <div>
+            <span class="section-number">04</span>
+            <h2 id="pricePreviewTitle">판매가 확인</h2>
+          </div>
+        </div>
+
+        <div class="price-preview">
+          <div>
+            <span>정상가</span>
+            <strong id="normalPricePreview">0원</strong>
+          </div>
+          <div>
+            <span>할인율</span>
+            <strong id="discountRatePreview">0%</strong>
+          </div>
+          <div class="final-price">
+            <span>최종 판매가</span>
+            <strong id="finalPricePreview">0원</strong>
+          </div>
+        </div>
+      </section>
+
+      <div class="form-message" id="formMessage" role="alert"></div>
+
+      <div class="form-actions">
+        <a class="cancel-button" href="seller-products.html">취소</a>
+        <button class="submit-button" id="submitButton" type="submit">상품 등록</button>
+      </div>
+    </form>
+  </section>
+</main>
+
+<!-- ================= 공통 푸터 시작 (수정 금지) ================= -->
+<footer>
+  <div class="wrap">
+    <div class="foot-top">
+      <div class="foot-brand">
+        <div class="brand">캐치캐치</div>
+        <p>예쁜 옷 많이 캐치캐치</p>
+      </div>
+      <div class="foot-col">
+        <h5>Shop</h5>
+        <a href="#">베스트</a><a href="#">아우터</a>
+      </div>
+      <div class="foot-col">
+        <h5>Customer</h5>
+        <a href="#">공지사항</a><a href="#">자주 묻는 질문</a><a href="#">1:1 문의</a><a href="#">배송/반품</a>
+      </div>
+      <div class="foot-col">
+        <h5>About</h5>
+        <a href="#">브랜드 스토리</a><a href="#">매장 안내</a><a href="#">채용</a><a href="#">제휴 문의</a>
+      </div>
+    </div>
+    <div class="foot-bar">
+      <span>© 2026 CATCHCATCH STORE. 서울특별시 성동구 · 사업자등록 000-00-00000</span>
+      <div class="socials">
+        <a href="#" aria-label="Instagram"><svg viewBox="0 0 24 24"><rect x="3.5" y="3.5" width="17" height="17" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.2" cy="6.8" r="1" fill="currentColor" stroke="none"/></svg></a>
+        <a href="#" aria-label="YouTube"><svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="12" rx="3.5"/><path d="M11 9.5l4 2.5-4 2.5z" fill="currentColor" stroke="none"/></svg></a>
+        <a href="#" aria-label="X"><svg viewBox="0 0 24 24"><path d="M5 5l14 14M19 5L5 19"/></svg></a>
+      </div>
+    </div>
+  </div>
+</footer>
+<!-- ================= 공통 푸터 끝 ================= -->
+
+<script src="js/auth.js"></script>
+<script src="js/seller-product-form.js"></script>
+</body>
+</html>
