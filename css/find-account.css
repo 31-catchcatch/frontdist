@@ -90,3 +90,23 @@
 @media (max-width: 640px) {
   .find-block { max-width: 100%; }
 }
+
+/* ===== 인증 방법 탭 (이메일/휴대폰) ===== */
+.method-tabs { display: flex; gap: 8px; }
+.method-tabs button {
+  flex: 1; height: 42px;
+  border: 1px solid #ddd; background: #fff;
+  border-radius: 4px; font-size: 13px; cursor: pointer;
+}
+.method-tabs button.is-active {
+  border-color: var(--ink, #222);
+  background: var(--ink, #222);
+  color: #fff; font-weight: 600;
+}
+.method-panel { display: flex; flex-direction: column; gap: 20px; }
+.field select {
+  height: 44px; padding: 0 12px;
+  border: 1px solid #ddd; border-radius: 4px;
+  font-size: 14px; background: #fff;
+}
+.field select:focus { outline: none; border-color: var(--ink, #222); }

@@ -1,0 +1,338 @@
+.profile-page {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 68px 0 20px;
+}
+
+.page-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 28px;
+}
+
+.page-kicker {
+  margin: 0 0 9px;
+  color: var(--point);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: .2em;
+  text-transform: uppercase;
+}
+
+.page-head h1 {
+  margin: 0;
+  font-size: clamp(30px, 4vw, 40px);
+  letter-spacing: -.04em;
+}
+
+.page-head > div > p:last-child {
+  margin: 13px 0 0;
+  color: var(--mid);
+  font-size: 13px;
+  line-height: 1.7;
+}
+
+.mypage-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 112px;
+  height: 44px;
+  padding: 0 18px;
+  border: 1px solid var(--hairline-strong);
+  background: var(--surface);
+  color: var(--ink);
+  font-size: 12.5px;
+  font-weight: 800;
+}
+
+.mypage-link:hover {
+  border-color: var(--ink);
+}
+
+#profileForm {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.form-card {
+  padding: 30px;
+  border: 1px solid var(--hairline);
+  background: var(--surface);
+}
+
+.card-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+  margin-bottom: 24px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid var(--hairline);
+}
+
+.card-head > div {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.section-number {
+  color: var(--point);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: .08em;
+}
+
+.card-head h2 {
+  margin: 0;
+  font-size: 18px;
+  letter-spacing: -.02em;
+}
+
+.card-head p {
+  margin: 0;
+  color: var(--mid);
+  font-size: 11.5px;
+  line-height: 1.5;
+}
+
+.card-head strong,
+.field label strong {
+  color: var(--point);
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px 18px;
+}
+
+.field-full {
+  grid-column: 1 / -1;
+}
+
+.field label {
+  display: block;
+  margin-bottom: 8px;
+  color: var(--ink);
+  font-size: 12.5px;
+  font-weight: 700;
+}
+
+.field input {
+  width: 100%;
+  height: 48px;
+  padding: 0 14px;
+  border: 1px solid var(--hairline-strong);
+  border-radius: 2px;
+  background: var(--surface);
+  color: var(--ink);
+  font: inherit;
+  font-size: 13.5px;
+}
+
+.field input:focus {
+  outline: 0;
+  border-color: var(--ink);
+}
+
+.field input[readonly] {
+  background: var(--paper);
+  color: var(--mid);
+  cursor: default;
+}
+
+.field input::placeholder {
+  color: var(--faint);
+}
+
+.field-help {
+  min-height: 17px;
+  margin: 7px 0 0;
+  color: var(--mid);
+  font-size: 11px;
+  line-height: 1.55;
+}
+
+.field-help.valid {
+  color: #347242;
+}
+
+.field-help.invalid {
+  color: var(--point);
+}
+
+.postcode-field {
+  grid-column: 1 / -1;
+  max-width: 420px;
+}
+
+.postcode-row {
+  display: grid;
+  grid-template-columns: 1fr 108px;
+  gap: 8px;
+}
+
+.postcode-row button {
+  border: 1px solid var(--ink);
+  background: var(--ink);
+  color: #fff;
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.postcode-row button:hover {
+  opacity: .88;
+}
+
+.password-guide {
+  margin-bottom: 20px;
+  padding: 13px 15px;
+  border: 1px solid var(--hairline);
+  background: var(--paper);
+  color: var(--mid);
+  font-size: 11.5px;
+  line-height: 1.6;
+}
+
+.password-input {
+  position: relative;
+}
+
+.password-input input {
+  padding-right: 62px;
+}
+
+.password-input button {
+  position: absolute;
+  top: 50%;
+  right: 12px;
+  border: 0;
+  background: transparent;
+  color: var(--mid);
+  font: inherit;
+  font-size: 11.5px;
+  font-weight: 700;
+  transform: translateY(-50%);
+  cursor: pointer;
+}
+
+.password-input button:hover {
+  color: var(--ink);
+}
+
+.form-message {
+  display: none;
+  padding: 13px 15px;
+  border: 1px solid #efc6c2;
+  background: #fff5f4;
+  color: #a52f26;
+  font-size: 12.5px;
+  line-height: 1.55;
+}
+
+.form-message.show {
+  display: block;
+}
+
+.form-message.success {
+  border-color: #b9d6bd;
+  background: #f2faf3;
+  color: #2f6b3a;
+}
+
+.form-actions {
+  display: grid;
+  grid-template-columns: 150px 1fr;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.cancel-button,
+.submit-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 52px;
+  border-radius: 2px;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.cancel-button {
+  border: 1px solid var(--hairline-strong);
+  background: var(--surface);
+  color: var(--ink);
+}
+
+.cancel-button:hover {
+  border-color: var(--ink);
+}
+
+.submit-button {
+  border: 1px solid var(--ink);
+  background: var(--ink);
+  color: #fff;
+  cursor: pointer;
+}
+
+.submit-button:hover {
+  opacity: .88;
+}
+
+.submit-button:disabled {
+  cursor: wait;
+  opacity: .55;
+}
+
+@media (max-width: 760px) {
+  .profile-page {
+    padding-top: 48px;
+  }
+
+  .page-head {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .mypage-link {
+    width: 100%;
+  }
+
+  .form-card {
+    padding: 22px 18px;
+  }
+
+  .card-head {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .field-full,
+  .postcode-field {
+    grid-column: auto;
+  }
+
+  .postcode-field {
+    max-width: none;
+  }
+
+  .form-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .cancel-button {
+    order: 2;
+  }
+}

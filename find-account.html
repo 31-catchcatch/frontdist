@@ -114,7 +114,7 @@
       </div>
     </div>
 
-    <!-- ===== 비밀번호 찾기 ===== -->
+<!-- ===== 비밀번호 찾기 ===== -->
     <div class="find-panel" data-panel="pw" hidden>
       <form id="findPwForm" class="find-form" novalidate>
         <div class="field">
@@ -123,12 +123,46 @@
         </div>
 
         <div class="field">
-          <label for="pwEmail">이메일 <span class="req">*</span></label>
-          <div class="field-row">
-            <input type="email" id="pwEmail" placeholder="가입 시 등록한 이메일" required>
-            <button type="button" class="btn-outline" data-action="send-pw-code">인증코드 발송</button>
+          <label>인증 방법 <span class="req">*</span></label>
+          <div class="method-tabs">
+            <button type="button" class="is-active" data-method="email">이메일로 인증</button>
+            <button type="button" data-method="phone">휴대폰으로 인증</button>
           </div>
-          <div class="field-row" data-group="pw-code" hidden>
+        </div>
+
+        <div class="method-panel" data-method-panel="email">
+          <div class="field">
+            <label for="pwEmail">이메일 <span class="req">*</span></label>
+            <div class="field-row">
+              <input type="email" id="pwEmail" placeholder="가입 시 등록한 이메일">
+              <button type="button" class="btn-outline" data-action="send-email-code">인증코드 발송</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="method-panel" data-method-panel="phone" hidden>
+          <div class="field">
+            <label for="pwTelecom">통신사 <span class="req">*</span></label>
+            <select id="pwTelecom">
+              <option value="">선택</option>
+              <option value="skt">SKT</option>
+              <option value="kt">KT</option>
+              <option value="lgu">LG U+</option>
+              <option value="mvno">알뜰폰</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="pwPhone">휴대폰번호 <span class="req">*</span></label>
+            <div class="field-row">
+              <input type="tel" id="pwPhone" placeholder="숫자만 입력">
+              <button type="button" class="btn-outline" data-action="send-phone-code">인증코드 발송</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="field" data-group="pw-code" hidden>
+          <label for="pwCode">인증코드 <span class="req">*</span></label>
+          <div class="field-row">
             <input type="text" inputmode="numeric" maxlength="6" placeholder="인증코드 6자리" id="pwCode">
             <button type="button" class="btn-outline" data-action="confirm-pw-code">확인</button>
             <span class="timer" data-role="pw-timer">03:00</span>
@@ -196,3 +230,4 @@
 <script src="js/find-account.js"></script>
 </body>
 </html>
+

@@ -2,12 +2,13 @@
 // ※ 기능정의서 미기재 — 보완 추가
 // 아이디 찾기: POST /api/v1/auth/find-username (제안)
 // 비밀번호 재설정: POST /api/v1/auth/reset-password (제안)
+// 비밀번호 찾기 본인인증: 이메일 또는 휴대폰(SMS) 선택
 
 document.addEventListener("DOMContentLoaded", () => {
 
   const $ = (sel) => document.querySelector(sel);
 
-  // ===== 탭 전환 =====
+  // ===== 상단 탭 (아이디 찾기 / 비밀번호 찾기) =====
   const tabBtns = document.querySelectorAll("[data-tab]");
   const panels = document.querySelectorAll("[data-panel]");
 
@@ -19,88 +20,60 @@ document.addEventListener("DOMContentLoaded", () => {
 
   $('[data-action="go-pw"]').addEventListener("click", () => showTab("pw"));
 
-  // ===== 인증코드 공통 로직 =====
-  function setupCode(cfg) {
-    const sendBtn = $(cfg.sendBtn);
-    const group = $(cfg.group);
-    const confirmBtn = $(cfg.confirmBtn);
-    const timerEl = $(cfg.timer);
-    const msgEl = $(cfg.msg);
-    let interval = null;
-
-    sendBtn.addEventListener("click", () => {
-      const email = $(cfg.emailInput).value.trim();
-      if (!email) {
-        msgEl.textContent = "이메일을 입력해 주세요.";
-        msgEl.className = "field-msg error";
-        return;
-      }
-      // TODO: 인증코드 발송 API 호출
-      group.hidden = false;
-      msgEl.textContent = "인증코드를 발송했습니다.";
-      msgEl.className = "field-msg ok";
-
-      let sec = 180;
-      clearInterval(interval);
-      interval = setInterval(() => {
-        sec--;
-        const m = String(Math.floor(sec / 60)).padStart(2, "0");
-        const s = String(sec % 60).padStart(2, "0");
-        timerEl.textContent = `${m}:${s}`;
-        if (sec <= 0) {
-          clearInterval(interval);
-          msgEl.textContent = "인증 시간이 만료되었습니다. 다시 요청해 주세요.";
-          msgEl.className = "field-msg error";
-        }
-      }, 1000);
-    });
-
-    confirmBtn.addEventListener("click", () => {
-      const code = $(cfg.codeInput).value.trim();
-      if (!code) {
-        msgEl.textContent = "인증코드를 입력해 주세요.";
-        msgEl.className = "field-msg error";
-        return;
-      }
-      // TODO: 인증코드 검증 API
-      clearInterval(interval);
-      msgEl.textContent = "인증이 완료되었습니다.";
-      msgEl.className = "field-msg ok";
-      cfg.onVerified();
-    });
-  }
-
   let idVerified = false;
   let pwVerified = false;
 
+  // ================= 아이디 찾기 =================
+
   // 아이디 찾기용 인증
-  setupCode({
-    sendBtn: '[data-action="send-id-code"]',
-    group: '[data-group="id-code"]',
-    confirmBtn: '[data-action="confirm-id-code"]',
-    emailInput: "#idEmail",
-    codeInput: "#idCode",
-    timer: '[data-role="id-timer"]',
-    msg: '[data-role="id-msg"]',
-    onVerified: () => (idVerified = true),
+  const idGroup = $('[data-group="id-code"]');
+  const idTimer = $('[data-role="id-timer"]');
+  const idMsg = $('[data-role="id-msg"]');
+  let idInterval = null;
+
+  $('[data-action="send-id-code"]').addEventListener("click", () => {
+    const email = $("#idEmail").value.trim();
+    if (!email) {
+      idMsg.textContent = "이메일을 입력해 주세요.";
+      idMsg.className = "field-msg error";
+      return;
+    }
+    // TODO: 인증코드 발송 API
+    idGroup.hidden = false;
+    idMsg.textContent = "인증코드를 발송했습니다.";
+    idMsg.className = "field-msg ok";
+
+    let sec = 180;
+    clearInterval(idInterval);
+    idInterval = setInterval(() => {
+      sec--;
+      const m = String(Math.floor(sec / 60)).padStart(2, "0");
+      const s = String(sec % 60).padStart(2, "0");
+      idTimer.textContent = `${m}:${s}`;
+      if (sec <= 0) {
+        clearInterval(idInterval);
+        idMsg.textContent = "인증 시간이 만료되었습니다. 다시 요청해 주세요.";
+        idMsg.className = "field-msg error";
+      }
+    }, 1000);
   });
 
-  // 비밀번호 찾기용 인증
-  setupCode({
-    sendBtn: '[data-action="send-pw-code"]',
-    group: '[data-group="pw-code"]',
-    confirmBtn: '[data-action="confirm-pw-code"]',
-    emailInput: "#pwEmail",
-    codeInput: "#pwCode",
-    timer: '[data-role="pw-timer"]',
-    msg: '[data-role="pw-msg"]',
-    onVerified: () => (pwVerified = true),
+  $('[data-action="confirm-id-code"]').addEventListener("click", () => {
+    const code = $("#idCode").value.trim();
+    if (!code) {
+      idMsg.textContent = "인증코드를 입력해 주세요.";
+      idMsg.className = "field-msg error";
+      return;
+    }
+    // TODO: 인증코드 검증 API
+    clearInterval(idInterval);
+    idMsg.textContent = "인증이 완료되었습니다.";
+    idMsg.className = "field-msg ok";
+    idVerified = true;
   });
 
-  // ===== 아이디 찾기 제출 =====
   $("#findIdForm").addEventListener("submit", (e) => {
     e.preventDefault();
-
     const name = $("#idName").value.trim();
     const email = $("#idEmail").value.trim();
 
@@ -114,27 +87,111 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // TODO: POST /api/v1/auth/find-username  body: { name, email }
-    //   응답으로 마스킹된 아이디를 받아옴
-    const maskedId = "catch****"; // mock
-    $('[data-role="id-value"]').textContent = maskedId;
-
+    $('[data-role="id-value"]').textContent = "catch****"; // mock
     $("#findIdForm").hidden = true;
     $('[data-role="id-result"]').hidden = false;
   });
 
-  // ===== 비밀번호 찾기 제출 =====
+  // ================= 비밀번호 찾기 =================
+
+  // 인증 방법 탭 (이메일 / 휴대폰)
+  const methodTabs = document.querySelectorAll("[data-method]");
+  const methodPanels = document.querySelectorAll("[data-method-panel]");
+  let currentMethod = "email";
+
+  methodTabs.forEach((btn) => {
+    btn.addEventListener("click", () => {
+      currentMethod = btn.dataset.method;
+      methodTabs.forEach((b) => b.classList.toggle("is-active", b === btn));
+      methodPanels.forEach((p) => (p.hidden = p.dataset.methodPanel !== currentMethod));
+      // 방법 바꾸면 인증코드 입력창 초기화
+      $('[data-group="pw-code"]').hidden = true;
+      pwVerified = false;
+    });
+  });
+
+  // 인증코드 발송 (이메일/휴대폰 공통 타이머)
+  const pwGroup = $('[data-group="pw-code"]');
+  const pwTimer = $('[data-role="pw-timer"]');
+  const pwMsg = $('[data-role="pw-msg"]');
+  let pwInterval = null;
+
+  function startPwTimer() {
+    pwGroup.hidden = false;
+    pwMsg.textContent = "인증코드를 발송했습니다.";
+    pwMsg.className = "field-msg ok";
+
+    let sec = 180;
+    clearInterval(pwInterval);
+    pwInterval = setInterval(() => {
+      sec--;
+      const m = String(Math.floor(sec / 60)).padStart(2, "0");
+      const s = String(sec % 60).padStart(2, "0");
+      pwTimer.textContent = `${m}:${s}`;
+      if (sec <= 0) {
+        clearInterval(pwInterval);
+        pwMsg.textContent = "인증 시간이 만료되었습니다. 다시 요청해 주세요.";
+        pwMsg.className = "field-msg error";
+      }
+    }, 1000);
+  }
+
+  // 이메일로 발송
+  $('[data-action="send-email-code"]').addEventListener("click", () => {
+    const email = $("#pwEmail").value.trim();
+    if (!email) {
+      pwMsg.textContent = "이메일을 입력해 주세요.";
+      pwMsg.className = "field-msg error";
+      return;
+    }
+    // TODO: POST /api/v1/auth/email-verification
+    startPwTimer();
+  });
+
+  // 휴대폰으로 발송
+  $('[data-action="send-phone-code"]').addEventListener("click", () => {
+    const telecom = $("#pwTelecom").value;
+    const phone = $("#pwPhone").value.trim();
+    if (!telecom) {
+      pwMsg.textContent = "통신사를 선택해 주세요.";
+      pwMsg.className = "field-msg error";
+      return;
+    }
+    if (!phone) {
+      pwMsg.textContent = "휴대폰번호를 입력해 주세요.";
+      pwMsg.className = "field-msg error";
+      return;
+    }
+    // TODO: POST /api/v1/auth/sms-verification (제안)
+    startPwTimer();
+  });
+
+  // 인증코드 확인
+  $('[data-action="confirm-pw-code"]').addEventListener("click", () => {
+    const code = $("#pwCode").value.trim();
+    if (!code) {
+      pwMsg.textContent = "인증코드를 입력해 주세요.";
+      pwMsg.className = "field-msg error";
+      return;
+    }
+    // TODO: 인증코드 검증 API
+    clearInterval(pwInterval);
+    pwMsg.textContent = "인증이 완료되었습니다.";
+    pwMsg.className = "field-msg ok";
+    pwVerified = true;
+  });
+
+  // 비밀번호 찾기 제출
   $("#findPwForm").addEventListener("submit", (e) => {
     e.preventDefault();
-
     const userId = $("#pwUserId").value.trim();
-    const email = $("#pwEmail").value.trim();
 
-    if (!userId || !email) {
-      alert("아이디와 이메일을 입력해 주세요.");
+    if (!userId) {
+      alert("아이디를 입력해 주세요.");
       return;
     }
     if (!pwVerified) {
-      alert("이메일 인증을 완료해 주세요.");
+      alert("본인인증을 완료해 주세요.");
       return;
     }
 
@@ -143,7 +200,7 @@ document.addEventListener("DOMContentLoaded", () => {
     $('[data-role="pw-reset"]').hidden = false;
   });
 
-  // ===== 새 비밀번호 설정 =====
+  // 새 비밀번호 설정
   $('[data-action="reset-pw"]').addEventListener("click", () => {
     const pw = $("#newPw").value;
     const pwConfirm = $("#newPwConfirm").value;
@@ -160,7 +217,7 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    // TODO: POST /api/v1/auth/reset-password  body: { userId, email, newPassword }
+    // TODO: POST /api/v1/auth/reset-password  body: { userId, newPassword }
     alert("비밀번호가 변경되었습니다. 다시 로그인해 주세요.");
     location.href = "login.html";
   });
