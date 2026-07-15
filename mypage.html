@@ -57,18 +57,19 @@
 
 <nav class="cats">
   <div class="wrap">
-    <a href="#" class="on">베스트</a>
+    <a href="product-list.html">전체</a>
+    <a href="product-list.html?view=best">베스트</a>
     <a href="brand.html">브랜드</a>
-    <a href="#">아우터</a>
-    <a href="#">상의</a>
-    <a href="#">셔츠</a>
-    <a href="#">니트</a>
-    <a href="#">팬츠</a>
-    <a href="#">데님</a>
-    <a href="#">신발</a>
-    <a href="#">가방</a>
-    <a href="#">액세서리</a>
-    <a href="#">언더웨어</a>
+    <a href="product-list.html?cat=outer">아우터</a>
+    <a href="product-list.html?cat=top">상의</a>
+    <a href="product-list.html?cat=shirts">셔츠</a>
+    <a href="product-list.html?cat=knit">니트</a>
+    <a href="product-list.html?cat=pants">팬츠</a>
+    <a href="product-list.html?cat=denim">데님</a>
+    <a href="product-list.html?cat=shoes">신발</a>
+    <a href="product-list.html?cat=bag">가방</a>
+    <a href="product-list.html?cat=acc">액세서리</a>
+    <a href="product-list.html?cat=underwear">언더웨어</a>
   </div>
 </nav>
 <!-- ================= 공통 헤더 끝 ================= -->
@@ -91,12 +92,12 @@
             <h3>마이페이지</h3>
 
             <ul>
-                <li><a href="member-edit.html">회원정보 수정</a></li>
-                <li><a href="order-list.html">주문목록 조회</a></li>
-                <li><a href="payment-list.html">결제수단 목록 조회</a></li>
-                <li><a href="coupon-list.html">보유 쿠폰 목록 조회</a></li>
-                <li><a href="recent-view.html">최근 본 상품 조회</a></li>
-                <li><a href="review-list.html">내 리뷰 목록 조회</a></li>
+                <li><a href="mypage-edit.html" data-role="account-edit-link">회원정보 수정</a></li>
+                <li><a href="orders.html">주문목록 조회</a></li>
+                <li><a href="coupons.html">보유 쿠폰 목록 조회</a></li>
+                <li><a href="latest-list.html">최근 본 상품 조회</a></li>
+                <li><a href="my-reviews.html">내 리뷰 목록 조회</a></li>
+                <li><a href="points.html">나의 포인트 내역</a></li>
             </ul>
 
         </aside>
@@ -113,22 +114,22 @@
 
             <div class="summary-grid">
 
-                <a href="coupon-list.html" class="summary-card">
+                <a href="coupons.html" class="summary-card">
                     <span class="summary-label">보유 쿠폰</span>
                     <strong>3장</strong>
                 </a>
 
-                <a href="payment-list.html" class="summary-card">
-                    <span class="summary-label">결제수단</span>
-                    <strong>2개</strong>
+                <a href="points.html" class="summary-card">
+                    <span class="summary-label">나의 포인트</span>
+                    <strong>12,400P</strong>
                 </a>
 
-                <a href="recent-view.html" class="summary-card">
+                <a href="latest-list.html" class="summary-card">
                     <span class="summary-label">최근 본 상품</span>
                     <strong>8개</strong>
                 </a>
 
-                <a href="review-list.html" class="summary-card">
+                <a href="my-reviews.html" class="summary-card">
                     <span class="summary-label">내 리뷰</span>
                     <strong>12개</strong>
                 </a>
@@ -177,6 +178,8 @@
 
 <!-- 페이지 전용 스크립트가 있으면 여기에 추가 -->
 <script src="js/auth.js"></script>
+<script src="js/mypage.js"></script>
 
+<script src="js/navigation.js"></script>
 </body>
 </html>

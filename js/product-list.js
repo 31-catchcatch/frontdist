@@ -53,6 +53,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const params = new URLSearchParams(location.search);
   const urlCat = params.get("cat");
   const urlQuery = params.get("q");
+  const urlView = params.get("view");
 
   // 페이지 제목 세팅
   if (urlQuery) {
@@ -62,6 +63,9 @@ document.addEventListener("DOMContentLoaded", () => {
     // URL 카테고리를 필터 체크박스에 자동 반영
     const cb = document.querySelector(`[data-filter="cat"][value="${urlCat}"]`);
     if (cb) cb.checked = true;
+  } else if (urlView === "best") {
+    titleEl.textContent = "베스트 상품";
+    sortSelect.value = "review";
   } else {
     titleEl.textContent = "전체 상품";
   }
