@@ -115,9 +115,9 @@
 
       <select id="claimStatusFilter">
         <option value="all">전체</option>
+        <option value="신청">신청</option>
         <option value="접수">접수</option>
-        <option value="검토중">검토중</option>
-        <option value="승인">승인</option>
+        <option value="처리중">처리중</option>
         <option value="반려">반려</option>
         <option value="완료">완료</option>
       </select>
@@ -293,6 +293,15 @@
 </div>
 
 
+<div class="detail-row">
+
+<label>현재 상태</label>
+
+<p id="claimStatus">-</p>
+
+</div>
+
+
 </div>
 
 
@@ -320,11 +329,7 @@
 </option>
 
 <option>
-검토중
-</option>
-
-<option>
-승인
+처리중
 </option>
 
 <option>

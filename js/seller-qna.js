@@ -21,6 +21,9 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("answerText");
   const saveButton =
     document.getElementById("saveAnswerBtn");
+  // S-QA-003: 부적절한 고객 질문 삭제 (없으면 삭제 기능만 비활성)
+  const deleteButton =
+    document.getElementById("deleteQnaBtn");
 
   let currentFilter = "all";
   let currentQnaList = [];
@@ -428,6 +431,52 @@ document.addEventListener("DOMContentLoaded", () => {
       saveButton.textContent = "답변 등록";
     }
   });
+
+  /**
+   * 문의 삭제 (S-QA-003)
+   * DELETE /api/v1/seller/qna/{qnaId}
+   * 백엔드는 소프트 삭제(is_deleted=true) 처리하며, 이후 목록에서 제외된다.
+   */
+  if (deleteButton) {
+    deleteButton.addEventListener("click", async () => {
+      if (!selectedQnaId) {
+        alert("삭제할 문의를 선택해주세요.");
+        return;
+      }
+
+      if (!confirm("이 문의를 삭제할까요?\n삭제된 문의는 상품 페이지와 목록에서 더 이상 노출되지 않습니다.")) {
+        return;
+      }
+
+      deleteButton.disabled = true;
+
+      try {
+        await requestApi(
+          `${QNA_API}/${selectedQnaId}`,
+          { method: "DELETE" }
+        );
+
+        alert("문의가 삭제되었습니다.");
+
+        answerBox.style.display = "none";
+        answerText.value = "";
+        selectedQnaId = null;
+
+        await Promise.all([
+          loadCounts(),
+          loadQnaList(currentFilter)
+        ]);
+      } catch (error) {
+        console.error("Q&A 삭제 실패:", error);
+
+        if (error.message !== "UNAUTHORIZED") {
+          alert(error.message);
+        }
+      } finally {
+        deleteButton.disabled = false;
+      }
+    });
+  }
 
   /**
    * 필터 버튼

@@ -1,11 +1,23 @@
 // seller-claims.js — 판매자 교환/환불 관리
-// GET  /api/v1/seller/claims              (목록 조회)
-// PUT  /api/v1/seller/claims/{id}/status  (상태 변경)
+// GET  /api/v1/seller/claims              (목록 조회, status/claimType 필터)
+// PUT  /api/v1/seller/claims/{id}/status  (상태 변경: 접수/처리중/반려, 교환 완료)
+// POST /api/v1/seller/refunds             (환불(RETURN) 최종 완료 처리 — S-CLAIM-003)
 // 판매자 로그인 필요
+//
+// [수정 내역]
+// 1) 백엔드 ClaimType 은 RETURN/EXCHANGE 인데 기존 TYPE_KO 가 REFUND 로 되어 있어
+//    환불 건이 "RETURN" 으로 날것 표시되던 문제 수정
+// 2) HTML 드롭다운(검토중/승인)과 JS 매핑(신청/처리중)이 어긋나
+//    검토중·승인 선택 시 status=undefined 로 전송되어 400 나던 문제 수정
+// 3) "완료"는 유형별로 분기: 환불(RETURN) → POST /seller/refunds,
+//    교환(EXCHANGE) → PUT status=COMPLETED (백엔드도 함께 수정됨)
+// 4) 현재 상태가 드롭다운에 없어 항상 "접수"로 보이던 문제 → 상세에 현재 상태 표시
 
 document.addEventListener("DOMContentLoaded", () => {
 
-  const API = "http://localhost:8080/api/v1";
+  const API = (
+    window.CATCHCATCH_API_BASE_URL || "/api/v1"
+  ).replace(/\/$/, "");
 
   // ===== 영어 ↔ 한글 변환표 =====
   const STATUS_KO = {
@@ -15,11 +27,12 @@ document.addEventListener("DOMContentLoaded", () => {
     PROCESSING: "처리중",
     COMPLETED: "완료",
   };
+  // 백엔드 ClaimType enum: RETURN(환불/반품), EXCHANGE(교환)
   const TYPE_KO = {
     EXCHANGE: "교환",
-    REFUND: "환불",
+    RETURN: "환불",
   };
-  // 화면 → 백엔드 (상태 변경 보낼 때)
+  // 화면 → 백엔드 (상태 변경/필터 보낼 때)
   const STATUS_EN = {
     "신청": "REQUESTED",
     "접수": "ACCEPTED",
@@ -47,12 +60,23 @@ document.addEventListener("DOMContentLoaded", () => {
     return localStorage.getItem("catchcatch.accessToken");
   }
 
+  function authHeaders(withBody) {
+    return {
+      ...(withBody ? { "Content-Type": "application/json" } : {}),
+      "Authorization": "Bearer " + getToken(),
+    };
+  }
+
   // ===== 목록 조회 (GET) =====
-  async function loadClaims() {
+  async function loadClaims(statusEn) {
     try {
-      const res = await fetch(`${API}/seller/claims`, {
+      const url = statusEn
+        ? `${API}/seller/claims?status=${statusEn}`
+        : `${API}/seller/claims`;
+
+      const res = await fetch(url, {
         method: "GET",
-        headers: { "Authorization": "Bearer " + getToken() },
+        headers: authHeaders(false),
       });
 
       if (!res.ok) throw new Error("클레임 조회 실패: " + res.status);
@@ -60,17 +84,20 @@ document.addEventListener("DOMContentLoaded", () => {
       const json = await res.json();
       claims = json.data.content;   // 페이지 응답의 content
 
-      console.log("받은 클레임:", claims);
-
       renderList();
 
       // 첫 번째 자동 선택
       if (claims.length > 0) {
         selectClaim(claims[0].claimId);
+      } else {
+        selected = null;
       }
+
+      return claims.length;
     } catch (err) {
       console.error(err);
       filterMessage.textContent = "클레임을 불러오지 못했습니다: " + err.message;
+      return null;
     }
   }
 
@@ -114,6 +141,8 @@ document.addEventListener("DOMContentLoaded", () => {
       row.classList.toggle("active", Number(row.dataset.id) === claimId);
     });
 
+    const statusKo = STATUS_KO[selected.status] || selected.status;
+
     // 상세 채우기
     $("claimId").textContent = selected.claimId;
     $("claimProduct").textContent = selected.productName;
@@ -121,9 +150,14 @@ document.addEventListener("DOMContentLoaded", () => {
     $("claimReason").textContent = selected.reason || "-";
     $("claimAmount").textContent = won(selected.claimAmount);
 
-    // 상태 드롭다운 맞추기
-    const statusKo = STATUS_KO[selected.status] || selected.status;
-    statusSelect.value = statusKo;
+    // 현재 상태 표시 (HTML에 claimStatus 요소가 있을 때)
+    const statusEl = $("claimStatus");
+    if (statusEl) statusEl.textContent = statusKo;
+
+    // 상태 드롭다운: 동일한 옵션이 있으면 맞추고, 없으면(신청 등) 그대로 둔다
+    const hasOption = [...statusSelect.options]
+      .some((o) => o.value === statusKo || o.text.trim() === statusKo);
+    if (hasOption) statusSelect.value = statusKo;
   }
 
   // ===== 상태 변경 (PUT) =====
@@ -133,19 +167,30 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    const statusKo = statusSelect.value;
+    const statusKo = (statusSelect.value || "").trim();
     const statusEn = STATUS_EN[statusKo];
+
+    if (!statusEn) {
+      alert("변경할 상태를 선택해 주세요.");
+      return;
+    }
+
+    // "완료"는 유형별로 처리 경로가 다르다.
+    if (statusEn === "COMPLETED" && selected.claimType === "RETURN") {
+      // 환불 완료는 결제 취소가 얽혀 있어 별도 API로만 처리 (S-CLAIM-003)
+      return completeRefund();
+    }
+
+    const reason = prompt("처리 사유를 입력해 주세요.", "판매자 처리");
+    if (reason === null) return; // 취소
 
     try {
       const res = await fetch(`${API}/seller/claims/${selected.claimId}/status`, {
         method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": "Bearer " + getToken(),
-        },
+        headers: authHeaders(true),
         body: JSON.stringify({
           status: statusEn,
-          reason: "판매자 처리",   // 처리 사유 (필요시 입력받게 개선)
+          reason: reason || "판매자 처리",
         }),
       });
 
@@ -154,7 +199,7 @@ document.addEventListener("DOMContentLoaded", () => {
         throw new Error(errJson.message || "상태 변경 실패: " + res.status);
       }
 
-      filterMessage.textContent = `${selected.claimId} 상태를 ${statusKo}(으)로 변경했습니다.`;
+      filterMessage.textContent = `${selected.claimId}번 클레임 상태를 ${statusKo}(으)로 변경했습니다.`;
 
       // 목록 새로고침
       loadClaims();
@@ -170,47 +215,58 @@ document.addEventListener("DOMContentLoaded", () => {
     const statusKo = statusFilter.value;
     const statusEn = statusKo === "all" ? "" : STATUS_EN[statusKo] || "";
 
-    try {
-      const url = statusEn
-        ? `${API}/seller/claims?status=${statusEn}`
-        : `${API}/seller/claims`;
-
-      const res = await fetch(url, {
-        method: "GET",
-        headers: { "Authorization": "Bearer " + getToken() },
-      });
-
-      if (!res.ok) throw new Error("조회 실패: " + res.status);
-
-      const json = await res.json();
-      claims = json.data.content;
-
-      renderList();
-      filterMessage.textContent = `${claims.length}건의 클레임을 조회했습니다.`;
-
-      if (claims.length > 0) selectClaim(claims[0].claimId);
-    } catch (err) {
-      console.error(err);
-      filterMessage.textContent = "조회 실패: " + err.message;
+    const count = await loadClaims(statusEn);
+    if (count !== null) {
+      filterMessage.textContent = `${count}건의 클레임을 조회했습니다.`;
     }
   }
 
-  // ===== 최종 환불 처리 =====
-  // ※ 별도 API(POST /seller/refunds)가 있으면 그걸로 교체
+  // ===== 환불(RETURN) 최종 완료 처리 =====
+  // POST /api/v1/seller/refunds  { claimId, memo }
+  // 백엔드가 PG 취소·포인트 회수(추후)와 클레임 완료, 배송상태 REFUNDED 전환을 수행한다.
   async function completeRefund() {
     if (!selected) {
       alert("클레임을 먼저 선택해 주세요.");
       return;
     }
-    if (TYPE_KO[selected.claimType] !== "환불") {
-      alert("환불 요청 건에서만 최종 환불 처리를 할 수 있습니다.");
+    if (selected.claimType !== "RETURN") {
+      alert("환불(반품) 요청 건에서만 최종 환불 처리를 할 수 있습니다.\n교환 건은 상태를 '완료'로 변경해 주세요.");
+      return;
+    }
+    // 백엔드는 ACCEPTED 또는 PROCESSING 상태에서만 환불을 허용한다.
+    if (!["ACCEPTED", "PROCESSING"].includes(selected.status)) {
+      alert("접수 또는 처리중 상태의 환불 건만 완료 처리할 수 있습니다.");
       return;
     }
 
-    // TODO: POST /api/v1/seller/refunds 연동 (별도 API)
-    //   지금은 상태를 COMPLETED로 변경하는 것으로 대체
-    statusSelect.value = "완료";
-    updateStatus();
+    const memo = prompt("환불 처리 메모를 입력해 주세요. (선택)", "");
+    if (memo === null) return; // 취소
+
+    if (!confirm(`${selected.claimId}번 클레임을 최종 환불 처리할까요?\n환불 금액: ${won(selected.claimAmount)}`)) {
+      return;
+    }
+
+    try {
+      const res = await fetch(`${API}/seller/refunds`, {
+        method: "POST",
+        headers: authHeaders(true),
+        body: JSON.stringify({
+          claimId: selected.claimId,
+          memo: memo || null,
+        }),
+      });
+
+      if (!res.ok) {
+        const errJson = await res.json().catch(() => ({}));
+        throw new Error(errJson.message || "환불 처리 실패: " + res.status);
+      }
+
+      filterMessage.textContent = `${selected.claimId}번 클레임의 환불이 완료 처리되었습니다.`;
+      loadClaims();
+    } catch (err) {
+      console.error(err);
+      alert("환불 처리 실패: " + err.message);
+    }
   }
 
   // ===== 버튼 연결 =====

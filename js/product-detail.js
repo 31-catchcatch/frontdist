@@ -64,6 +64,22 @@ document.addEventListener("DOMContentLoaded", () => {
   // ===== 1. 기본 정보 =====
   $('[data-role="brand"]').textContent = product.brand;
   $('[data-role="name"]').textContent = product.name;
+
+  // ===== 최근 본 상품 기록 (U-MY-008, localStorage) =====
+  // ※ 현재 product 는 mock 데이터라 저장되는 이름/가격도 mock 값이다.
+  //    U-PROD-001 API 연동 시 이 호출을 실제 응답 데이터 직후로 옮기면 된다.
+  if (window.CatchRecent) {
+    CatchRecent.add({
+      productId: product.id,
+      name: product.name,
+      price: product.price,
+      discountRate: product.discount,
+      finalPrice: product.finalPrice,
+      thumbnailUrl: product.images && product.images[0],
+      brandName: product.brand,
+    });
+  }
+
   $('[data-role="rating"]').textContent = product.rating.toFixed(1);
   $('[data-role="description"]').innerHTML = product.description;
   $('[data-role="point"]').textContent = Math.floor(product.finalPrice * 0.01).toLocaleString("ko-KR");
