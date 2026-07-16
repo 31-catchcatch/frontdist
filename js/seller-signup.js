@@ -46,6 +46,17 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   form.querySelector('[data-action="go-step1"]').addEventListener("click", () => showStep(1));
+  
+  // ===== 사업자등록증 파일명 표시 =====
+  const bizFileInput = document.getElementById("bizFile");
+  const bizFileName = document.querySelector('[data-role="biz-file-name"]');
+  if (bizFileInput && bizFileName) {
+    bizFileInput.addEventListener("change", () => {
+      const file = bizFileInput.files[0];
+      bizFileName.textContent = file ? file.name : "선택된 파일 없음";
+      bizFileName.classList.toggle("has-file", !!file);
+    });
+  }
 
   // ===== 전체 동의 =====
   const agreeAll = form.querySelector('[data-action="agree-all"]');
@@ -133,13 +144,51 @@ document.addEventListener("DOMContentLoaded", () => {
     msg: '[data-role="auth-msg"]',
   });
 
-  // ===== 최종 제출 (S-AUTH-003) =====
-  form.addEventListener("submit", (e) => {
+  // ===== 최종 제출 (S-AUTH-003) — 회원가입 + 입점신청 동시 =====
+  form.addEventListener("submit", async (e) => {
     e.preventDefault();
-    // TODO: POST /api/v1/auth/seller/signup
-    //   body: { userId, email, pw, companyName, brandName, bizNumber,
-    //           ceoName, managerName, managerPhone, agreements }
-    showStep(3);
+    const $ = (id) => document.getElementById(id);
+    const digits = (v) => (v || "").replace(/[^0-9]/g, "");
+
+    try {
+      // ① 사업자등록증 파일 업로드 → URL 확보
+      if (!$("bizFile") || !$("bizFile").files[0]) {
+        alert("사업자등록증 파일을 첨부해 주세요.");
+        return;
+      }
+      const fd = new FormData();
+      fd.append("file", $("bizFile").files[0]);
+      const upRes = await fetch("/api/v1/files/upload", { method: "POST", body: fd });
+      const upData = await upRes.json().catch(() => null);
+      const fileUrl = upData?.data?.fileUrl;
+      if (!upRes.ok || !fileUrl) { alert("파일 업로드에 실패했습니다."); return; }
+
+      // ② 판매자 회원가입 = 계정(role=SELLER) + 입점신청(PENDING) 동시 처리
+      const payload = {
+        username: $("userId").value.trim(),
+        password: $("pw").value,
+        name: $("managerName").value.trim(),
+        email: $("email").value.trim(),
+        phoneNumber: digits($("managerPhone").value),
+        businessName: $("companyName").value.trim(),
+        businessRegistrationNumber: digits($("bizNumber").value),
+        representativeName: $("ceoName").value.trim(),
+        contactNumber: digits($("managerPhone").value),
+        businessAddress: $("businessAddress").value.trim(),
+        businessRegistrationFileUrl: fileUrl,
+      };
+      const res = await fetch("/api/v1/auth/seller/signup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const data = await res.json().catch(() => null);
+      if (!res.ok || !data?.success) { alert(data?.message || "가입/입점신청에 실패했습니다."); return; }
+
+      showStep(3); // 완료 (가입 + 입점신청 접수, 승인 대기중)
+    } catch (err) {
+      alert("서버에 연결할 수 없습니다.");
+    }
   });
 
 });

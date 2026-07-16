@@ -1,7 +1,7 @@
 (() => {
   "use strict";
 
-  const COUPON_API = "/api/v1/users/me/coupons";
+  const COUPON_API = "/api/v1/coupons";
   const FILE_PREVIEW_MODE = location.protocol === "file:";
 
   const couponList = document.getElementById("couponList");

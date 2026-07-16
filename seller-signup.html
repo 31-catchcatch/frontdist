@@ -131,22 +131,37 @@
         <div class="field">
           <label for="companyName">상호명 <span class="req">*</span></label>
           <input type="text" id="companyName" name="companyName" placeholder="사업자등록증상 상호명" required>
-        </div>
+        </div> 
 
         <div class="field">
           <label for="brandName">브랜드명 <span class="req">*</span></label>
           <input type="text" id="brandName" name="brandName" placeholder="쇼핑몰에 노출될 브랜드명" required>
-        </div>
+        </div>  
 
         <div class="field">
           <label for="bizNumber">사업자등록번호 <span class="req">*</span></label>
           <input type="text" id="bizNumber" name="bizNumber" placeholder="숫자 10자리 (- 없이)" maxlength="10" required>
-        </div>
+        </div>        
 
         <div class="field">
           <label for="ceoName">대표자명 <span class="req">*</span></label>
           <input type="text" id="ceoName" name="ceoName" placeholder="대표자 실명" required>
         </div>
+
+        <div class="field">
+          <label for="businessAddress">사업장 주소 <span class="req">*</span></label>
+          <input type="text" id="businessAddress" name="businessAddress"
+                 placeholder="사업자등록증상 사업장 주소" required>
+        </div>
+        <div class="field">
+          <label for="bizFile">사업자등록증 <span class="req">*</span></label>
+          <div class="file-field">
+            <label class="file-btn" for="bizFile">파일 선택</label>
+            <input type="file" id="bizFile" name="bizFile" accept="image/*,.pdf">
+            <span class="file-name" data-role="biz-file-name">선택된 파일 없음</span>
+          </div>
+        </div>
+        
       </fieldset>
 
       <!-- 담당자 정보 (S-AUTH-003: "담당자 정보를 포함해") -->
