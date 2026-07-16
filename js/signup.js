@@ -40,6 +40,11 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
+    if (checkedUsername !== document.getElementById("userId").value.trim()) {
+      alert("아이디 중복확인을 해주세요.");
+      return;
+    }
+
     const requiredAgrees = step1.querySelectorAll("[data-agree-required]");
     if (![...requiredAgrees].every((el) => el.checked)) {
       alert("필수 약관에 동의해 주세요.");
@@ -63,23 +68,61 @@ document.addEventListener("DOMContentLoaded", () => {
     })
   );
 
-  // ===== 아이디 중복확인 (mock) =====
-  form.querySelector('[data-action="check-username"]').addEventListener("click", () => {
-    const val = document.getElementById("userId").value.trim();
+  // ===== 아이디 중복확인 =====
+  const userIdInput = document.getElementById("userId");
+  const checkUsernameBtn = form.querySelector('[data-action="check-username"]');
+  let checkedUsername = null; // 중복확인을 통과한 아이디. 값이 바뀌면 초기화된다.
+
+  userIdInput.addEventListener("input", () => {
+    if (userIdInput.value.trim() !== checkedUsername) {
+      checkedUsername = null;
+      const msg = form.querySelector('[data-role="username-msg"]');
+      msg.textContent = "";
+      msg.className = "field-msg";
+    }
+  });
+
+  checkUsernameBtn.addEventListener("click", async () => {
+    const val = userIdInput.value.trim();
     const msg = form.querySelector('[data-role="username-msg"]');
+
     if (!val) {
       msg.textContent = "아이디를 입력해 주세요.";
       msg.className = "field-msg error";
       return;
     }
-    // TODO: POST /api/v1/auth/check-username
-    msg.textContent = `'${val}' 사용 가능한 아이디입니다.`;
-    msg.className = "field-msg ok";
-  });
 
-  // ===== 닉네임 중복확인 (mock) =====
-  form.querySelector('[data-action="check-nickname"]').addEventListener("click", () => {
-    alert("닉네임 중복확인 (구현 예정)");
+    checkUsernameBtn.disabled = true;
+    try {
+      // 백엔드가 @RequestParam 이라 body가 아니라 쿼리스트링으로 보내야 한다.
+      const res = await fetch(
+        `/api/v1/auth/check-username?username=${encodeURIComponent(val)}`,
+        { method: "POST" }
+      );
+      const data = await res.json().catch(() => null);
+
+      if (!res.ok || !data || data.success === false) {
+        msg.textContent = (data && data.message) || "중복확인에 실패했습니다.";
+        msg.className = "field-msg error";
+        return;
+      }
+
+      // data.data === true 가 "사용 가능"
+      if (data.data) {
+        checkedUsername = val;
+        msg.textContent = `'${val}' 사용 가능한 아이디입니다.`;
+        msg.className = "field-msg ok";
+      } else {
+        checkedUsername = null;
+        msg.textContent = `'${val}' 이미 사용 중인 아이디입니다.`;
+        msg.className = "field-msg error";
+      }
+    } catch (err) {
+      msg.textContent = "서버에 연결할 수 없습니다.";
+      msg.className = "field-msg error";
+    } finally {
+      checkUsernameBtn.disabled = false;
+    }
   });
 
   // ===== 인증코드 공통 로직 =====

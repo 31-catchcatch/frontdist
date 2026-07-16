@@ -10,7 +10,6 @@
 
   const username = document.getElementById("username");
   const nameInput = document.getElementById("name");
-  const nickname = document.getElementById("nickname");
   const email = document.getElementById("email");
   const phone = document.getElementById("phone");
   const postalCode = document.getElementById("postalCode");
@@ -29,7 +28,6 @@
   const previewProfile = {
     username: "catchuser01",
     name: "김캐치",
-    nickname: "캐치왕",
     email: "catch@example.com",
     phone: "010-1234-5678",
     postalCode: "04790",
@@ -106,11 +104,6 @@
         body.userName ??
         body.memberName ??
         "",
-      nickname:
-        body.nickname ??
-        body.nickName ??
-        body.userNickname ??
-        "",
       email:
         body.email ??
         body.emailAddress ??
@@ -151,7 +144,6 @@
   function fillProfile(profile) {
     username.value = profile.username;
     nameInput.value = profile.name;
-    nickname.value = profile.nickname;
     email.value = profile.email;
     phone.value = profile.phone;
     postalCode.value = profile.postalCode;
@@ -290,7 +282,6 @@
   function createPayload() {
     const payload = {
       name: nameInput.value.trim(),
-      nickname: nickname.value.trim(),
       email: email.value.trim(),
       phone: phone.value.trim(),
       postalCode: postalCode.value.trim(),
