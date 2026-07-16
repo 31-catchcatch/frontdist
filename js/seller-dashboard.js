@@ -1,20 +1,39 @@
 document.addEventListener("DOMContentLoaded", () => {
-  const API_BASE = (window.CATCHCATCH_API_BASE_URL || "/api/v1").replace(/\/$/, "");
+  const API_BASE = (
+    window.CATCHCATCH_API_BASE_URL || "/api/v1"
+  ).replace(/\/$/, "");
+
   const DASHBOARD_API = `${API_BASE}/seller/dashboard`;
+  const SALES_API = `${API_BASE}/seller/sales`;
+  const QNA_API = `${API_BASE}/seller/qna`;
   const COUPON_REQUEST_API = `${API_BASE}/seller/coupons/request`;
+
   const FILE_PREVIEW_MODE = location.protocol === "file:";
 
   const form = document.getElementById("couponRequestForm");
   const message = document.getElementById("couponMessage");
   const submitButton = document.getElementById("couponRequestSubmit");
-  const dashboardMessage = document.getElementById("dashboardMessage");
-  const dashboardSummary = document.querySelector(".dashboard-summary");
-  const dashboardDate = document.getElementById("dashboardDate");
-  const todaySales = document.getElementById("todaySales");
-  const salesChangeRate = document.getElementById("salesChangeRate");
-  const todayOrderCount = document.getElementById("todayOrderCount");
-  const unansweredQnaCount = document.getElementById("unansweredQnaCount");
-  const pendingClaimCount = document.getElementById("pendingClaimCount");
+
+  const dashboardMessage =
+    document.getElementById("dashboardMessage");
+
+  const dashboardSummary =
+    document.querySelector(".dashboard-summary");
+
+  const dashboardDate =
+    document.getElementById("dashboardDate");
+
+  const todaySales =
+    document.getElementById("todaySales");
+
+  const todayOrderCount =
+    document.getElementById("todayOrderCount");
+
+  const unansweredQnaCount =
+    document.getElementById("unansweredQnaCount");
+
+  const pendingClaimCount =
+    document.getElementById("pendingClaimCount");
 
   const money = new Intl.NumberFormat("ko-KR", {
     style: "currency",
@@ -25,14 +44,23 @@ document.addEventListener("DOMContentLoaded", () => {
   function isSellerLoggedIn() {
     const loggedIn =
       sessionStorage.getItem("catchcatch.loggedIn") === "true" ||
-      Boolean(sessionStorage.getItem("catchcatch.accessToken")) ||
-      Boolean(localStorage.getItem("catchcatch.accessToken"));
+      Boolean(
+        sessionStorage.getItem("catchcatch.accessToken")
+      ) ||
+      Boolean(
+        localStorage.getItem("catchcatch.accessToken")
+      );
 
-    return loggedIn && sessionStorage.getItem("catchcatch.loginType") === "seller";
+    const loginType =
+      sessionStorage.getItem("catchcatch.loginType");
+
+    return loggedIn && loginType === "seller";
   }
 
   function moveToSellerLogin() {
-    location.replace("login.html?type=seller&redirect=seller-dashboard.html");
+    location.replace(
+      "login.html?type=seller&redirect=seller-dashboard.html"
+    );
   }
 
   function clearLoginState() {
@@ -48,173 +76,416 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function showCouponMessage(text, type = "error") {
+    if (!message) return;
+
     message.textContent = text;
-    message.classList.toggle("success", type === "success");
+    message.classList.toggle(
+      "success",
+      type === "success"
+    );
   }
 
   function showDashboardMessage(text) {
+    if (!dashboardMessage) return;
+
     dashboardMessage.textContent = text;
     dashboardMessage.hidden = !text;
   }
 
-  function getBody(data) {
-    return data?.data ?? data ?? {};
-  }
-
-  function getFirstValue(source, keys) {
-    for (const key of keys) {
-      const value = source?.[key];
-      if (value !== null && value !== undefined && value !== "") return value;
-    }
-    return undefined;
-  }
-
-  function toNumber(value) {
-    if (typeof value === "object") return undefined;
-    const number = Number(value);
-    return Number.isFinite(number) ? number : undefined;
+  function getBody(result) {
+    return result?.data ?? result ?? {};
   }
 
   function formatCount(value) {
-    return value === undefined
-      ? "-"
-      : `${Math.max(0, Math.trunc(value)).toLocaleString("ko-KR")}건`;
+    return `${Math.max(
+      0,
+      Math.trunc(Number(value ?? 0))
+    ).toLocaleString("ko-KR")}건`;
   }
 
-  function formatDate(value) {
-    if (!value) return "-";
-    const date = new Date(value);
-    if (Number.isNaN(date.getTime())) return `${value} 기준`;
+  function getToday() {
+    const now = new Date();
 
-    const formatted = new Intl.DateTimeFormat("ko-KR", {
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit"
-    }).format(date).replaceAll(". ", ".").replace(/\.$/, "");
+    const year = now.getFullYear();
 
-    return `${formatted} 기준`;
+    const month = String(
+      now.getMonth() + 1
+    ).padStart(2, "0");
+
+    const day = String(
+      now.getDate()
+    ).padStart(2, "0");
+
+    return `${year}-${month}-${day}`;
   }
 
-  function formatRate(value) {
-    if (value === undefined) return "전일 대비 -";
-    const rounded = Math.round(value * 10) / 10;
-    return `전일 대비 ${rounded > 0 ? "+" : ""}${rounded.toLocaleString("ko-KR")}%`;
+  function getTodayLabel() {
+    const now = new Date();
+
+    const year = now.getFullYear();
+
+    const month = String(
+      now.getMonth() + 1
+    ).padStart(2, "0");
+
+    const day = String(
+      now.getDate()
+    ).padStart(2, "0");
+
+    return `${year}.${month}.${day} 기준`;
+  }
+
+  async function getErrorMessage(
+    response,
+    defaultMessage
+  ) {
+    try {
+      const result = await response.json();
+
+      return (
+        result?.message ||
+        result?.data?.message ||
+        defaultMessage
+      );
+    } catch {
+      return defaultMessage;
+    }
   }
 
   async function request(url, options = {}) {
     const response = await fetch(url, {
       credentials: "include",
-      ...options
+      ...options,
+      headers: {
+        Accept: "application/json",
+        ...(options.body
+          ? { "Content-Type": "application/json" }
+          : {}),
+        ...(options.headers || {})
+      }
     });
 
-    if (response.status === 401 || response.status === 403) {
+    if (
+      response.status === 401 ||
+      response.status === 403
+    ) {
       clearLoginState();
       moveToSellerLogin();
       throw new Error("UNAUTHORIZED");
     }
 
-    let data = {};
-    try {
-      data = await response.json();
-    } catch (_) {
-      // 응답 본문이 없거나 JSON이 아닌 경우에도 상태 코드로 처리한다.
-    }
-
     if (!response.ok) {
-      throw new Error(data.message || "요청을 처리하지 못했습니다.");
+      const errorMessage =
+        await getErrorMessage(
+          response,
+          `요청을 처리하지 못했습니다. (${response.status})`
+        );
+
+      throw new Error(errorMessage);
     }
 
-    return data;
+    try {
+      return await response.json();
+    } catch {
+      return {};
+    }
   }
 
-  function renderDashboard(data) {
-    const body = getBody(data);
-    const summary = body.summary ?? body.dashboard ?? body;
-    const salesAmount = toNumber(getFirstValue(summary, ["todaySalesAmount", "todaySales", "salesAmount", "sales"]));
-    const salesRate = toNumber(getFirstValue(summary, ["salesChangeRate", "dayOverDaySalesRate", "salesGrowthRate"]));
-    const orderCount = toNumber(getFirstValue(summary, ["todayOrderCount", "newOrderCount", "orderCount"]));
-    const qnaCount = toNumber(getFirstValue(summary, ["unansweredQnaCount", "pendingQnaCount", "unansweredQuestionCount"]));
-    const claimCount = toNumber(getFirstValue(summary, ["pendingClaimCount","claimCount"]));
-    const asOfDate = getFirstValue(summary, ["asOfDate", "summaryDate", "date", "today"]);
+  async function loadTodaySales() {
+    const today = getToday();
 
-    todaySales.textContent = salesAmount === undefined ? "-" : money.format(salesAmount);
-    salesChangeRate.textContent = formatRate(salesRate);
-    todayOrderCount.textContent = formatCount(orderCount);
-    unansweredQnaCount.textContent = formatCount(qnaCount);
-    pendingClaimCount.textContent = formatCount(claimCount);
-    dashboardDate.textContent = formatDate(asOfDate);
+    const params = new URLSearchParams({
+      startDate: today,
+      endDate: today
+    });
+
+    const result = await request(
+      `${SALES_API}?${params.toString()}`
+    );
+
+    const data = getBody(result);
+
+    return {
+      totalSalesAmount: Number(
+        data.totalSalesAmount ?? 0
+      ),
+
+      orderCount: Number(
+        data.orderCount ?? 0
+      ),
+
+      totalSoldQuantity: Number(
+        data.totalSoldQuantity ?? 0
+      )
+    };
+  }
+
+  async function loadUnansweredQnaCount() {
+    const params = new URLSearchParams({
+      answered: "false",
+      page: "0",
+      size: "1"
+    });
+
+    const result = await request(
+      `${QNA_API}?${params.toString()}`
+    );
+
+    const data = getBody(result);
+
+    return Number(
+      data.totalElements ?? 0
+    );
+  }
+
+  async function loadPendingClaimCount() {
+    const result = await request(
+      DASHBOARD_API
+    );
+
+    const data = getBody(result);
+
+    return Number(
+      data.pendingClaimCount ?? 0
+    );
+  }
+
+  function renderDashboard({
+    sales,
+    qnaCount,
+    claimCount
+  }) {
+    if (todaySales) {
+      todaySales.textContent =
+        money.format(
+          sales.totalSalesAmount
+        );
+    }
+
+    if (todayOrderCount) {
+      todayOrderCount.textContent =
+        formatCount(
+          sales.orderCount
+        );
+    }
+
+    if (unansweredQnaCount) {
+      unansweredQnaCount.textContent =
+        formatCount(qnaCount);
+    }
+
+    if (pendingClaimCount) {
+      pendingClaimCount.textContent =
+        formatCount(claimCount);
+    }
+
+    if (dashboardDate) {
+      dashboardDate.textContent =
+        getTodayLabel();
+    }
   }
 
   async function loadDashboard() {
-    dashboardSummary.setAttribute("aria-busy", "true");
+    if (dashboardSummary) {
+      dashboardSummary.setAttribute(
+        "aria-busy",
+        "true"
+      );
+    }
+
     showDashboardMessage("");
 
     try {
-      const data = await request(DASHBOARD_API);
-      renderDashboard(data);
+      const [
+        sales,
+        qnaCount,
+        claimCount
+      ] = await Promise.all([
+        loadTodaySales(),
+        loadUnansweredQnaCount(),
+        loadPendingClaimCount()
+      ]);
+
+      renderDashboard({
+        sales,
+        qnaCount,
+        claimCount
+      });
     } catch (error) {
+      console.error(
+        "판매자 대시보드 조회 오류:",
+        error
+      );
+
       if (error.message !== "UNAUTHORIZED") {
-        showDashboardMessage(error.message || "판매 현황을 불러오지 못했습니다.");
+        showDashboardMessage(
+          error.message ||
+          "판매 현황을 불러오지 못했습니다."
+        );
       }
     } finally {
-      dashboardSummary.setAttribute("aria-busy", "false");
+      if (dashboardSummary) {
+        dashboardSummary.setAttribute(
+          "aria-busy",
+          "false"
+        );
+      }
     }
   }
 
-  form.addEventListener("submit", async (event) => {
-    event.preventDefault();
-    const requiredFields = ["couponName", "discount", "minPrice", "quantity", "startDate", "endDate"];
-    const missingField = requiredFields
-      .map((id) => document.getElementById(id))
-      .find((field) => !field.value.trim());
+  if (form) {
+    form.addEventListener(
+      "submit",
+      async (event) => {
+        event.preventDefault();
 
-    if (missingField) {
-      showCouponMessage("쿠폰 발행에 필요한 항목을 모두 입력해주세요.");
-      missingField.focus();
-      return;
-    }
+        const requiredFieldIds = [
+          "couponName",
+          "discount",
+          "minPrice",
+          "quantity",
+          "startDate",
+          "endDate"
+        ];
 
-    const startDate = document.getElementById("startDate").value;
-    const endDate = document.getElementById("endDate").value;
-    if (startDate >= endDate) {
-      showCouponMessage("사용 종료일은 시작일보다 이후여야 합니다.");
-      document.getElementById("endDate").focus();
-      return;
-    }
+        const missingField =
+          requiredFieldIds
+            .map((id) =>
+              document.getElementById(id)
+            )
+            .find(
+              (field) =>
+                !field ||
+                !field.value.trim()
+            );
 
-    const maxDiscount = document.getElementById("maxDiscount").value;
-    const payload = {
-      couponName: document.getElementById("couponName").value.trim(),
-      discountType: document.getElementById("couponType").value,
-      discountValue: Number(document.getElementById("discount").value),
-      minimumOrderAmount: Number(document.getElementById("minPrice").value),
-      maximumDiscountAmount: maxDiscount ? Number(maxDiscount) : 0,
-      totalQuantity: Number(document.getElementById("quantity").value),
-      validFrom: startDate,
-      validUntil: endDate
-};
+        if (missingField) {
+          showCouponMessage(
+            "쿠폰 발행에 필요한 항목을 모두 입력해주세요."
+          );
 
-    try {
-      submitButton.disabled = true;
-      submitButton.textContent = "요청 등록 중...";
-      await request(COUPON_REQUEST_API, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
-      });
+          missingField.focus();
+          return;
+        }
 
-      form.reset();
-      showCouponMessage("쿠폰 발행 승인 요청이 등록되었습니다.", "success");
-      await loadDashboard();
-    } catch (error) {
-      if (error.message !== "UNAUTHORIZED") {
-        showCouponMessage(error.message || "쿠폰 발행 승인 요청에 실패했습니다.");
+        const startDate =
+          document.getElementById(
+            "startDate"
+          ).value;
+
+        const endDate =
+          document.getElementById(
+            "endDate"
+          ).value;
+
+        if (startDate >= endDate) {
+          showCouponMessage(
+            "사용 종료일은 시작일보다 이후여야 합니다."
+          );
+
+          document.getElementById(
+            "endDate"
+          ).focus();
+
+          return;
+        }
+
+        const maxDiscount =
+          document.getElementById(
+            "maxDiscount"
+          ).value;
+
+        const payload = {
+          couponName:
+            document
+              .getElementById(
+                "couponName"
+              )
+              .value.trim(),
+
+          discountType:
+            document.getElementById(
+              "couponType"
+            ).value,
+
+          discountValue:
+            Number(
+              document.getElementById(
+                "discount"
+              ).value
+            ),
+
+          minimumOrderAmount:
+            Number(
+              document.getElementById(
+                "minPrice"
+              ).value
+            ),
+
+          maximumDiscountAmount:
+            maxDiscount
+              ? Number(maxDiscount)
+              : 0,
+
+          totalQuantity:
+            Number(
+              document.getElementById(
+                "quantity"
+              ).value
+            ),
+
+          validFrom: startDate,
+          validUntil: endDate
+        };
+
+        try {
+          if (submitButton) {
+            submitButton.disabled = true;
+            submitButton.textContent =
+              "요청 등록 중...";
+          }
+
+          await request(
+            COUPON_REQUEST_API,
+            {
+              method: "POST",
+              body: JSON.stringify(payload)
+            }
+          );
+
+          form.reset();
+
+          showCouponMessage(
+            "쿠폰 발행 승인 요청이 등록되었습니다.",
+            "success"
+          );
+
+          await loadDashboard();
+        } catch (error) {
+          console.error(
+            "쿠폰 발행 요청 오류:",
+            error
+          );
+
+          if (
+            error.message !==
+            "UNAUTHORIZED"
+          ) {
+            showCouponMessage(
+              error.message ||
+              "쿠폰 발행 승인 요청에 실패했습니다."
+            );
+          }
+        } finally {
+          if (submitButton) {
+            submitButton.disabled = false;
+            submitButton.textContent =
+              "쿠폰 발행 승인 요청";
+          }
+        }
       }
-    } finally {
-      submitButton.disabled = false;
-      submitButton.textContent = "쿠폰 발행 승인 요청";
-    }
-  });
+    );
+  }
 
   loadDashboard();
 });
