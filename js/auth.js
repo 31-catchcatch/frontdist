@@ -122,6 +122,12 @@
       el.hidden = !loggedIn;
     });
 
+    // 판매자로 로그인했을 때만 상단 카테고리에 '판매 관리' 노출
+    const isSeller = loggedIn && sessionStorage.getItem("catchcatch.loginType") === "seller";
+    document.querySelectorAll("[data-seller-only]").forEach((el) => {
+      el.hidden = !isSeller;
+    });
+
     // 로그아웃 버튼(있으면) 연결
     document.querySelectorAll("[data-logout]").forEach((el) => {
       el.addEventListener("click", (e) => {

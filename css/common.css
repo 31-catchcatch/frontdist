@@ -113,6 +113,9 @@
     content: ""; position: absolute; left: 0; right: 0; bottom: -1px;
     height: 2px; background: var(--ink);
   }
+  /* 판매자 로그인 시 노출되는 '판매 관리' 버튼 (빨간 글자) */
+  nav.cats a.cat-seller { color: var(--point); font-weight: 800; }
+  nav.cats a.cat-seller:hover { color: var(--point); opacity: .8; }
 
 
   /* ---------- Section ---------- */
