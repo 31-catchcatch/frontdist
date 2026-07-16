@@ -1,0 +1,150 @@
+/* my-inquiries.css — 나의 문의 내역 */
+
+.myinquiry-page {
+  padding: 40px 0 80px;
+}
+
+.myinquiry-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  padding-bottom: 20px;
+  border-bottom: 2px solid #1c1917;
+  margin-bottom: 24px;
+}
+.myinquiry-head .kicker {
+  font-size: 12px;
+  letter-spacing: .08em;
+  color: #a8a29e;
+  text-transform: uppercase;
+  margin: 0 0 4px;
+}
+.myinquiry-head h3 {
+  font-size: 24px;
+  margin: 0;
+}
+.myinquiry-head .total-count {
+  font-size: 14px;
+  color: #78716c;
+}
+.myinquiry-head .total-count b {
+  color: #1c1917;
+}
+
+.inquiry-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.inquiry-item {
+  border: 1px solid #e7e5e4;
+  border-radius: 10px;
+  padding: 20px;
+  background: #fff;
+}
+
+.inq-top {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+.inq-category {
+  font-size: 12px;
+  font-weight: 700;
+  color: #57534e;
+  background: #f5f5f4;
+  border-radius: 4px;
+  padding: 3px 8px;
+}
+.inq-status {
+  font-size: 12px;
+  font-weight: 700;
+  border-radius: 4px;
+  padding: 3px 8px;
+}
+.inq-status.waiting {
+  color: #a16207;
+  background: #fef9c3;
+}
+.inq-status.answered {
+  color: #15803d;
+  background: #dcfce7;
+}
+.inq-date {
+  margin-left: auto;
+  font-size: 12px;
+  color: #a8a29e;
+}
+
+.inq-title {
+  font-size: 16px;
+  font-weight: 700;
+  margin: 0 0 6px;
+  color: #1c1917;
+}
+.inq-order {
+  display: inline-block;
+  font-size: 12px;
+  color: #78716c;
+  margin-bottom: 8px;
+}
+.inq-content {
+  font-size: 14px;
+  line-height: 1.6;
+  color: #44403c;
+  margin: 0;
+  white-space: pre-wrap;
+}
+
+.inq-answer {
+  margin-top: 16px;
+  padding: 14px 16px;
+  background: #f8fafc;
+  border-left: 3px solid #15803d;
+  border-radius: 0 8px 8px 0;
+}
+.inq-answer-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+.inq-answer-head b {
+  font-size: 13px;
+  color: #15803d;
+}
+.inq-answer-date {
+  font-size: 12px;
+  color: #a8a29e;
+}
+.inq-answer p {
+  font-size: 14px;
+  line-height: 1.6;
+  color: #44403c;
+  margin: 0;
+  white-space: pre-wrap;
+}
+
+.inquiry-empty {
+  text-align: center;
+  padding: 80px 0;
+  color: #78716c;
+}
+.inquiry-empty p {
+  margin: 0 0 16px;
+  font-size: 15px;
+}
+.inquiry-empty .btn-primary {
+  display: inline-block;
+  padding: 12px 28px;
+  background: #1c1917;
+  color: #fff;
+  border-radius: 8px;
+  text-decoration: none;
+  font-size: 14px;
+}

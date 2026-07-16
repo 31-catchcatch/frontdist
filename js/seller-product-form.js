@@ -502,7 +502,7 @@
         sizes: splitOptionText(sizes.value),
         colors: splitOptionText(colors.value),
         imageUrls,
-        mainImageUrl: imageUrls[0]
+        thumbnailUrl: imageUrls[0]
       };
 
       submitButton.textContent =

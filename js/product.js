@@ -33,11 +33,13 @@
       discountRate,
       finalPrice,
       thumbnailUrl: raw.thumbnailUrl || "",
-      // 상세엔 brandName 이 없으므로 목록에서 알고 있을 때 쿼리로 넘겨 폴백에 쓴다
+      // 상세 응답엔 brandName·thumbnailUrl 이 없으므로, 목록에서 알고 있을 때 쿼리로 넘겨 폴백에 쓴다.
+      // (상세 이미지 product_images 가 비어 있어도 목록 썸네일로 대표 이미지를 채우기 위함)
       detailUrl:
         "product-detail.html?id=" +
         productId +
-        (raw.brandName ? "&brand=" + encodeURIComponent(raw.brandName) : ""),
+        (raw.brandName ? "&brand=" + encodeURIComponent(raw.brandName) : "") +
+        (raw.thumbnailUrl ? "&thumb=" + encodeURIComponent(raw.thumbnailUrl) : ""),
     };
   }
 

@@ -6,6 +6,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const params = new URLSearchParams(location.search);
   const productId = Number(params.get("id"));
   const brandFromQuery = params.get("brand"); // 목록에서 넘어온 브랜드명(폴백용)
+  const thumbFromQuery = params.get("thumb"); // 목록에서 넘어온 썸네일(상세 이미지 없을 때 폴백)
 
   const $ = (sel) => document.querySelector(sel);
   const esc = (v) => CatchApi.escape(v);
@@ -71,11 +72,17 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     }
 
-    // 이미지 갤러리 (imageUrls 없으면 플레이스홀더 1장)
-    const images =
-      Array.isArray(product.imageUrls) && product.imageUrls.length
-        ? product.imageUrls
-        : [CatchApi.PLACEHOLDER];
+    // 이미지 갤러리
+    //  1순위: 상세 이미지(product_images) → 2순위: 목록에서 넘어온 썸네일 → 3순위: 플레이스홀더
+    //  (판매자 등록 상품처럼 상세 이미지가 없어도 목록 썸네일로 대표 이미지를 채운다)
+    let images;
+    if (Array.isArray(product.imageUrls) && product.imageUrls.length) {
+      images = product.imageUrls;
+    } else if (thumbFromQuery) {
+      images = [thumbFromQuery];
+    } else {
+      images = [CatchApi.PLACEHOLDER];
+    }
     const mainImg = $('[data-role="main-image"]');
     const thumbs = $('[data-role="thumbs"]');
     mainImg.src = images[0];
@@ -364,7 +371,9 @@ document.addEventListener("DOMContentLoaded", () => {
       brandName: brandFromQuery || "",
       finalPrice: product.finalPrice,
       thumbnailUrl:
-        Array.isArray(product.imageUrls) && product.imageUrls.length ? product.imageUrls[0] : "",
+        Array.isArray(product.imageUrls) && product.imageUrls.length
+          ? product.imageUrls[0]
+          : (thumbFromQuery || ""),
     });
 
     renderReviews();

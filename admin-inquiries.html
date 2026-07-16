@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="캐치캐치 관리자 · 입점 업체 상태 관리">
-  <title>입점 업체 관리 · 캐치캐치 관리자</title>
+  <meta name="description" content="캐치캐치 관리자 · 1:1 문의 관리">
+  <title>1:1 문의 · 캐치캐치 관리자</title>
   <link rel="stylesheet" href="css/common.css">
   <link rel="stylesheet" href="css/admin.css">
   <script src="js/admin-auth.js"></script>
@@ -18,11 +18,11 @@
       <a href="admin-users.html">사용자</a>
       <a href="admin-products.html">상품</a>
       <a href="admin-seller-applications.html">입점심사</a>
-      <a class="is-current" href="admin-sellers.html">입점업체</a>
+      <a href="admin-sellers.html">입점업체</a>
       <a href="admin-coupons.html">쿠폰</a>
       <a href="admin-points.html">포인트</a>
       <a href="admin-qna.html">Q&amp;A</a>
-      <a href="admin-inquiries.html">1:1 문의</a>
+      <a class="is-current" href="admin-inquiries.html">1:1 문의</a>
       <a href="admin-settlements.html">정산</a>
     </nav>
     <div class="admin-actions">
@@ -34,38 +34,37 @@
   <main class="admin-page wrap">
     <div class="page-head">
       <div>
-        <p class="kicker">SELLER STATUS · A-SELLER-003</p>
-        <h1>입점 업체 상태 관리</h1>
-        <p class="desc">기존 입점 업체의 운영 상태를 정상 · 일시정지 · 강제폐점으로 변경합니다.</p>
+        <p class="kicker">CUSTOMER INQUIRY · A-INQ-001</p>
+        <h1>1:1 고객문의 관리</h1>
+        <p class="desc">고객센터를 통해 접수된 1:1 문의를 조회하고 답변합니다.</p>
       </div>
-      <span class="preview-badge">실시간 데이터 · PUT /api/v1/admin/sellers/{sellerId}/status</span>
+      <span class="preview-badge">실시간 데이터 · GET /api/v1/admin/inquiries</span>
     </div>
 
     <div class="toolbar">
       <label class="search-box">
         <svg class="icn" viewBox="0 0 24 24" style="width:15px;height:15px"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg>
-        <input type="text" id="q" placeholder="업체명·대표자·ID 검색">
+        <input type="text" id="q" placeholder="제목·작성자 검색">
       </label>
       <select id="statusFilter">
         <option value="">전체 상태</option>
-        <option value="ok">정상</option>
-        <option value="wait">일시정지</option>
-        <option value="stop">강제폐점</option>
+        <option value="ok">답변완료</option>
+        <option value="wait">미답변</option>
       </select>
-      <span class="count">총 <b id="count">0</b>개 업체</span>
+      <span class="count">총 <b id="count">0</b>건</span>
     </div>
 
     <div class="table-wrap">
       <table class="data">
         <thead>
           <tr>
-            <th>업체ID</th>
-            <th>업체명</th>
-            <th>대표자</th>
-            <th class="num">등록상품</th>
-            <th>입점일</th>
+            <th>문의ID</th>
+            <th>유형</th>
+            <th>제목</th>
+            <th>작성자</th>
             <th>상태</th>
-            <th>상태 변경</th>
+            <th>작성일</th>
+            <th>관리</th>
           </tr>
         </thead>
         <tbody id="rows"></tbody>
@@ -80,8 +79,7 @@
   </main>
 
   <script src="js/admin-ui.js"></script>
-  
   <script src="js/admin-api.js"></script>
-  <script src="js/admin-sellers.js"></script>
+  <script src="js/admin-inquiries.js"></script>
 </body>
 </html>
