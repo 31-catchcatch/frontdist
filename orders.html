@@ -126,14 +126,85 @@
 
 <script src="js/auth.js"></script>
 <script>
-  const orders = [
-    { id: '20260710-184203', date: '2026.07.10', status: '배송중', statusClass: 'shipping', item: '코튼 스트라이프 셔츠', option: '오프화이트 / M · 1개', price: '49,000원', image: 'shirt', month: 7, delivery: { company: 'CJ대한통운', number: '6894-2310-7842', steps: [['상품 준비중', '2026.07.10 14:12'], ['집화 완료', '2026.07.11 18:42'], ['배송중', '2026.07.12 08:20']] } },
-    { id: '20260702-028611', date: '2026.07.02', status: '배송완료', statusClass: 'delivered', item: '클래식 레더 미니 백', option: '블랙 · 1개', price: '89,000원', image: 'bag', month: 7, delivery: { company: '한진택배', number: '5089-1734-2280', steps: [['상품 준비중', '2026.07.02 12:24'], ['배송 시작', '2026.07.03 16:10'], ['배송 완료', '2026.07.04 13:28']] } },
-    { id: '20260618-539816', date: '2026.06.18', status: '구매확정', statusClass: 'confirmed', item: '와이드 핏 데님 팬츠', option: '딥블루 / 30 · 1개', price: '59,000원', image: 'pants', month: 6, delivery: { company: '롯데택배', number: '2408-7712-3314', steps: [['상품 준비중', '2026.06.18 10:03'], ['배송 시작', '2026.06.19 17:16'], ['배송 완료', '2026.06.20 15:02']] } },
-    { id: '20260430-102942', date: '2026.04.30', status: '구매확정', statusClass: 'confirmed', item: '오버핏 로고 스웨트셔츠', option: '멜란지 그레이 / L · 1개', price: '69,000원', image: 'sweat', month: 4, delivery: { company: 'CJ대한통운', number: '5781-9325-6641', steps: [['상품 준비중', '2026.04.30 11:40'], ['배송 시작', '2026.05.01 15:10'], ['배송 완료', '2026.05.02 12:45']] } }
-  ];
+  /* ============================================================
+   * 실제 백엔드 연동 버전
+   * - API_BASE, getAccessToken()/authHeader() 부분은 auth.js 스펙이
+   *   아직 없어서 "표준적인 방식"으로 가정했습니다.
+   *   -> localStorage.getItem('accessToken') + Authorization: Bearer 헤더
+   *   실제 auth.js가 다른 방식(쿠키, 다른 키 이름 등)이면 이 두 함수만 고치면 됩니다.
+   * - 한 주문(Order) 안에 여러 상품(OrderDetail)이 들어있는 실제 구조를 그대로 반영했습니다.
+   * ============================================================ */
+
+  // Live Server(예: 5500)와 스프링부트 백엔드(8080)의 포트가 다르므로 절대 주소로 지정합니다.
+  // 배포 시에는 프론트도 같은 도메인/포트 뒤로 붙이거나, 여기 값을 실제 배포 주소로 바꾸면 됩니다.
+  const API_BASE = 'http://localhost:8080/api/v1';
+
+  function getAccessToken() {
+    return localStorage.getItem('accessToken');
+  }
+
+  function authHeaders() {
+    const token = getAccessToken();
+    return token ? { 'Authorization': `Bearer ${token}` } : {};
+  }
+
+  async function apiFetch(path, options = {}) {
+    const res = await fetch(`${API_BASE}${path}`, {
+      ...options,
+      headers: {
+        'Content-Type': 'application/json',
+        ...authHeaders(),
+        ...(options.headers || {})
+      }
+    });
+    if (res.status === 401) {
+      location.href = 'login.html';
+      throw new Error('인증이 필요합니다.');
+    }
+    const body = await res.json();
+    if (!body.success) throw new Error(body.message || '요청 처리 중 오류가 발생했습니다.');
+    return body.data;
+  }
+
+  // 주문(Order) 상태 -> 표시 라벨
+  const ORDER_STATUS_LABEL = {
+    PENDING: '결제 대기',
+    PAID: '결제 완료',
+    PARTIALLY_SHIPPED: '일부 배송중',
+    SHIPPED: '배송중',
+    COMPLETED: '구매확정',
+    CANCELED: '주문취소',
+    REFUNDED: '환불완료'
+  };
+
+  // 주문상품(OrderDetail) 배송 상태 -> 표시 라벨 / 뱃지 클래스
+  const DELIVERY_STATUS_LABEL = {
+    PAYMENT_COMPLETED: '결제완료',
+    PREPARING: '상품 준비중',
+    SHIPPING: '배송중',
+    DELIVERED: '배송완료',
+    CONFIRMED: '구매확정',
+    CANCELED: '취소',
+    RETURN_REQUESTED: '반품 신청',
+    EXCHANGE_REQUESTED: '교환 신청',
+    REFUNDED: '환불완료'
+  };
+  const DELIVERY_STATUS_CLASS = {
+    PAYMENT_COMPLETED: 'pending',
+    PREPARING: 'pending',
+    SHIPPING: 'shipping',
+    DELIVERED: 'delivered',
+    CONFIRMED: 'confirmed',
+    CANCELED: 'canceled',
+    RETURN_REQUESTED: 'canceled',
+    EXCHANGE_REQUESTED: 'canceled',
+    REFUNDED: 'canceled'
+  };
+
+  let orders = [];          // 서버에서 받아온 OrderResponse[]
   let activeMonths = 3;
-  let selectedOrder = null;
+  let selectedOrder = null; // 다이얼로그에서 사용중인 order 캐시
+
   const list = document.getElementById('orderList');
   const emptyState = document.getElementById('emptyState');
   const count = document.getElementById('orderCount');
@@ -142,22 +213,79 @@
   const dialogTitle = document.getElementById('dialogTitle');
   const dialogContent = document.getElementById('dialogContent');
   const formatter = new Intl.NumberFormat('ko-KR');
+  const won = amount => `${formatter.format(amount ?? 0)}원`;
+
+  function formatDate(dateTimeStr) {
+    if (!dateTimeStr) return '';
+    return dateTimeStr.slice(0, 10).replaceAll('-', '.');
+  }
+
+  async function loadOrders() {
+    count.textContent = '주문을 불러오는 중입니다.';
+    try {
+      // 서버는 month 단위 필터를 지원하지 않아서, 페이지 크기를 넉넉히 받아 화면에서 기간 필터링합니다.
+      const data = await apiFetch('/orders?page=0&size=100');
+      orders = data.orders;
+      renderOrders();
+    } catch (err) {
+      count.textContent = '주문 내역을 불러오지 못했습니다.';
+      showToast(err.message);
+    }
+  }
+
+  function itemAction(order, detail) {
+    const status = detail.deliveryStatus;
+    if (status === 'DELIVERED') {
+      return `<button class="btn btn-dark" data-action="confirm" data-order-detail-id="${detail.orderDetailId}">구매 확정</button>
+        <button class="btn" data-action="claim" data-order-id="${order.orderId}" data-order-detail-id="${detail.orderDetailId}">교환/환불 신청</button>`;
+    }
+    if (status === 'CONFIRMED') {
+      return `<a class="btn btn-dark" href="review-write.html?orderId=${order.orderId}&orderDetailId=${detail.orderDetailId}">리뷰 작성</a>`;
+    }
+    if (status === 'CANCELED' || status === 'REFUNDED') return '';
+    return `<button class="btn" data-action="claim" data-order-id="${order.orderId}" data-order-detail-id="${detail.orderDetailId}">교환/환불 신청</button>`;
+  }
+
+  function productRow(order, detail) {
+    const statusClass = DELIVERY_STATUS_CLASS[detail.deliveryStatus] || 'pending';
+    const statusLabel = DELIVERY_STATUS_LABEL[detail.deliveryStatus] || detail.deliveryStatus;
+    return `<div class="order-product" data-order-detail-id="${detail.orderDetailId}">
+      <div class="product-thumb" aria-hidden="true"><span></span></div>
+      <div class="product-info"><strong>${detail.productName}</strong><p>수량 ${detail.quantity}개</p><b>${won(detail.totalPrice)}</b></div>
+      <span class="status ${statusClass}">${statusLabel}</span>
+    </div>
+    <div class="order-actions item-actions"><div class="primary-actions">${itemAction(order, detail)}</div></div>`;
+  }
 
   function orderCard(order) {
-    const action = order.status === '배송완료'
-      ? `<button class="btn btn-dark" data-action="confirm" data-id="${order.id}">구매 확정</button><button class="btn" data-action="claim" data-id="${order.id}">교환/환불 신청</button>`
-      : order.status === '구매확정'
-        ? `<a class="btn btn-dark" href="review-write.html?orderId=${order.id}">리뷰 작성</a>`
-        : `<button class="btn" data-action="claim" data-id="${order.id}">교환/환불 신청</button>`;
-    return `<article class="order-card" id="order-${order.id}" data-order-id="${order.id}">
-      <header class="order-card-head"><div><time datetime="${order.date.replaceAll('.', '-')}">${order.date}</time><span class="order-no">주문번호 ${order.id}</span></div><a href="#" data-action="order-detail" data-id="${order.id}">주문 상세 <span aria-hidden="true">›</span></a></header>
-      <div class="order-product"><div class="product-thumb ${order.image}" aria-hidden="true"><span></span></div><div class="product-info"><strong>${order.item}</strong><p>${order.option}</p><b>${order.price}</b></div><span class="status ${order.statusClass}">${order.status}</span></div>
-      <div class="order-actions"><div class="document-actions"><button type="button" class="text-btn" data-action="delivery" data-id="${order.id}">배송 조회</button><button type="button" class="text-btn" data-action="receipt" data-id="${order.id}">전자 영수증</button><button type="button" class="text-btn" data-action="statement" data-id="${order.id}">거래명세서</button></div><div class="primary-actions">${action}</div></div>
+    const orderStatusLabel = ORDER_STATUS_LABEL[order.orderStatus] || order.orderStatus;
+    return `<article class="order-card" id="order-${order.orderId}" data-order-id="${order.orderId}">
+      <header class="order-card-head">
+        <div><time datetime="${order.createdAt}">${formatDate(order.createdAt)}</time><span class="order-no">주문번호 ${order.orderNumber}</span></div>
+        <a href="#" data-action="order-detail" data-order-id="${order.orderId}">주문 상세 <span aria-hidden="true">›</span></a>
+      </header>
+      ${order.orderDetails.map(detail => productRow(order, detail)).join('')}
+      <div class="order-actions">
+        <div class="document-actions">
+          <button type="button" class="text-btn" data-action="delivery" data-order-id="${order.orderId}">배송 조회</button>
+          <button type="button" class="text-btn" data-action="receipt" data-order-id="${order.orderId}">전자 영수증</button>
+          <button type="button" class="text-btn" data-action="statement" data-order-id="${order.orderId}">거래명세서</button>
+        </div>
+        <span class="status order-status">${orderStatusLabel}</span>
+      </div>
     </article>`;
   }
 
+  function monthsAgo(months) {
+    const d = new Date();
+    d.setMonth(d.getMonth() - months);
+    return d;
+  }
+
   function renderOrders() {
-    const shown = activeMonths === 'all' ? orders : orders.filter(order => order.month >= 7 - Number(activeMonths) + 1);
+    const shown = activeMonths === 'all'
+      ? orders
+      : orders.filter(order => new Date(order.createdAt) >= monthsAgo(Number(activeMonths)));
     list.innerHTML = shown.map(orderCard).join('');
     count.textContent = `총 ${shown.length}건의 주문이 있습니다.`;
     emptyState.hidden = shown.length > 0;
@@ -165,34 +293,99 @@
     highlightRequestedOrder();
   }
 
-  function findOrder(id) { return orders.find(order => order.id === id); }
+  function findOrder(orderId) { return orders.find(order => String(order.orderId) === String(orderId)); }
+  function findDetail(order, orderDetailId) { return order.orderDetails.find(detail => String(detail.orderDetailId) === String(orderDetailId)); }
 
-  function openDialog(type, order) {
+  async function openDialog(type, order, orderDetailId) {
     selectedOrder = order;
-    const summary = `<div class="dialog-order-summary"><span>${order.date} · 주문번호 ${order.id}</span><strong>${order.item}</strong></div>`;
+    const summary = `<div class="dialog-order-summary"><span>${formatDate(order.createdAt)} · 주문번호 ${order.orderNumber}</span><strong>${order.orderDetails.map(d => d.productName).join(', ')}</strong></div>`;
+
     if (type === 'delivery') {
       dialogKicker.textContent = 'DELIVERY TRACKING'; dialogTitle.textContent = '배송 조회';
-      dialogContent.innerHTML = `${summary}<div class="tracking-number"><span>${order.delivery.company}</span><b>${order.delivery.number}</b></div><ol class="tracking-steps">${order.delivery.steps.map((step, index) => `<li class="${index === order.delivery.steps.length - 1 ? 'current' : ''}"><i></i><div><strong>${step[0]}</strong><time>${step[1]}</time></div></li>`).join('')}</ol>`;
-    } else if (type === 'receipt') {
-      dialogKicker.textContent = 'ELECTRONIC RECEIPT'; dialogTitle.textContent = '전자 영수증';
-      dialogContent.innerHTML = `${summary}<dl class="receipt-list"><div><dt>결제 금액</dt><dd>${order.price}</dd></div><div><dt>결제 수단</dt><dd>신용카드 (일시불)</dd></div><div><dt>승인 일시</dt><dd>${order.date} 10:24</dd></div><div><dt>승인 번호</dt><dd>1482-9***-****</dd></div></dl><p class="dialog-note">전자 영수증은 결제 내역 확인용으로 제공됩니다.</p>`;
-    } else if (type === 'statement') {
-      dialogKicker.textContent = 'TRANSACTION STATEMENT'; dialogTitle.textContent = '거래명세서';
-      dialogContent.innerHTML = `${summary}<div class="statement-box"><div class="statement-title">거 래 명 세 서</div><dl><div><dt>공급자</dt><dd>CATCHCATCH STORE</dd></div><div><dt>공급받는 자</dt><dd>김캐치</dd></div><div><dt>품목</dt><dd>${order.item}</dd></div><div><dt>수량 / 금액</dt><dd>1개 / ${order.price}</dd></div></dl></div><button type="button" class="btn btn-dark full" data-action="print">인쇄하기</button>`;
-    } else if (type === 'claim') {
-      dialogKicker.textContent = 'EXCHANGE / RETURN'; dialogTitle.textContent = '교환/환불 신청';
-      dialogContent.innerHTML = `${summary}<form id="claimForm" class="claim-form"><label>신청 유형<select name="type" required><option value="교환">교환</option><option value="환불">환불</option></select></label><label>사유<select name="reason" required><option value="사이즈가 맞지 않아요">사이즈가 맞지 않아요</option><option value="상품에 하자가 있어요">상품에 하자가 있어요</option><option value="다른 상품이 배송되었어요">다른 상품이 배송되었어요</option><option value="단순 변심">단순 변심</option></select></label><label>상세 사유<textarea name="detail" placeholder="상세 사유를 입력해 주세요."></textarea></label><p class="dialog-note">구매 확정 전 주문 상품에 한해 신청할 수 있습니다.</p><button type="submit" class="btn btn-dark full">신청하기</button></form>`;
-    } else {
-      dialogKicker.textContent = 'ORDER DETAIL'; dialogTitle.textContent = '주문 상세';
-      dialogContent.innerHTML = `${summary}<dl class="receipt-list"><div><dt>주문 상태</dt><dd>${order.status}</dd></div><div><dt>배송지</dt><dd>서울시 성동구 캐치로 24, 101동 1203호</dd></div><div><dt>결제 금액</dt><dd>${order.price}</dd></div></dl>`;
+      dialogContent.innerHTML = `${summary}<p class="dialog-note">불러오는 중입니다...</p>`;
+      dialog.showModal();
+      try {
+        const deliveries = await apiFetch(`/orders/${order.orderId}/delivery`);
+        dialogContent.innerHTML = `${summary}<ol class="tracking-steps">${deliveries.map(dv => `
+          <li class="${dv.deliveryStatus === 'DELIVERED' ? 'current' : ''}">
+            <i></i>
+            <div>
+              <strong>${dv.courierCompany ?? '택배사 미배정'} ${dv.trackingNumber ? `· ${dv.trackingNumber}` : ''}</strong>
+              <time>${DELIVERY_STATUS_LABEL[dv.deliveryStatus] || dv.deliveryStatus}${dv.deliveredAt ? ` · ${formatDate(dv.deliveredAt)}` : dv.shippedAt ? ` · ${formatDate(dv.shippedAt)}` : ''}</time>
+            </div>
+          </li>`).join('')}</ol>`;
+      } catch (err) {
+        dialogContent.innerHTML = `${summary}<p class="dialog-note">배송 정보를 불러오지 못했습니다.</p>`;
+        showToast(err.message);
+      }
+      return;
     }
+
+    if (type === 'receipt') {
+      dialogKicker.textContent = 'ELECTRONIC RECEIPT'; dialogTitle.textContent = '전자 영수증';
+      dialogContent.innerHTML = `${summary}<p class="dialog-note">불러오는 중입니다...</p>`;
+      dialog.showModal();
+      try {
+        const receipt = await apiFetch(`/orders/${order.orderId}/receipt`);
+        dialogContent.innerHTML = `${summary}<dl class="receipt-list">
+          <div><dt>결제 금액</dt><dd>${won(receipt.amount)}</dd></div>
+          <div><dt>결제 수단</dt><dd>${receipt.payMethod ?? '-'}</dd></div>
+          <div><dt>승인 일시</dt><dd>${formatDate(receipt.paidAt)}</dd></div>
+          <div><dt>결제 상태</dt><dd>${receipt.paymentStatus ?? '-'}</dd></div>
+          <div><dt>거래번호</dt><dd>${receipt.pgTransactionId ?? '-'}</dd></div>
+        </dl><p class="dialog-note">전자 영수증은 결제 내역 확인용으로 제공됩니다.</p>`;
+      } catch (err) {
+        dialogContent.innerHTML = `${summary}<p class="dialog-note">영수증 정보를 불러오지 못했습니다.</p>`;
+        showToast(err.message);
+      }
+      return;
+    }
+
+    if (type === 'statement') {
+      dialogKicker.textContent = 'TRANSACTION STATEMENT'; dialogTitle.textContent = '거래명세서';
+      dialogContent.innerHTML = `${summary}<div class="statement-box"><div class="statement-title">거 래 명 세 서</div><dl>
+        <div><dt>공급자</dt><dd>CATCHCATCH STORE</dd></div>
+        <div><dt>공급받는 자</dt><dd>${order.receiverName ?? '-'}</dd></div>
+        ${order.orderDetails.map(d => `<div><dt>품목</dt><dd>${d.productName} · 수량 ${d.quantity} · ${won(d.totalPrice)}</dd></div>`).join('')}
+        <div><dt>결제 금액</dt><dd>${won(order.finalPaymentAmount)}</dd></div>
+      </dl></div><button type="button" class="btn btn-dark full" data-action="print">인쇄하기</button>`;
+      dialog.showModal();
+      return;
+    }
+
+    if (type === 'claim') {
+      const detail = findDetail(order, orderDetailId);
+      dialogKicker.textContent = 'EXCHANGE / RETURN'; dialogTitle.textContent = '교환/환불 신청';
+      dialogContent.innerHTML = `${summary}<form id="claimForm" class="claim-form" data-order-detail-id="${orderDetailId}">
+        <label>신청 유형<select name="type" required><option value="교환">교환</option><option value="환불">환불</option></select></label>
+        <label>사유<select name="reason" required><option value="사이즈가 맞지 않아요">사이즈가 맞지 않아요</option><option value="상품에 하자가 있어요">상품에 하자가 있어요</option><option value="다른 상품이 배송되었어요">다른 상품이 배송되었어요</option><option value="단순 변심">단순 변심</option></select></label>
+        <label>상세 사유<textarea name="detail" placeholder="상세 사유를 입력해 주세요."></textarea></label>
+        <p class="dialog-note">구매 확정 전 주문 상품에 한해 신청할 수 있습니다.</p>
+        <button type="submit" class="btn btn-dark full">신청하기</button>
+      </form>`;
+      dialog.showModal();
+      return;
+    }
+
+    // order-detail (기본)
+    dialogKicker.textContent = 'ORDER DETAIL'; dialogTitle.textContent = '주문 상세';
+    dialogContent.innerHTML = `${summary}<dl class="receipt-list">
+      <div><dt>주문 상태</dt><dd>${ORDER_STATUS_LABEL[order.orderStatus] || order.orderStatus}</dd></div>
+      <div><dt>배송지</dt><dd>${order.receiverName ?? ''} · (${order.zipCode ?? ''}) ${order.address ?? ''} ${order.addressDetail ?? ''}</dd></div>
+      <div><dt>결제 금액</dt><dd>${won(order.finalPaymentAmount)}</dd></div>
+    </dl>`;
     dialog.showModal();
   }
 
-  function confirmPurchase(order) {
+  async function confirmPurchase(orderDetailId) {
     if (!window.confirm('구매를 확정하시겠습니까?\n구매 확정 후에는 교환·환불 신청이 제한됩니다.')) return;
-    order.status = '구매확정'; order.statusClass = 'confirmed';
-    renderOrders(); showToast('구매가 확정되었습니다. 리뷰를 작성해 보세요.');
+    try {
+      await apiFetch(`/orders/${orderDetailId}/confirm`, { method: 'PUT' });
+      await loadOrders();
+      showToast('구매가 확정되었습니다. 리뷰를 작성해 보세요.');
+    } catch (err) {
+      showToast(err.message);
+    }
   }
 
   function showToast(message) { const toast = document.getElementById('toast'); toast.textContent = message; toast.classList.add('show'); window.setTimeout(() => toast.classList.remove('show'), 3200); }
@@ -210,17 +403,30 @@
     const action = target.dataset.action;
     if (action === 'print') { window.print(); return; }
     if (action === 'order-detail') event.preventDefault();
-    const order = findOrder(target.dataset.id);
+
+    if (action === 'confirm') {
+      confirmPurchase(target.dataset.orderDetailId);
+      return;
+    }
+
+    const order = findOrder(target.dataset.orderId);
     if (!order) return;
-    if (action === 'confirm') confirmPurchase(order);
-    else openDialog(action, order);
+    openDialog(action, order, target.dataset.orderDetailId);
   });
 
   document.querySelectorAll('.period').forEach(button => button.addEventListener('click', () => { activeMonths = button.dataset.months; document.querySelectorAll('.period').forEach(tab => tab.classList.toggle('on', tab === button)); renderOrders(); }));
   document.querySelector('[data-close-dialog]').addEventListener('click', () => dialog.close());
   dialog.addEventListener('click', event => { if (event.target === dialog) dialog.close(); });
-  dialog.addEventListener('submit', event => { if (event.target.id !== 'claimForm') return; event.preventDefault(); dialog.close(); showToast(`${selectedOrder.item} ${event.target.elements.type.value} 신청이 접수되었습니다.`); });
-  renderOrders();
+  dialog.addEventListener('submit', event => {
+    if (event.target.id !== 'claimForm') return;
+    event.preventDefault();
+    // NOTE: 백엔드에 교환/환불 신청 엔드포인트가 아직 없습니다 (OrderController에 TODO로 남아있음).
+    // Claim 도메인 API가 추가되면 여기서 POST /api/v1/orders/{orderId}/claims 호출로 교체하세요.
+    dialog.close();
+    showToast(`${event.target.elements.type.value} 신청이 접수되었습니다. (백엔드 API 연동 대기)`);
+  });
+
+  loadOrders();
 </script>
 </body>
 </html>
