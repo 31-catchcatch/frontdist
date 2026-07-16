@@ -1,139 +1,287 @@
-// my-reviews.js — 내 리뷰 목록 mock 스크립트
-// ※ 기능정의서 보완 — 내가 작성한 리뷰 조회/관리
-// 조회: GET /api/v1/users/me/reviews (제안)
-// 수정: PUT /api/v1/reviews/{reviewId} (제안)
-// 삭제: DELETE /api/v1/reviews/{reviewId} (제안)
-// 로그인 필요 페이지
+/* ============================================================
+ * 내 리뷰 (my-reviews) — 실제 백엔드 연동 버전
+ * ------------------------------------------------------------
+ * 기존 파일은 더미(하드코딩) 데이터를 뿌리고 있어서 DB에 리뷰를
+ * 추가/수정/삭제해도 화면에 반영되지 않았습니다.
+ * 이 파일은 orders.html(리더 완성본)과 동일한 규칙으로 실제 API를 호출합니다.
+ *
+ *  - 목록 조회 : GET    /api/v1/users/me/reviews?page=&size=
+ *  - 리뷰 수정 : PUT    /api/v1/reviews/{reviewId}
+ *  - 리뷰 삭제 : DELETE /api/v1/reviews/{reviewId}
+ *
+ * ※ API_BASE / getAccessToken() 은 auth.js 표준 방식(localStorage 'accessToken'
+ *   + Authorization: Bearer)을 가정했습니다. auth.js가 다른 방식이면 이 두 곳만 고치면 됩니다.
+ * ============================================================ */
+(function () {
+  'use strict';
 
-document.addEventListener("DOMContentLoaded", () => {
+  // Live Server(예: 5500)와 스프링부트(8080) 포트가 다르므로 절대 주소로 지정.
+  // 배포 시엔 실제 도메인으로 바꾸면 됩니다.
+  const API_BASE = 'http://localhost:8080/api/v1';
+  const PAGE_SIZE = 20;
 
-  // ===== 로그인 안 했으면 로그인 페이지로 =====
-  if (!CatchAuth.requireLogin()) return;
-
-  // ===== 가짜 내 리뷰 데이터 =====
-  // TODO: GET /api/v1/users/me/reviews
-  let myReviews = [
-    {
-      reviewId: 1001,
-      productId: 1,
-      brand: "캐치베이직",
-      name: "오버핏 울 블렌드 싱글 코트",
-      size: "M",
-      rating: 5,
-      date: "2026.07.10",
-      content: "핏이 정말 예뻐요! 어깨가 넉넉해서 안에 니트 입어도 편합니다. 두께감도 적당해서 초겨울까지 입기 좋을 것 같아요.",
-      thumb: "https://placehold.co/300x400/e8e8e8/999?text=COAT",
-      photos: [
-        "https://placehold.co/200x200/eaeaea/999?text=1",
-        "https://placehold.co/200x200/e0e0e0/999?text=2",
-      ],
-    },
-    {
-      reviewId: 1002,
-      productId: 5,
-      brand: "무드로우",
-      name: "베이직 크루넥 니트",
-      size: "L",
-      rating: 4,
-      date: "2026.07.05",
-      content: "색감 예쁘고 촉감 좋아요. 다만 생각보다 얇아서 별 하나 뺐습니다.",
-      thumb: "https://placehold.co/300x400/f0f0f0/999?text=KNIT",
-      photos: [],
-    },
-    {
-      reviewId: 1003,
-      productId: 12,
-      brand: "온더코너",
-      name: "와이드 데님 팬츠",
-      size: "S",
-      rating: 5,
-      date: "2026.06.28",
-      content: "핏이 딱 원하던 와이드핏이에요. 재질도 도톰하니 좋습니다. 재구매 의사 있어요!",
-      thumb: "https://placehold.co/300x400/e0e0e0/999?text=DENIM",
-      photos: [
-        "https://placehold.co/200x200/ededed/999?text=1",
-      ],
-    },
-  ];
-
-  const $ = (sel) => document.querySelector(sel);
-  const stars = (n) => "★".repeat(n) + "☆".repeat(5 - n);
-
-  // ===== 리뷰 하나 HTML =====
-  function itemHTML(r) {
-    const photoHTML = r.photos.length
-      ? `<div class="ri-photos">${r.photos.map((src) => `<img src="${src}" alt="리뷰 사진">`).join("")}</div>`
-      : "";
-
-    return `
-      <li class="review-item" data-id="${r.reviewId}">
-        <a href="product-detail.html?id=${r.productId}" class="ri-thumb">
-          <img src="${r.thumb}" alt="${r.name}">
-        </a>
-        <div class="ri-body">
-          <div class="ri-product">
-            <span class="ri-brand">${r.brand}</span>
-            <a href="product-detail.html?id=${r.productId}" class="ri-name">${r.name}</a>
-            <span class="ri-option">사이즈 ${r.size}</span>
-          </div>
-
-          <div class="ri-meta">
-            <span class="ri-stars">${stars(r.rating)}</span>
-            <span class="ri-date">${r.date}</span>
-          </div>
-
-          <p class="ri-text">${r.content}</p>
-          ${photoHTML}
-
-          <div class="ri-actions">
-            <button type="button" class="btn-edit" data-action="edit">수정</button>
-            <button type="button" class="btn-delete" data-action="delete">삭제</button>
-          </div>
-        </div>
-      </li>
-    `;
+  function getAccessToken() {
+    return localStorage.getItem('accessToken');
   }
 
-  // ===== 화면 그리기 =====
-  function render() {
-    $('[data-role="total"]').textContent = myReviews.length;
+  function authHeaders() {
+    const token = getAccessToken();
+    return token ? { Authorization: `Bearer ${token}` } : {};
+  }
 
-    if (myReviews.length === 0) {
-      $('[data-role="review-list"]').innerHTML = "";
-      $('[data-role="review-empty"]').hidden = false;
+  async function apiFetch(path, options = {}) {
+    const res = await fetch(`${API_BASE}${path}`, {
+      ...options,
+      headers: {
+        'Content-Type': 'application/json',
+        ...authHeaders(),
+        ...(options.headers || {}),
+      },
+    });
+
+    if (res.status === 401) {
+      location.href = 'login.html';
+      throw new Error('로그인이 필요합니다.');
+    }
+
+    // 204(No Content) 등 바디가 없을 수 있음
+    let body = null;
+    const text = await res.text();
+    if (text) {
+      try { body = JSON.parse(text); } catch (_) { body = null; }
+    }
+
+    if (!res.ok || (body && body.success === false)) {
+      throw new Error((body && body.message) || '요청 처리 중 오류가 발생했습니다.');
+    }
+    return body ? body.data : null;
+  }
+
+  /* ---------- DOM refs ---------- */
+  const listEl = document.querySelector('[data-role="review-list"]');
+  const emptyEl = document.querySelector('[data-role="review-empty"]');
+  const totalEl = document.querySelector('[data-role="total"]');
+  const dialog = document.getElementById('reviewEditDialog');
+  const toastEl = document.getElementById('toast');
+
+  if (!listEl) return; // my-reviews.html이 아니면 종료
+
+  /* ---------- state ---------- */
+  let page = 0;
+  let last = true;
+  let totalElements = 0;
+  let loading = false;
+  let editingId = null;
+  let editingRating = 5;
+
+  const numberFmt = new Intl.NumberFormat('ko-KR');
+
+  /* ---------- helpers ---------- */
+  function escapeHtml(str) {
+    return String(str ?? '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  function formatDate(dateTimeStr) {
+    if (!dateTimeStr) return '';
+    return String(dateTimeStr).slice(0, 10).replaceAll('-', '.');
+  }
+
+  function stars(rating) {
+    const r = Math.max(0, Math.min(5, Number(rating) || 0));
+    return '★'.repeat(r) + '☆'.repeat(5 - r);
+  }
+
+  function showToast(msg) {
+    if (!toastEl) { alert(msg); return; }
+    toastEl.textContent = msg;
+    toastEl.classList.add('show');
+    clearTimeout(showToast._t);
+    showToast._t = setTimeout(() => toastEl.classList.remove('show'), 2200);
+  }
+
+  /* ---------- render ---------- */
+  function reviewItemHtml(review) {
+    const thumb = review.productThumbnailUrl
+      ? `<img src="${escapeHtml(review.productThumbnailUrl)}" alt="${escapeHtml(review.productName)}" loading="lazy">`
+      : '<span class="myr-noimg" aria-hidden="true"></span>';
+
+    const photo = review.imageUrl
+      ? `<div class="myr-photo"><img src="${escapeHtml(review.imageUrl)}" alt="첨부 사진" loading="lazy"></div>`
+      : '';
+
+    return `
+      <li class="myr-item" data-review-id="${review.reviewId}">
+        <a class="myr-thumb" href="product-detail.html?id=${review.productId}" aria-label="${escapeHtml(review.productName)} 상세보기">${thumb}</a>
+        <div class="myr-body">
+          <div class="myr-top">
+            <a class="myr-name" href="product-detail.html?id=${review.productId}">${escapeHtml(review.productName)}</a>
+            <div class="myr-actions">
+              <button type="button" class="myr-btn" data-action="edit" data-review-id="${review.reviewId}">수정</button>
+              <button type="button" class="myr-btn myr-btn-danger" data-action="delete" data-review-id="${review.reviewId}">삭제</button>
+            </div>
+          </div>
+          <div class="myr-meta">
+            <span class="myr-stars" aria-label="별점 ${review.rating}점">${stars(review.rating)}</span>
+            <span class="myr-date">${formatDate(review.createdAt)}</span>
+          </div>
+          <p class="myr-content">${escapeHtml(review.content)}</p>
+          ${photo}
+        </div>
+      </li>`;
+  }
+
+  function render(reviews, { append } = { append: false }) {
+    if (totalEl) totalEl.textContent = numberFmt.format(totalElements);
+
+    if (!append) listEl.innerHTML = '';
+
+    if (totalElements === 0) {
+      listEl.hidden = true;
+      if (emptyEl) emptyEl.hidden = false;
+      removeMoreBtn();
       return;
     }
 
-    $('[data-role="review-empty"]').hidden = true;
-    $('[data-role="review-list"]').innerHTML = myReviews.map(itemHTML).join("");
+    listEl.hidden = false;
+    if (emptyEl) emptyEl.hidden = true;
+    listEl.insertAdjacentHTML('beforeend', reviews.map(reviewItemHtml).join(''));
+    renderMoreBtn();
   }
 
-  // ===== 수정 / 삭제 (이벤트 위임) =====
-  $('[data-role="review-list"]').addEventListener("click", (e) => {
-    const li = e.target.closest(".review-item");
+  /* ---------- 더보기 버튼 ---------- */
+  function removeMoreBtn() {
+    const btn = document.getElementById('myrMoreBtn');
+    if (btn) btn.remove();
+  }
+
+  function renderMoreBtn() {
+    removeMoreBtn();
+    if (last) return;
+    const btn = document.createElement('button');
+    btn.id = 'myrMoreBtn';
+    btn.type = 'button';
+    btn.className = 'myr-more';
+    btn.textContent = '더보기';
+    btn.addEventListener('click', () => loadReviews({ append: true }));
+    listEl.insertAdjacentElement('afterend', btn);
+  }
+
+  /* ---------- 목록 로드 ---------- */
+  async function loadReviews({ append } = { append: false }) {
+    if (loading) return;
+    loading = true;
+    const nextPage = append ? page + 1 : 0;
+
+    try {
+      const data = await apiFetch(`/users/me/reviews?page=${nextPage}&size=${PAGE_SIZE}`);
+      // PageResponse: { content, page, size, totalElements, totalPages, last }
+      page = data.page;
+      last = data.last;
+      totalElements = data.totalElements;
+      render(data.content || [], { append });
+    } catch (err) {
+      showToast(err.message);
+      if (!append && totalElements === 0) {
+        listEl.hidden = true;
+        if (emptyEl) emptyEl.hidden = false;
+      }
+    } finally {
+      loading = false;
+    }
+  }
+
+  /* ---------- 삭제 ---------- */
+  async function handleDelete(reviewId) {
+    if (!confirm('이 리뷰를 삭제하시겠어요?')) return;
+    try {
+      await apiFetch(`/reviews/${reviewId}`, { method: 'DELETE' });
+      showToast('리뷰가 삭제되었습니다.');
+      await loadReviews({ append: false });
+    } catch (err) {
+      showToast(err.message);
+    }
+  }
+
+  /* ---------- 수정 (dialog) ---------- */
+  function setDialogStars(rating) {
+    editingRating = Math.max(1, Math.min(5, Number(rating) || 1));
+    if (!dialog) return;
+    dialog.querySelectorAll('[data-star]').forEach((btn) => {
+      const v = Number(btn.dataset.star);
+      btn.classList.toggle('on', v <= editingRating);
+      btn.textContent = v <= editingRating ? '★' : '☆';
+    });
+    const out = dialog.querySelector('[data-role="edit-rating-out"]');
+    if (out) out.textContent = `${editingRating}점`;
+  }
+
+  function openEdit(reviewId) {
+    if (!dialog) return;
+    const li = listEl.querySelector(`.myr-item[data-review-id="${reviewId}"]`);
     if (!li) return;
 
-    const id = Number(li.dataset.id);
-    const review = myReviews.find((r) => r.reviewId === id);
-    const action = e.target.dataset.action;
+    editingId = reviewId;
+    const currentRating = (li.querySelector('.myr-stars')?.textContent || '').split('☆')[0].length || 5;
+    const currentContent = li.querySelector('.myr-content')?.textContent || '';
 
-    // 수정 → 리뷰 작성 페이지로 (수정 모드)
-    if (action === "edit") {
-      // TODO: PUT /api/v1/reviews/{reviewId}
-      //   review-write.html에서 기존 값을 불러와 수정하도록 연동
-      location.href = `review-write.html?reviewId=${id}&edit=true`;
-    }
+    dialog.querySelector('[data-role="edit-content"]').value = currentContent;
+    setDialogStars(currentRating);
 
-    // 삭제
-    if (action === "delete") {
-      if (!confirm("이 리뷰를 삭제할까요?")) return;
-      myReviews = myReviews.filter((r) => r.reviewId !== id);
-      // TODO: DELETE /api/v1/reviews/{reviewId}
-      render();
+    if (typeof dialog.showModal === 'function') dialog.showModal();
+    else dialog.setAttribute('open', '');
+  }
+
+  function closeEdit() {
+    if (!dialog) return;
+    editingId = null;
+    if (typeof dialog.close === 'function' && dialog.open) dialog.close();
+    else dialog.removeAttribute('open');
+  }
+
+  async function submitEdit() {
+    if (editingId == null) return;
+    const content = (dialog.querySelector('[data-role="edit-content"]').value || '').trim();
+    if (!content) { showToast('리뷰 내용을 입력해주세요.'); return; }
+
+    try {
+      await apiFetch(`/reviews/${editingId}`, {
+        method: 'PUT',
+        body: JSON.stringify({ rating: editingRating, content, imageUrl: null }),
+      });
+      showToast('리뷰가 수정되었습니다.');
+      closeEdit();
+      await loadReviews({ append: false });
+    } catch (err) {
+      showToast(err.message);
     }
+  }
+
+  /* ---------- 이벤트 위임 ---------- */
+  listEl.addEventListener('click', (e) => {
+    const btn = e.target.closest('[data-action]');
+    if (!btn) return;
+    const id = btn.dataset.reviewId;
+    if (btn.dataset.action === 'edit') openEdit(id);
+    if (btn.dataset.action === 'delete') handleDelete(id);
   });
 
-  // ===== 시작 =====
-  render();
+  if (dialog) {
+    dialog.addEventListener('click', (e) => {
+      const star = e.target.closest('[data-star]');
+      if (star) { setDialogStars(star.dataset.star); return; }
+      if (e.target.closest('[data-role="edit-save"]')) { submitEdit(); return; }
+      if (e.target.closest('[data-role="edit-cancel"]')) { closeEdit(); }
+    });
+    dialog.addEventListener('cancel', (e) => { e.preventDefault(); closeEdit(); });
+  }
 
-});
+  /* ---------- init ---------- */
+  document.addEventListener('DOMContentLoaded', () => loadReviews({ append: false }));
+  // DOMContentLoaded가 이미 지난 경우 대비
+  if (document.readyState !== 'loading') loadReviews({ append: false });
+})();
