@@ -70,7 +70,7 @@ document.addEventListener("DOMContentLoaded", () => {
     try {
       const token = localStorage.getItem("catchcatch.accessToken");
 
-      const res = await fetch("http://localhost:8080/api/v1/users/me/points", {
+      const res = await fetch("/api/v1/users/me/points", {
         method: "GET",
         headers: {
           "Authorization": "Bearer " + token,
