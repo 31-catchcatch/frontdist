@@ -22,9 +22,21 @@ document.addEventListener("DOMContentLoaded", () => {
   const endpoints = {
     coupons: "/users/me/coupons",
     points: "/users/me/points",
-    recentProducts: "/users/me/recent-products",
     reviews: "/users/me/reviews"
   };
+
+  // 최근 본 상품(U-MY-008)은 localStorage 방식으로 확정되어 API를 호출하지 않는다.
+  // js/recent-products.js(CatchRecent)가 있으면 그 개수를, 없으면 키를 직접 읽는다.
+  function getRecentProductCount() {
+    try {
+      if (window.CatchRecent) return CatchRecent.count();
+      const raw = localStorage.getItem("catchcatch.recentProducts");
+      const parsed = raw ? JSON.parse(raw) : [];
+      return Array.isArray(parsed) ? parsed.length : 0;
+    } catch (_) {
+      return 0;
+    }
+  }
 
   function getBody(data) {
     return data?.data ?? data ?? {};
@@ -125,7 +137,7 @@ document.addEventListener("DOMContentLoaded", () => {
     renderValue(summaryElements.points, getPointBalance(dataByKey.points), "P");
     renderValue(
       summaryElements.recentProducts,
-      getCollectionCount(dataByKey.recentProducts, ["recentProductCount", "productCount", "totalElements", "count"], ["recentProducts", "products", "items", "content", "list"]),
+      getRecentProductCount(),
       "개"
     );
     renderValue(
