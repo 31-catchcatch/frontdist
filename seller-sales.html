@@ -17,7 +17,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>페이지제목 — 캐치캐치</title>
+<title>매출 / 정산 관리 — 캐치캐치</title>
 <link rel="stylesheet" href="css/common.css">
 <link rel="stylesheet" href="css/seller-sales.css">
 </head>
@@ -135,17 +135,17 @@
 
         <div class="summary-card">
           <p>총 매출</p>
-          <h2 id="salesTotal">₩10,580,000</h2>
+          <h2 id="salesTotal">₩0</h2>
         </div>
 
         <div class="summary-card">
-          <p>총 판매 건수</p>
-          <h2 id="salesQuantity">300건</h2>
+          <p>주문 상품 건수</p>
+          <h2 id="salesOrderCount">0건</h2>
         </div>
 
         <div class="summary-card">
-          <p>평균 주문 금액</p>
-          <h2 id="salesAverage">₩35,267</h2>
+          <p>총 판매 수량</p>
+          <h2 id="salesSoldQuantity">0개</h2>
         </div>
 
       </div>
@@ -156,46 +156,17 @@
 
           <thead>
             <tr>
-              <th>판매일</th>
               <th>상품명</th>
+              <th>주문 건수</th>
               <th>판매 수량</th>
               <th>매출액</th>
-              <th>판매 비율</th>
             </tr>
           </thead>
 
-          <tbody>
+          <tbody id="salesTableBody">
 
-            <tr data-date="2026-07-01" data-amount="2400000" data-quantity="120">
-              <td>2026-07-01</td>
-              <td>베이직 반팔 티셔츠</td>
-              <td>120개</td>
-              <td>₩2,400,000</td>
-              <td>13%</td>
-            </tr>
-
-            <tr data-date="2026-07-03" data-amount="3870000" data-quantity="86">
-              <td>2026-07-03</td>
-              <td>와이드 데님 팬츠</td>
-              <td>86개</td>
-              <td>₩3,870,000</td>
-              <td>21%</td>
-            </tr>
-
-            <tr data-date="2026-07-05" data-amount="2750000" data-quantity="55">
-              <td>2026-07-05</td>
-              <td>오버핏 후드집업</td>
-              <td>55개</td>
-              <td>₩2,750,000</td>
-              <td>15%</td>
-            </tr>
-
-            <tr data-date="2026-07-12" data-amount="1560000" data-quantity="39">
-              <td>2026-07-12</td>
-              <td>코튼 셔츠</td>
-              <td>39개</td>
-              <td>₩1,560,000</td>
-              <td>8%</td>
+            <tr>
+              <td colspan="4">매출 데이터를 불러오는 중입니다.</td>
             </tr>
 
           </tbody>
@@ -243,17 +214,17 @@
 
         <div class="summary-card">
           <p>정산 예정 금액</p>
-          <h2>₩3,280,000</h2>
+          <h2 id="expectedSettlementAmount">₩0</h2>
         </div>
 
         <div class="summary-card">
           <p>정산 완료 금액</p>
-          <h2>₩15,240,000</h2>
+          <h2 id="completedSettlementAmount">₩0</h2>
         </div>
 
         <div class="summary-card">
-          <p>구매 확정 건수</p>
-          <h2>489건</h2>
+          <p>플랫폼 수수료</p>
+          <h2 id="commissionAmount">₩0</h2>
         </div>
 
       </div>
@@ -263,47 +234,18 @@
         <table class="data-table">
 
           <thead>
-
             <tr>
-              <th>정산일</th>
-              <th>주문번호</th>
-              <th>상품명</th>
-              <th>판매금액</th>
-              <th>정산금액</th>
-              <th>상태</th>
+              <th>구매 확정 총매출</th>
+              <th>플랫폼 수수료</th>
+              <th>정산 예정 금액</th>
+              <th>정산 완료 금액</th>
             </tr>
-
           </thead>
 
-          <tbody>
-
-            <tr data-date="2026-07-01">
-              <td>2026-07-01</td>
-              <td>202607010001</td>
-              <td>와이드 데님 팬츠</td>
-              <td>₩45,000</td>
-              <td>₩40,500</td>
-              <td><span class="status done">완료</span></td>
+          <tbody id="settlementTableBody">
+            <tr>
+              <td colspan="4">정산 데이터를 불러오는 중입니다.</td>
             </tr>
-
-            <tr data-date="2026-07-03">
-              <td>2026-07-03</td>
-              <td>202607030215</td>
-              <td>베이직 티셔츠</td>
-              <td>₩20,000</td>
-              <td>₩18,000</td>
-              <td><span class="status wait">예정</span></td>
-            </tr>
-
-            <tr data-date="2026-07-05">
-              <td>2026-07-05</td>
-              <td>202607050091</td>
-              <td>코튼 셔츠</td>
-              <td>₩39,000</td>
-              <td>₩35,100</td>
-              <td><span class="status done">완료</span></td>
-            </tr>
-
           </tbody>
 
         </table>
