@@ -1,7 +1,7 @@
 document.addEventListener("DOMContentLoaded", () => {
   const API_BASE = (window.CATCHCATCH_API_BASE_URL || "/api/v1").replace(/\/$/, "");
   const DASHBOARD_API = `${API_BASE}/seller/dashboard`;
-  const COUPON_REQUEST_API = `${API_BASE}/seller/coupons/requests`;
+  const COUPON_REQUEST_API = `${API_BASE}/seller/coupons/request`;
   const FILE_PREVIEW_MODE = location.protocol === "file:";
 
   const form = document.getElementById("couponRequestForm");
@@ -14,7 +14,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const salesChangeRate = document.getElementById("salesChangeRate");
   const todayOrderCount = document.getElementById("todayOrderCount");
   const unansweredQnaCount = document.getElementById("unansweredQnaCount");
-  const pendingCouponCount = document.getElementById("pendingCouponCount");
+  const pendingClaimCount = document.getElementById("pendingClaimCount");
 
   const money = new Intl.NumberFormat("ko-KR", {
     style: "currency",
@@ -134,14 +134,14 @@ document.addEventListener("DOMContentLoaded", () => {
     const salesRate = toNumber(getFirstValue(summary, ["salesChangeRate", "dayOverDaySalesRate", "salesGrowthRate"]));
     const orderCount = toNumber(getFirstValue(summary, ["todayOrderCount", "newOrderCount", "orderCount"]));
     const qnaCount = toNumber(getFirstValue(summary, ["unansweredQnaCount", "pendingQnaCount", "unansweredQuestionCount"]));
-    const couponCount = toNumber(getFirstValue(summary, ["pendingCouponRequestCount", "pendingCouponCount", "couponRequestCount"]));
+    const claimCount = toNumber(getFirstValue(summary, ["pendingClaimCount","claimCount"]));
     const asOfDate = getFirstValue(summary, ["asOfDate", "summaryDate", "date", "today"]);
 
     todaySales.textContent = salesAmount === undefined ? "-" : money.format(salesAmount);
     salesChangeRate.textContent = formatRate(salesRate);
     todayOrderCount.textContent = formatCount(orderCount);
     unansweredQnaCount.textContent = formatCount(qnaCount);
-    pendingCouponCount.textContent = formatCount(couponCount);
+    pendingClaimCount.textContent = formatCount(claimCount);
     dashboardDate.textContent = formatDate(asOfDate);
   }
 
@@ -163,7 +163,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   form.addEventListener("submit", async (event) => {
     event.preventDefault();
-    const requiredFields = ["couponName", "discount", "minPrice", "quantity", "startDate", "endDate", "reason"];
+    const requiredFields = ["couponName", "discount", "minPrice", "quantity", "startDate", "endDate"];
     const missingField = requiredFields
       .map((id) => document.getElementById(id))
       .find((field) => !field.value.trim());
@@ -176,8 +176,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const startDate = document.getElementById("startDate").value;
     const endDate = document.getElementById("endDate").value;
-    if (startDate > endDate) {
-      showCouponMessage("사용 시작일은 종료일보다 늦을 수 없습니다.");
+    if (startDate >= endDate) {
+      showCouponMessage("사용 종료일은 시작일보다 이후여야 합니다.");
       document.getElementById("endDate").focus();
       return;
     }
@@ -188,12 +188,11 @@ document.addEventListener("DOMContentLoaded", () => {
       discountType: document.getElementById("couponType").value,
       discountValue: Number(document.getElementById("discount").value),
       minimumOrderAmount: Number(document.getElementById("minPrice").value),
-      maximumDiscountAmount: maxDiscount ? Number(maxDiscount) : null,
-      quantity: Number(document.getElementById("quantity").value),
+      maximumDiscountAmount: maxDiscount ? Number(maxDiscount) : 0,
+      totalQuantity: Number(document.getElementById("quantity").value),
       validFrom: startDate,
-      validUntil: endDate,
-      reason: document.getElementById("reason").value.trim()
-    };
+      validUntil: endDate
+};
 
     try {
       submitButton.disabled = true;
