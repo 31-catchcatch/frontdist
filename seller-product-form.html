@@ -105,8 +105,10 @@
           </div>
 
           <div class="field">
-            <label for="brandName">브랜드명 <strong>*</strong></label>
-            <input id="brandName" name="brandName" type="text" maxlength="50" placeholder="브랜드명을 입력하세요" required>
+            <label for="brandId">브랜드 <strong>*</strong></label>
+            <select id="brandId" name="brandId" required>
+              <option value="">브랜드 선택</option>
+            </select>
           </div>
 
           <div class="field">
@@ -122,14 +124,6 @@
             <div class="input-unit">
               <input id="discountRate" name="discountRate" type="number" min="0" max="100" step="1" value="0">
               <span>%</span>
-            </div>
-          </div>
-
-          <div class="field">
-            <label for="stock">재고 수량 <strong>*</strong></label>
-            <div class="input-unit">
-              <input id="stock" name="stock" type="number" min="0" step="1" placeholder="0" required>
-              <span>개</span>
             </div>
           </div>
 
@@ -156,20 +150,11 @@
             <span class="section-number">02</span>
             <h2 id="optionTitle">상품 옵션</h2>
           </div>
-          <p>쉼표로 여러 값을 구분하세요.</p>
+          <p>최소 1개 이상의 옵션을 등록해야 구매(장바구니 담기)가 가능합니다.</p>
         </div>
 
-        <div class="form-grid">
-          <div class="field">
-            <label for="sizes">사이즈</label>
-            <input id="sizes" name="sizes" type="text" placeholder="예: S, M, L, XL">
-          </div>
-
-          <div class="field">
-            <label for="colors">색상</label>
-            <input id="colors" name="colors" type="text" placeholder="예: 블랙, 화이트, 네이비">
-          </div>
-        </div>
+        <div class="option-rows" id="optionRows"></div>
+        <button type="button" id="addOptionButton" class="add-option-button">+ 옵션 추가</button>
       </section>
 
       <section class="form-card" aria-labelledby="imageTitle">

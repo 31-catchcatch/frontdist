@@ -1,261 +1,393 @@
-// product-detail.js — 상품상세 페이지 mock 스크립트
-// U-PROD-001~007  /  받는 파라미터: ?id=상품번호
-// 로그인 체크는 js/auth.js의 CatchAuth 사용 (리더 제공)
+// product-detail.js — 상품상세 (U-PROD-001~007)  URL: ?id=상품번호 [&brand=브랜드명]
+//
+// ⚠️ auth.js → api.js → product.js 다음에 로드된다.
 
 document.addEventListener("DOMContentLoaded", () => {
-
   const params = new URLSearchParams(location.search);
-  const productId = Number(params.get("id")) || 1;
-
-  // ===== 가짜 데이터 (백엔드 나오면 API로 교체) =====
-  // TODO: GET /api/v1/products/{productId}  (U-PROD-001)
-  const product = {
-    id: productId,
-    brand: "캐치베이직",
-    name: "오버핏 울 블렌드 싱글 코트",
-    price: 128000,
-    discount: 30,
-    finalPrice: 89600,
-    rating: 4.8,
-    reviewCount: 128,
-    liked: false,
-    images: [
-      "https://placehold.co/600x800/e8e8e8/999?text=IMAGE+1",
-      "https://placehold.co/600x800/f0f0f0/999?text=IMAGE+2",
-      "https://placehold.co/600x800/e0e0e0/999?text=IMAGE+3",
-      "https://placehold.co/600x800/eaeaea/999?text=IMAGE+4",
-    ],
-    sizes: [
-      { label: "S", stock: 5 },
-      { label: "M", stock: 12 },
-      { label: "L", stock: 0 },
-      { label: "XL", stock: 3 },
-    ],
-    description: `
-      <img src="https://placehold.co/800x1000/f5f5f5/999?text=DETAIL+IMAGE">
-      <p>부드러운 울 혼방 소재로 제작된 오버핏 코트입니다.<br>
-      가볍지만 보온성이 뛰어나 데일리로 착용하기 좋습니다.</p>
-      <p>소재: 울 70%, 폴리에스터 30%<br>
-      제조국: 대한민국<br>
-      세탁방법: 드라이클리닝</p>
-    `,
-  };
-
-  // TODO: GET /api/v1/products/{productId}/reviews  (U-PROD-005)
-  const reviews = [
-    { user: "김**", rating: 5, size: "M", date: "2026.07.10", body: "핏이 정말 예뻐요! 어깨가 넉넉해서 안에 니트 입어도 편합니다." },
-    { user: "이**", rating: 4, size: "L", date: "2026.07.08", body: "색감 좋고 두께감도 적당해요. 다만 배송이 조금 늦었습니다." },
-    { user: "박**", rating: 5, size: "S", date: "2026.07.05", body: "155cm인데 오버핏으로 딱 좋아요. 재구매 의사 있습니다." },
-  ];
-
-  // TODO: GET /api/v1/products/{productId}/qna  (U-PROD-006)
-  const qnas = [
-    { title: "재입고 예정 있나요?", date: "2026.07.11", answered: true, answer: "안녕하세요. L 사이즈는 7월 20일 재입고 예정입니다." },
-    { title: "실측 사이즈 알려주세요", date: "2026.07.09", answered: true, answer: "M 기준 총장 105cm, 어깨 52cm, 가슴 60cm입니다." },
-    { title: "다른 색상도 나오나요?", date: "2026.07.12", answered: false, answer: null },
-  ];
+  const productId = Number(params.get("id"));
+  const brandFromQuery = params.get("brand"); // 목록에서 넘어온 브랜드명(폴백용)
+  const thumbFromQuery = params.get("thumb"); // 목록에서 넘어온 썸네일(상세 이미지 없을 때 폴백)
 
   const $ = (sel) => document.querySelector(sel);
-  const won = (n) => n.toLocaleString("ko-KR") + "원";
+  const esc = (v) => CatchApi.escape(v);
+  const won = (n) => CatchApi.won(n);
 
-  let selectedSize = null;
+  let product = null; // fetchDetail 결과
+  let selectedOption = null; // { optionId, additionalPrice }
   let qty = 1;
+  let liked = false;
 
-  // ===== 1. 기본 정보 =====
-  $('[data-role="brand"]').textContent = product.brand;
-  $('[data-role="name"]').textContent = product.name;
-  $('[data-role="rating"]').textContent = product.rating.toFixed(1);
-  $('[data-role="description"]').innerHTML = product.description;
-  $('[data-role="point"]').textContent = Math.floor(product.finalPrice * 0.01).toLocaleString("ko-KR");
+  const mainEl = document.querySelector("main");
 
-  document.querySelectorAll('[data-role="review-count"]').forEach((el) => {
-    el.textContent = product.reviewCount;
-  });
+  function showError(message) {
+    if (mainEl) {
+      mainEl.innerHTML =
+        '<div class="wrap" style="padding:80px 0;text-align:center;color:#666">' +
+        '<p style="font-size:18px;margin-bottom:16px">' +
+        esc(message) +
+        "</p>" +
+        '<a href="product-list.html" class="btn-outline" style="display:inline-block;padding:12px 28px">상품 목록으로</a>' +
+        "</div>";
+    }
+  }
 
-  $('[data-role="final-price"]').textContent = won(product.finalPrice);
-
-  // ===== 2. 이미지 갤러리 =====
-  const mainImg = $('[data-role="main-image"]');
-  const thumbs = $('[data-role="thumbs"]');
-
-  mainImg.src = product.images[0];
-  thumbs.innerHTML = product.images
-    .map((src, i) => `
-      <button type="button" class="${i === 0 ? "is-active" : ""}" data-img="${src}">
-        <img src="${src}" alt="상품 이미지 ${i + 1}">
-      </button>
-    `).join("");
-
-  thumbs.addEventListener("click", (e) => {
-    const btn = e.target.closest("button[data-img]");
-    if (!btn) return;
-    mainImg.src = btn.dataset.img;
-    thumbs.querySelectorAll("button").forEach((b) => b.classList.remove("is-active"));
-    btn.classList.add("is-active");
-  });
-
-  // ===== 3. 사이즈 선택 =====
-  const sizeChips = $('[data-role="size-chips"]');
-  sizeChips.innerHTML = product.sizes
-    .map((s) => `
-      <button type="button" data-size="${s.label}" ${s.stock === 0 ? "disabled" : ""}>
-        ${s.label}${s.stock === 0 ? " (품절)" : ""}
-      </button>
-    `).join("");
-
-  sizeChips.addEventListener("click", (e) => {
-    const btn = e.target.closest("button[data-size]");
-    if (!btn || btn.disabled) return;
-    selectedSize = btn.dataset.size;
-    sizeChips.querySelectorAll("button").forEach((b) => b.classList.remove("is-selected"));
-    btn.classList.add("is-selected");
-  });
-
-  // ===== 4. 수량 =====
-  const qtyInput = $('[data-role="qty"]');
-  const totalEl = $('[data-role="total-price"]');
-
+  // ===== 가격/합계 =====
+  function unitPrice() {
+    const add = selectedOption ? selectedOption.additionalPrice : 0;
+    return product.finalPrice + add;
+  }
   function updateTotal() {
-    qtyInput.value = qty;
-    totalEl.textContent = won(product.finalPrice * qty);
+    const qtyInput = $('[data-role="qty"]');
+    const totalEl = $('[data-role="total-price"]');
+    if (qtyInput) qtyInput.value = qty;
+    if (totalEl) totalEl.textContent = won(unitPrice() * qty);
   }
 
-  $('[data-action="qty-minus"]').addEventListener("click", () => {
-    if (qty > 1) { qty--; updateTotal(); }
-  });
-  $('[data-action="qty-plus"]').addEventListener("click", () => {
-    if (qty < 10) { qty++; updateTotal(); }
-    else alert("최대 10개까지 구매 가능합니다.");
-  });
-  updateTotal();
+  // ===== 렌더 =====
+  function renderProduct() {
+    // finalPrice 정규화 (상세 응답엔 finalPrice 있음)
+    const price = product.price;
+    const discountRate = product.discountRate || 0;
+    const finalPrice = product.finalPrice != null ? product.finalPrice : price;
+    product.finalPrice = finalPrice;
 
-  // ===== 5. 찜하기 (U-PROD-004) — 로그인 필요 =====
-  const likeBtn = $('[data-action="like"]');
-  likeBtn.addEventListener("click", () => {
-    if (!CatchAuth.requireLogin()) return;
+    // 브랜드 라벨: 목록에서 넘어온 brand 우선, 없으면 판매자명
+    $('[data-role="brand"]').textContent = brandFromQuery || product.sellerName || "";
+    $('[data-role="name"]').textContent = product.name;
+    $('[data-role="description"]').textContent = product.description || "";
+    $('[data-role="point"]').textContent = Math.floor(finalPrice * 0.01).toLocaleString("ko-KR");
 
-    product.liked = !product.liked;
-    likeBtn.classList.toggle("is-liked", product.liked);
-    // TODO: POST /api/v1/products/{productId}/like
-  });
+    $('[data-role="final-price"]').textContent = won(finalPrice);
 
-  // ===== 6. 장바구니 담기 (U-PROD-002) — 로그인 필요 =====
-  $('[data-action="add-cart"]').addEventListener("click", () => {
-    if (!selectedSize) {
-      alert("사이즈를 선택해 주세요.");
-      return;
+    const discountEl = $('[data-role="discount"]');
+    const originEl = $('[data-role="origin-price"]');
+    if (discountRate > 0) {
+      if (discountEl) {
+        discountEl.textContent = discountRate + "%";
+        discountEl.hidden = false;
+      }
+      if (originEl) {
+        originEl.innerHTML = "<s>" + won(price) + "</s>";
+        originEl.hidden = false;
+      }
     }
-    if (!CatchAuth.requireLogin()) return;
 
-    // TODO: POST /api/v1/carts  body: { productId, size, quantity }
-    if (confirm("장바구니에 담았습니다.\n장바구니로 이동할까요?")) {
-      location.href = "shoppingcart.html";
+    // 이미지 갤러리
+    //  1순위: 상세 이미지(product_images) → 2순위: 목록에서 넘어온 썸네일 → 3순위: 플레이스홀더
+    //  (판매자 등록 상품처럼 상세 이미지가 없어도 목록 썸네일로 대표 이미지를 채운다)
+    let images;
+    if (Array.isArray(product.imageUrls) && product.imageUrls.length) {
+      images = product.imageUrls;
+    } else if (thumbFromQuery) {
+      images = [thumbFromQuery];
+    } else {
+      images = [CatchApi.PLACEHOLDER];
     }
-  });
+    const mainImg = $('[data-role="main-image"]');
+    const thumbs = $('[data-role="thumbs"]');
+    mainImg.src = images[0];
+    mainImg.onerror = function () {
+      this.onerror = null;
+      this.src = CatchApi.PLACEHOLDER;
+    };
+    thumbs.innerHTML = images
+      .map(
+        (src, i) =>
+          `<button type="button" class="${i === 0 ? "is-active" : ""}" data-img="${esc(src)}">` +
+          `<img src="${esc(src)}" alt="상품 이미지 ${i + 1}" onerror="this.onerror=null;this.src=CatchApi.PLACEHOLDER"></button>`
+      )
+      .join("");
 
-  // ===== 7. 바로구매 (U-PROD-003) — 로그인 필요 =====
-  $('[data-action="buy-now"]').addEventListener("click", () => {
-    if (!selectedSize) {
-      alert("사이즈를 선택해 주세요.");
-      return;
+    // 옵션 → 사이즈 칩 (품절 disabled)
+    const sizeChips = $('[data-role="size-chips"]');
+    const options = Array.isArray(product.options) ? product.options : [];
+    if (options.length === 0) {
+      sizeChips.innerHTML = '<p class="pd-no-option">옵션 정보가 없습니다.</p>';
+    } else {
+      sizeChips.innerHTML = options
+        .map((o) => {
+          const soldOut = o.soldOut || o.stockQuantity === 0;
+          const addTxt = o.additionalPrice ? ` (+${o.additionalPrice.toLocaleString("ko-KR")})` : "";
+          return (
+            `<button type="button" data-option-id="${o.optionId}" data-add="${o.additionalPrice || 0}" ${soldOut ? "disabled" : ""}>` +
+            `${esc(o.optionName)}${addTxt}${soldOut ? " (품절)" : ""}</button>`
+          );
+        })
+        .join("");
+
+      // 옵션이 1개뿐이면 굳이 클릭 안 해도 되게 자동 선택한다.
+      if (options.length === 1 && !options[0].soldOut && options[0].stockQuantity !== 0) {
+        const onlyOption = options[0];
+        selectedOption = {
+          optionId: onlyOption.optionId,
+          additionalPrice: onlyOption.additionalPrice || 0,
+        };
+        const onlyChip = sizeChips.querySelector("button[data-option-id]");
+        if (onlyChip) onlyChip.classList.add("is-selected");
+      }
     }
-    if (!CatchAuth.requireLogin()) return;
 
-    // TODO: GET /api/v1/orders/checkout
-    location.href = `checkout.html?id=${product.id}&size=${selectedSize}&qty=${qty}`;
-  });
+    updateTotal();
+  }
 
-  // ===== 8. 탭 전환 =====
-  const tabBtns = document.querySelectorAll("[data-tab]");
-  const tabPanels = document.querySelectorAll("[data-panel]");
+  function stars(n) {
+    const full = Math.round(n);
+    return "★".repeat(full) + "☆".repeat(5 - full);
+  }
+  function fmtDate(iso) {
+    if (!iso) return "";
+    return String(iso).slice(0, 10).replace(/-/g, ".");
+  }
 
-  tabBtns.forEach((btn) => {
-    btn.addEventListener("click", () => {
-      const target = btn.dataset.tab;
-      tabBtns.forEach((b) => b.classList.toggle("is-active", b === btn));
-      tabPanels.forEach((p) => (p.hidden = p.dataset.panel !== target));
+  async function renderReviews() {
+    let result;
+    try {
+      result = await CatchApi.page("/products/" + productId + "/reviews", { page: 0, size: 100 });
+    } catch (_) {
+      result = { content: [], totalElements: 0 };
+    }
+    const count = result.totalElements;
+    document.querySelectorAll('[data-role="review-count"]').forEach((el) => {
+      el.textContent = count;
     });
-  });
+    const ratings = result.content.map((r) => Number(r.rating)).filter(Number.isFinite);
+    const avg = ratings.length ? ratings.reduce((a, b) => a + b, 0) / ratings.length : 0;
+    $('[data-role="rating"]').textContent = avg.toFixed(1);
 
-  $(".review-link").addEventListener("click", (e) => {
-    e.preventDefault();
-    document.querySelector('[data-tab="review"]').click();
-    $(".pdetail-tabs").scrollIntoView({ behavior: "smooth" });
-  });
+    const listEl = $('[data-role="review-list"]');
+    if (result.content.length === 0) {
+      listEl.innerHTML = '<li class="empty-row">아직 작성된 리뷰가 없습니다.</li>';
+      return;
+    }
+    listEl.innerHTML = result.content
+      .map(
+        (r) =>
+          "<li><div class=\"review-head\">" +
+          `<span class="stars">${stars(r.rating)}</span>` +
+          `<span>${esc(r.reviewerName)}</span>` +
+          `<span>${fmtDate(r.createdAt)}</span></div>` +
+          `<p class="review-body">${esc(r.content)}</p></li>`
+      )
+      .join("");
+  }
 
-  // ===== 9. 리뷰 (U-PROD-005) =====
-  const stars = (n) => "★".repeat(n) + "☆".repeat(5 - n);
-  $('[data-role="review-list"]').innerHTML = reviews
-    .map((r) => `
-      <li>
-        <div class="review-head">
-          <span class="stars">${stars(r.rating)}</span>
-          <span>${r.user}</span>
-          <span>${r.date}</span>
-        </div>
-        <p class="review-opt">사이즈: ${r.size}</p>
-        <p class="review-body">${r.body}</p>
-      </li>
-    `).join("");
-
-  // ===== 10. Q&A 목록 (U-PROD-006) =====
-  function renderQna() {
-    $('[data-role="qna-list"]').innerHTML = qnas
-      .map((q) => `
-        <li>
-          <div class="qna-q">
-            <span class="badge${q.answered ? " is-answered" : ""}">${q.answered ? "답변완료" : "답변대기"}</span>
-            <div class="qna-q-body">
-              <p class="qna-title">${q.title}</p>
-              <span class="qna-date">${q.date}</span>
-            </div>
-          </div>
-          ${q.answered ? `<div class="qna-a"><b>판매자 답변</b><br>${q.answer}</div>` : ""}
-        </li>
-      `).join("");
-
+  async function renderQna() {
+    let result;
+    try {
+      result = await CatchApi.page("/products/" + productId + "/qna", { page: 0, size: 20 });
+    } catch (_) {
+      result = { content: [], totalElements: 0 };
+    }
     document.querySelectorAll('[data-role="qna-count"]').forEach((el) => {
-      el.textContent = qnas.length;
+      el.textContent = result.totalElements;
     });
-  }
-  renderQna();
-
-  // ===== 11. Q&A 등록 (U-PROD-007) — 로그인 필요 =====
-  const qnaForm = $('[data-role="qna-form"]');
-
-  $('[data-action="open-qna"]').addEventListener("click", () => {
-    if (!CatchAuth.requireLogin()) return;
-    qnaForm.hidden = false;
-  });
-
-  $('[data-action="cancel-qna"]').addEventListener("click", () => {
-    qnaForm.hidden = true;
-    qnaForm.reset();
-  });
-
-  qnaForm.addEventListener("submit", (e) => {
-    e.preventDefault();
-    const title = $("#qnaTitle").value.trim();
-    const body = $("#qnaBody").value.trim();
-
-    if (!title || !body) {
-      alert("제목과 내용을 모두 입력해 주세요.");
+    const listEl = $('[data-role="qna-list"]');
+    if (result.content.length === 0) {
+      listEl.innerHTML = '<li class="empty-row">등록된 문의가 없습니다.</li>';
       return;
     }
+    listEl.innerHTML = result.content
+      .map((q) => {
+        const answered = q.answered;
+        const answer =
+          answered && (q.answerContent || q.answer)
+            ? `<div class="qna-a"><b>판매자 답변</b><br>${esc(q.answerContent || q.answer)}</div>`
+            : "";
+        return (
+          "<li><div class=\"qna-q\">" +
+          `<span class="badge${answered ? " is-answered" : ""}">${answered ? "답변완료" : "답변대기"}</span>` +
+          `<div class="qna-q-body"><p class="qna-title">${esc(q.title)}</p>` +
+          `<span class="qna-date">${fmtDate(q.createdAt)}</span></div></div>${answer}</li>`
+        );
+      })
+      .join("");
+  }
 
-    // TODO: POST /api/v1/products/{productId}/qna
-    //   body: { title, content, isSecret }
-    qnas.unshift({
-      title: title,
-      date: new Date().toLocaleDateString("ko-KR").replace(/\. /g, ".").replace(/\.$/, ""),
-      answered: false,
-      answer: null,
+  // ===== 이벤트 바인딩 (product 로드 후) =====
+  function bindInteractions() {
+    // 썸네일 전환
+    const thumbs = $('[data-role="thumbs"]');
+    const mainImg = $('[data-role="main-image"]');
+    thumbs.addEventListener("click", (e) => {
+      const btn = e.target.closest("button[data-img]");
+      if (!btn) return;
+      mainImg.src = btn.dataset.img;
+      thumbs.querySelectorAll("button").forEach((b) => b.classList.remove("is-active"));
+      btn.classList.add("is-active");
     });
 
-    renderQna();
-    qnaForm.hidden = true;
-    qnaForm.reset();
-    alert("문의가 등록되었습니다.");
-  });
+    // 옵션 선택
+    const sizeChips = $('[data-role="size-chips"]');
+    sizeChips.addEventListener("click", (e) => {
+      const btn = e.target.closest("button[data-option-id]");
+      if (!btn || btn.disabled) return;
+      selectedOption = {
+        optionId: Number(btn.dataset.optionId),
+        additionalPrice: Number(btn.dataset.add) || 0,
+      };
+      sizeChips.querySelectorAll("button").forEach((b) => b.classList.remove("is-selected"));
+      btn.classList.add("is-selected");
+      updateTotal();
+    });
 
+    // 수량
+    $('[data-action="qty-minus"]').addEventListener("click", () => {
+      if (qty > 1) {
+        qty--;
+        updateTotal();
+      }
+    });
+    $('[data-action="qty-plus"]').addEventListener("click", () => {
+      if (qty < 10) {
+        qty++;
+        updateTotal();
+      } else {
+        alert("최대 10개까지 구매 가능합니다.");
+      }
+    });
+
+    // 찜
+    const likeBtn = $('[data-action="like"]');
+    likeBtn.addEventListener("click", async () => {
+      const result = await CatchProduct.toggleLike(productId); // 비로그인 시 로그인 이동 + null
+      if (result === null) return;
+      liked = result;
+      likeBtn.classList.toggle("is-liked", liked);
+    });
+
+    // 장바구니 담기
+    $('[data-action="add-cart"]').addEventListener("click", async () => {
+      if (!requireOption()) return;
+      if (!CatchAuth.requireLogin()) return;
+      try {
+        await CatchApi.post("/carts", {
+          productId: productId,
+          productOptionId: selectedOption.optionId,
+          quantity: qty,
+        });
+        if (confirm("장바구니에 담았습니다.\n장바구니로 이동할까요?")) {
+          location.href = "shoppingcart.html";
+        }
+      } catch (err) {
+        alert(err.message || "장바구니 담기에 실패했습니다.");
+      }
+    });
+
+    // 바로구매 → 장바구니 담고 주문서로
+    $('[data-action="buy-now"]').addEventListener("click", async () => {
+      if (!requireOption()) return;
+      if (!CatchAuth.requireLogin()) return;
+      try {
+        await CatchApi.post("/carts", {
+          productId: productId,
+          productOptionId: selectedOption.optionId,
+          quantity: qty,
+        });
+        location.href = "checkout.html";
+      } catch (err) {
+        alert(err.message || "주문 진행에 실패했습니다.");
+      }
+    });
+
+    // 탭 전환
+    const tabBtns = document.querySelectorAll("[data-tab]");
+    const tabPanels = document.querySelectorAll("[data-panel]");
+    tabBtns.forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const target = btn.dataset.tab;
+        tabBtns.forEach((b) => b.classList.toggle("is-active", b === btn));
+        tabPanels.forEach((p) => (p.hidden = p.dataset.panel !== target));
+      });
+    });
+    const reviewLink = document.querySelector(".review-link");
+    if (reviewLink) {
+      reviewLink.addEventListener("click", (e) => {
+        e.preventDefault();
+        document.querySelector('[data-tab="review"]').click();
+        document.querySelector(".pdetail-tabs").scrollIntoView({ behavior: "smooth" });
+      });
+    }
+
+    // Q&A 등록 폼 (열기/닫기)
+    const qnaForm = $('[data-role="qna-form"]');
+    $('[data-action="open-qna"]').addEventListener("click", () => {
+      if (!CatchAuth.requireLogin()) return;
+      qnaForm.hidden = false;
+    });
+    $('[data-action="cancel-qna"]').addEventListener("click", () => {
+      qnaForm.hidden = true;
+      qnaForm.reset();
+    });
+    qnaForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const title = $("#qnaTitle").value.trim();
+      const content = $("#qnaBody").value.trim();
+      const secret = $("#qnaSecret") ? $("#qnaSecret").checked : false;
+      if (!title || !content) {
+        alert("제목과 내용을 모두 입력해 주세요.");
+        return;
+      }
+      try {
+        await CatchApi.post("/products/" + productId + "/qna", { title, content, secret });
+        alert("문의가 등록되었습니다.");
+        qnaForm.hidden = true;
+        qnaForm.reset();
+        renderQna();
+      } catch (err) {
+        alert(err.message || "문의 등록에 실패했습니다.");
+      }
+    });
+  }
+
+  function requireOption() {
+    const options = Array.isArray(product.options) ? product.options : [];
+    if (options.length > 0 && !selectedOption) {
+      alert("옵션을 선택해 주세요.");
+      return false;
+    }
+    return true;
+  }
+
+  // ===== 시작 =====
+  (async function start() {
+    if (!productId) {
+      showError("잘못된 접근입니다. 상품을 찾을 수 없습니다.");
+      return;
+    }
+    try {
+      product = await CatchProduct.fetchDetail(productId);
+    } catch (err) {
+      showError(
+        err.status === 404
+          ? "존재하지 않는 상품입니다."
+          : "상품 정보를 불러오지 못했습니다."
+      );
+      return;
+    }
+    renderProduct();
+    bindInteractions();
+
+    // 찜 초기 상태 (로그인 시 위시리스트 대조)
+    CatchProduct.loadLikedIds().then((set) => {
+      if (set.has(productId)) {
+        liked = true;
+        $('[data-action="like"]').classList.add("is-liked");
+      }
+    });
+
+    // 최근 본 상품 기록 (latest-list.html 데이터 소스)
+    CatchProduct.pushRecentlyViewed({
+      productId: productId,
+      name: product.name,
+      brandName: brandFromQuery || "",
+      finalPrice: product.finalPrice,
+      thumbnailUrl:
+        Array.isArray(product.imageUrls) && product.imageUrls.length
+          ? product.imageUrls[0]
+          : (thumbFromQuery || ""),
+    });
+
+    renderReviews();
+    renderQna();
+  })();
 });

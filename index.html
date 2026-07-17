@@ -122,23 +122,23 @@
     </div>
   </section>
 
-  <!-- BEST -->
+  <!-- 신상품 -->
   <section class="block">
     <div class="sec-head">
       <div>
-        <p class="kicker">Ranking</p>
-        <h3>베스트</h3>
+        <p class="kicker">New Arrivals</p>
+        <h3>신상품</h3>
       </div>
       <a class="more" href="product-list.html?view=best">전체보기 →</a>
     </div>
     <div class="chips">
-      <span class="chip on">전체</span>
-      <span class="chip">아우터</span>
-      <span class="chip">상의</span>
-      <span class="chip">팬츠</span>
-      <span class="chip">신발</span>
-      <span class="chip">가방</span>
-      <span class="chip">액세서리</span>
+      <a class="chip on" href="product-list.html">전체</a>
+      <a class="chip" href="product-list.html?cat=outer">아우터</a>
+      <a class="chip" href="product-list.html?cat=top">상의</a>
+      <a class="chip" href="product-list.html?cat=pants">팬츠</a>
+      <a class="chip" href="product-list.html?cat=shoes">신발</a>
+      <a class="chip" href="product-list.html?cat=bag">가방</a>
+      <a class="chip" href="product-list.html?cat=acc">액세서리</a>
     </div>
     <div class="grid" id="grid"></div>
   </section>
@@ -175,89 +175,10 @@
   </div>
 </footer>
 
-<script>
-  // product data
-  const tiles = ['var(--tile-1)','var(--tile-2)','var(--tile-3)','var(--tile-4)'];
-  const garments = ['g-tee','g-hoodie','g-pants','g-jacket','g-cap','g-bag'];
-  const best = [
-    ['STANDARD','릴렉스 핏 쿨 코튼 반팔 티셔츠','29,000','g-tee','4.8','2.1k'],
-    ['STANDARD','와이드 원턱 코튼 팬츠','49,000','g-pants','4.7','1.4k'],
-    ['STANDARD','오버핏 후드 스웨트셔츠','44,900','g-hoodie','4.9','980'],
-    ['STANDARD','베이식 볼캡','19,000','g-cap','4.6','760'],
-    ['STANDARD','미니멀 데일리 크로스백','32,900','g-bag','4.8','1.1k'],
-    ['STANDARD','린넨 블렌드 셔츠 자켓','89,000','g-jacket','4.7','540'],
-    ['STANDARD','에센셜 5팩 크루넥 티셔츠','39,000','g-tee','4.9','3.3k'],
-    ['STANDARD','테이퍼드 히든밴딩 슬랙스','36,900','g-pants','4.6','870'],
-  ];
-  function card([brand,name,price,g,rate,cnt], i, isNew){
-    const badge = isNew
-      ? '<span class="badge">NEW</span>'
-      : (i===0?'<span class="badge">BEST</span>':'');
-    const priceRow = '<span class="price tnum">'+price+'원</span>';
-    return `<article class="card" tabindex="0">
-      <div class="thumb">
-        <div class="art" style="background:${tiles[i % tiles.length]}"></div>
-        <svg class="garment" viewBox="0 0 130 110"><use href="#${g}"/></svg>
-        ${badge}
-        <button class="like" aria-label="찜하기"><svg viewBox="0 0 24 24"><path d="M12 20s-7-4.6-7-9.3A3.7 3.7 0 0 1 12 8a3.7 3.7 0 0 1 7 2.7C19 15.4 12 20 12 20Z"/></svg></button>
-      </div>
-      <div class="meta">
-        <span class="brand-nm">${brand}</span>
-        <span class="prod-nm">${name}</span>
-        <div class="price-row">${priceRow}</div>
-        <div class="rate"><svg class="star" viewBox="0 0 24 24"><path d="M12 2l2.9 6.3 6.9.7-5.1 4.6 1.4 6.8L12 17.8 5.9 20.4l1.4-6.8L2.2 9l6.9-.7z"/></svg><b>${rate}</b> · 리뷰 ${cnt}</div>
-      </div>
-    </article>`;
-  }
-  document.getElementById('grid').innerHTML = best.map((d,i)=>card(d,i,false)).join('');
-
-  // 광고/이벤트 배너 자동 가로 슬라이드
-  (() => {
-    const slider = document.getElementById('adSlider');
-    const track = document.getElementById('adTrack');
-    const dots = Array.from(document.querySelectorAll('.slider-dot'));
-    const slideCount = dots.length;
-    let index = 0;
-    let timer = null;
-
-    function moveTo(nextIndex) {
-      index = (nextIndex + slideCount) % slideCount;
-      track.style.transform = `translateX(-${index * 100}%)`;
-      dots.forEach((dot, i) => dot.classList.toggle('on', i === index));
-    }
-
-    function startAutoSlide() {
-      stopAutoSlide();
-      timer = window.setInterval(() => moveTo(index + 1), 4000);
-    }
-
-    function stopAutoSlide() {
-      if (timer !== null) {
-        window.clearInterval(timer);
-        timer = null;
-      }
-    }
-
-    dots.forEach((dot, i) => {
-      dot.addEventListener('click', () => {
-        moveTo(i);
-        startAutoSlide();
-      });
-    });
-
-    slider.addEventListener('mouseenter', stopAutoSlide);
-    slider.addEventListener('mouseleave', startAutoSlide);
-    slider.addEventListener('focusin', stopAutoSlide);
-    slider.addEventListener('focusout', startAutoSlide);
-
-    moveTo(0);
-    startAutoSlide();
-  })();
-
-</script>
-
 <script src="js/auth.js"></script>
-
+<script src="js/api.js"></script>
+<script src="js/product.js"></script>
+<script src="js/home.js"></script>
 <script src="js/navigation.js"></script>
 </body>
 </html>

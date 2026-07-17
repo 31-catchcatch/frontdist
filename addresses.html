@@ -78,7 +78,7 @@
 
   <!-- ▼▼▼ 여기부터 페이지 내용을 작성하세요 ▼▼▼ -->
 
-<section class="block">
+<section class="block address-page">
 
   <div class="sec-head">
     <div>
@@ -87,483 +87,157 @@
     </div>
   </div>
 
-
-
-  <!-- 탭 -->
-  <div class="tabs">
-
-    <button class="tab-btn active" data-tab="list">
+  <div class="tabs" role="tablist" aria-label="배송지 관리 메뉴">
+    <button type="button" class="tab-btn active" data-tab="list" role="tab" aria-selected="true">
       배송지 조회
     </button>
-
-    <button class="tab-btn" data-tab="add">
+    <button type="button" class="tab-btn" data-tab="add" role="tab" aria-selected="false">
       신규 등록
     </button>
-
   </div>
 
+  <!-- 배송지 목록 -->
+  <div class="tab-content active" id="list" role="tabpanel">
+    <p class="api-message" id="listMessage" aria-live="polite"></p>
 
+    <div class="table-scroll">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>구분</th>
+            <th>받는 사람</th>
+            <th>주소</th>
+            <th>연락처</th>
+            <th>기본배송지</th>
+            <th>관리</th>
+          </tr>
+        </thead>
+        <tbody id="addressRows">
+          <tr>
+            <td colspan="6" class="loading-cell">배송지 목록을 불러오는 중입니다.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
 
-
-  <!-- =========================
-       배송지 조회
-  ========================== -->
-
-  <div class="tab-content active" id="list">
-
-
-    <table class="table">
-
-      <thead>
-
-        <tr>
-          <th>구분</th>
-          <th>받는 사람</th>
-          <th>주소</th>
-          <th>연락처</th>
-          <th>기본배송지</th>
-          <th>관리</th>
-        </tr>
-
-      </thead>
-
-
-
-      <tbody>
-
-
-        <tr>
-
-          <td>집</td>
-
-          <td>홍길동</td>
-
-          <td>
-            서울특별시 성동구 왕십리로 100
-          </td>
-
-          <td>
-            010-1234-5678
-          </td>
-
-
-          <td>
-
-            <input
-              type="checkbox"
-              class="default-address"
-              checked
-              onchange="changeDefault(this)">
-
-          </td>
-
-
-          <td>
-
-            <button
-              class="btn-outline"
-              onclick="showEdit(
-              '집',
-              '홍길동',
-              '010-1234-5678',
-              '서울특별시 성동구 왕십리로 100',
-              '101동 1001호',
-              true)">
-              수정
-            </button>
-
-          </td>
-
-
-        </tr>
-
-
-
-
-        <tr>
-
-          <td>회사</td>
-
-          <td>홍길동</td>
-
-          <td>
-            서울특별시 강남구 테헤란로 100
-          </td>
-
-          <td>
-            010-1234-5678
-          </td>
-
-
-          <td>
-
-            <input
-              type="checkbox"
-              class="default-address"
-              onchange="changeDefault(this)">
-
-          </td>
-
-
-          <td>
-
-            <button
-              class="btn-outline"
-              onclick="showEdit(
-              '회사',
-              '홍길동',
-              '010-1234-5678',
-              '서울특별시 강남구 테헤란로 100',
-              '5층',
-              false)">
-              수정
-            </button>
-
-          </td>
-
-
-        </tr>
-
-
-      </tbody>
-
-
-    </table>
-
-
-
-
-
-    <!-- =========================
-         배송지 수정 영역
-    ========================== -->
-
-
+    <!-- 배송지 수정 -->
     <div id="edit-area" class="edit-box">
-
-
       <div class="edit-title">
-
         <h4>배송지 수정</h4>
-
       </div>
 
-
-
-
-      <form class="form-grid">
-
-
+      <form id="editAddressForm" class="form-grid" novalidate>
         <label>
-
-          배송지명
-
-          <input id="editName" type="text">
-
+          배송지명 <span class="required">*</span>
+          <input id="editName" type="text" maxlength="50" required>
         </label>
 
-
-
         <label>
-
-          받는 사람
-
-          <input id="editReceiver" type="text">
-
+          받는 사람 <span class="required">*</span>
+          <input id="editReceiver" type="text" maxlength="100" required>
         </label>
 
-
-
         <label>
-
-          연락처
-
-          <input id="editPhone" type="text">
-
+          연락처 <span class="required">*</span>
+          <input id="editPhone" type="tel" maxlength="20" placeholder="010-0000-0000" required>
         </label>
-
-
-
 
         <label class="full">
-
-          주소
-
-
+          주소 <span class="required">*</span>
           <div class="addr-row">
-
-
-            <input id="editAddr" type="text">
-
-
-            <button
-              type="button"
-              class="btn-outline"
-              onclick="openAddress('edit')">
-
-              주소 검색
-
-            </button>
-
-
+            <input id="editAddr" type="text" maxlength="255" required>
+            <button type="button" class="btn-outline" data-address-target="edit">주소 입력</button>
           </div>
-
-
         </label>
 
-
-
+        <label>
+          우편번호 <span class="required">*</span>
+          <input id="editZip" type="text" maxlength="10" placeholder="예) 04782" required>
+        </label>
 
         <label class="full">
-
           상세주소
-
-          <input id="editDetail" type="text">
-
+          <input id="editDetail" type="text" maxlength="255">
         </label>
-
-
-
 
         <label class="check full">
-
-          <input 
-            id="editDefault"
-            type="checkbox">
-
+          <input id="editDefault" type="checkbox">
           기본 배송지로 설정
-
         </label>
 
-
+        <p class="api-message full" id="editMessage" aria-live="polite"></p>
 
         <div class="full btn-area">
-
-
-          <button class="btn-primary">
-
-            수정 완료
-
-          </button>
-
-
+          <button type="button" class="btn-outline" id="cancelEditButton">취소</button>
+          <button type="submit" class="btn-primary" id="editSubmitButton">수정 완료</button>
         </div>
-
-
-
       </form>
-
-
     </div>
-
-
-
   </div>
 
-
-
-
-
-
-
-  <!-- =========================
-       신규 등록
-  ========================== -->
-
-
-  <div class="tab-content" id="add">
-
-
-    <form class="form-grid">
-
-
+  <!-- 신규 등록 -->
+  <div class="tab-content" id="add" role="tabpanel">
+    <form id="addAddressForm" class="form-grid" novalidate>
       <label>
-
-        배송지명
-
-        <input
-          type="text"
-          placeholder="예) 집">
-
+        배송지명 <span class="required">*</span>
+        <input id="addName" type="text" maxlength="50" placeholder="예) 집" required>
       </label>
 
-
-
-
       <label>
-
-        받는 사람
-
-        <input type="text">
-
+        받는 사람 <span class="required">*</span>
+        <input id="addReceiver" type="text" maxlength="100" required>
       </label>
 
-
-
-
       <label>
-
-        연락처
-
-        <input
-          type="text"
-          placeholder="010-0000-0000">
-
+        연락처 <span class="required">*</span>
+        <input id="addPhone" type="tel" maxlength="20" placeholder="010-0000-0000" required>
       </label>
-
-
-
 
       <label class="full">
-
-        주소
-
-
+        주소 <span class="required">*</span>
         <div class="addr-row">
-
-
-          <input
-            id="addAddr"
-            type="text"
-            placeholder="주소">
-
-
-          <button
-            type="button"
-            class="btn-outline"
-            onclick="openAddress('add')">
-
-            주소 검색
-
-          </button>
-
-
+          <input id="addAddr" type="text" maxlength="255" placeholder="주소" required>
+          <button type="button" class="btn-outline" data-address-target="add">주소 입력</button>
         </div>
-
-
       </label>
 
-
-
+      <label>
+        우편번호 <span class="required">*</span>
+        <input id="addZip" type="text" maxlength="10" placeholder="예) 04782" required>
+      </label>
 
       <label class="full">
-
         상세주소
-
-        <input type="text">
-
+        <input id="addDetail" type="text" maxlength="255">
       </label>
-
-
-
 
       <label class="check full">
-
-
-        <input
-          id="addDefault"
-          type="checkbox">
-
-
+        <input id="addDefault" type="checkbox">
         기본 배송지로 설정
-
-
       </label>
 
-
-
+      <p class="api-message full" id="addMessage" aria-live="polite"></p>
 
       <div class="full btn-area">
-
-
-        <button class="btn-primary">
-
-          등록하기
-
-        </button>
-
-
+        <button type="submit" class="btn-primary" id="addSubmitButton">등록하기</button>
       </div>
-
-
     </form>
-
-
   </div>
 
-
-
-
-
-
-
-  <!-- =========================
-       주소 검색 팝업
-  ========================== -->
-
-
-  <div id="address-modal" class="address-modal">
-
-
-    <div class="address-box">
-
-
-      <h4>
-        도로명 주소 검색
-      </h4>
-
-
+  <!-- 별도 주소검색 API가 없으므로 직접 입력 모달로 동작 -->
+  <div id="address-modal" class="address-modal" aria-hidden="true">
+    <div class="address-box" role="dialog" aria-modal="true" aria-labelledby="addressModalTitle">
+      <h4 id="addressModalTitle">주소 입력</h4>
+      <p class="address-help">도로명 주소를 입력한 뒤 적용 버튼을 눌러주세요.</p>
 
       <div class="address-search">
-
-
-        <input
-          id="address-keyword"
-          type="text"
-          placeholder="도로명, 건물명 입력">
-
-
-        <button
-          type="button"
-          class="btn-primary"
-          onclick="findAddress()">
-
-          검색
-
-        </button>
-
-
+        <input id="address-keyword" type="text" maxlength="255" placeholder="예) 서울특별시 성동구 왕십리로 100">
+        <button type="button" class="btn-primary" id="applyAddressButton">적용</button>
       </div>
 
-
-
-
-      <div id="address-result"
-           class="address-result">
-
-        검색 결과가 표시됩니다.
-
-      </div>
-
-
-
-
-      <button
-        type="button"
-        class="btn-outline close-btn"
-        onclick="closeAddress()">
-
-        닫기
-
-      </button>
-
-
+      <button type="button" class="btn-outline close-btn" id="closeAddressButton">닫기</button>
     </div>
-
-
   </div>
-
-
 
 </section>
   <!-- ▲▲▲ 여기까지 ▲▲▲ -->

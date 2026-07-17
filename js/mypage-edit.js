@@ -283,7 +283,7 @@
     const payload = {
       name: nameInput.value.trim(),
       email: email.value.trim(),
-      phone: phone.value.trim(),
+      phoneNumber: phone.value.trim(),
       postalCode: postalCode.value.trim(),
       address: address.value.trim(),
       addressDetail: addressDetail.value.trim()

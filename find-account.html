@@ -58,14 +58,6 @@
 <!-- ================= 공통 헤더 끝 ================= -->
 
 <main class="wrap find-page">
-
-<!-- ▼▼▼ 아이디·비밀번호 찾기 =====================================
-     ※ 기능정의서 미기재 — 보완 추가 (팀 합의)
-     - 아이디 찾기     : POST /api/v1/auth/find-username (제안)
-     - 비밀번호 재설정 : POST /api/v1/auth/reset-password (제안)
-     ※ 로그인(login.html, 팀원 B)에서 링크로 진입
-================================================================ -->
-
   <section class="block find-block">
     <div class="sec-head">
       <div>
@@ -74,7 +66,6 @@
       </div>
     </div>
 
-    <!-- 탭 -->
     <div class="find-tabs">
       <button type="button" class="is-active" data-tab="id">아이디 찾기</button>
       <button type="button" data-tab="pw">비밀번호 찾기</button>
@@ -84,30 +75,31 @@
     <div class="find-panel" data-panel="id">
       <form id="findIdForm" class="find-form" novalidate>
         <div class="field">
+          <label>회원 유형 <span class="req">*</span></label>
+          <div class="account-type-tabs" data-role="id-account-type">
+            <button type="button" class="is-active" data-account-type="user">일반 회원</button>
+            <button type="button" data-account-type="seller">판매자</button>
+          </div>
+        </div>
+
+        <div class="field">
           <label for="idName">이름 <span class="req">*</span></label>
-          <input type="text" id="idName" placeholder="실명 입력" required>
+          <input type="text" id="idName" placeholder="가입 시 등록한 이름" required autocomplete="name">
         </div>
 
         <div class="field">
           <label for="idEmail">이메일 <span class="req">*</span></label>
-          <div class="field-row">
-            <input type="email" id="idEmail" placeholder="가입 시 등록한 이메일" required>
-            <button type="button" class="btn-outline" data-action="send-id-code">인증코드 발송</button>
-          </div>
-          <div class="field-row" data-group="id-code" hidden>
-            <input type="text" inputmode="numeric" maxlength="6" placeholder="인증코드 6자리" id="idCode">
-            <button type="button" class="btn-outline" data-action="confirm-id-code">확인</button>
-            <span class="timer" data-role="id-timer">03:00</span>
-          </div>
-          <p class="field-msg" data-role="id-msg"></p>
+          <input type="email" id="idEmail" placeholder="가입 시 등록한 이메일" required autocomplete="email">
         </div>
 
-        <button type="submit" class="btn-submit">아이디 찾기</button>
+        <p class="form-message" data-role="id-message" aria-live="polite"></p>
+
+        <button type="submit" class="btn-submit" data-role="id-submit">아이디 찾기</button>
       </form>
 
       <div class="find-result" data-role="id-result" hidden>
         <p class="result-label">회원님의 아이디입니다.</p>
-        <p class="result-value" data-role="id-value">catch****</p>
+        <p class="result-value" data-role="id-value"></p>
         <div class="result-actions">
           <a href="login.html" class="btn-submit">로그인하기</a>
           <button type="button" class="btn-outline" data-action="go-pw">비밀번호 찾기</button>
@@ -115,83 +107,48 @@
       </div>
     </div>
 
-<!-- ===== 비밀번호 찾기 ===== -->
+    <!-- ===== 비밀번호 찾기 ===== -->
     <div class="find-panel" data-panel="pw" hidden>
       <form id="findPwForm" class="find-form" novalidate>
         <div class="field">
-          <label for="pwUserId">아이디 <span class="req">*</span></label>
-          <input type="text" id="pwUserId" placeholder="가입한 아이디 입력" required>
+          <label>회원 유형 <span class="req">*</span></label>
+          <div class="account-type-tabs" data-role="pw-account-type">
+            <button type="button" class="is-active" data-account-type="user">일반 회원</button>
+            <button type="button" data-account-type="seller">판매자</button>
+          </div>
         </div>
 
         <div class="field">
-          <label>인증 방법 <span class="req">*</span></label>
-          <div class="method-tabs">
-            <button type="button" class="is-active" data-method="email">이메일로 인증</button>
-            <button type="button" data-method="phone">휴대폰으로 인증</button>
-          </div>
+          <label for="pwUsername">아이디 <span class="req">*</span></label>
+          <input type="text" id="pwUsername" placeholder="가입한 아이디 입력" required autocomplete="username">
         </div>
 
-        <div class="method-panel" data-method-panel="email">
-          <div class="field">
-            <label for="pwEmail">이메일 <span class="req">*</span></label>
-            <div class="field-row">
-              <input type="email" id="pwEmail" placeholder="가입 시 등록한 이메일">
-              <button type="button" class="btn-outline" data-action="send-email-code">인증코드 발송</button>
-            </div>
-          </div>
+        <div class="field">
+          <label for="pwEmail">이메일 <span class="req">*</span></label>
+          <input type="email" id="pwEmail" placeholder="가입 시 등록한 이메일" required autocomplete="email">
         </div>
 
-        <div class="method-panel" data-method-panel="phone" hidden>
-          <div class="field">
-            <label for="pwTelecom">통신사 <span class="req">*</span></label>
-            <select id="pwTelecom">
-              <option value="">선택</option>
-              <option value="skt">SKT</option>
-              <option value="kt">KT</option>
-              <option value="lgu">LG U+</option>
-              <option value="mvno">알뜰폰</option>
-            </select>
-          </div>
-          <div class="field">
-            <label for="pwPhone">휴대폰번호 <span class="req">*</span></label>
-            <div class="field-row">
-              <input type="tel" id="pwPhone" placeholder="숫자만 입력">
-              <button type="button" class="btn-outline" data-action="send-phone-code">인증코드 발송</button>
-            </div>
-          </div>
+        <div class="recovery-guide">
+          <strong>임시 비밀번호 발급 안내</strong>
+          <p>입력한 계정 정보가 일치하면 가입 이메일로 임시 비밀번호가 발송됩니다.</p>
         </div>
 
-        <div class="field" data-group="pw-code" hidden>
-          <label for="pwCode">인증코드 <span class="req">*</span></label>
-          <div class="field-row">
-            <input type="text" inputmode="numeric" maxlength="6" placeholder="인증코드 6자리" id="pwCode">
-            <button type="button" class="btn-outline" data-action="confirm-pw-code">확인</button>
-            <span class="timer" data-role="pw-timer">03:00</span>
-          </div>
-          <p class="field-msg" data-role="pw-msg"></p>
-        </div>
+        <p class="form-message" data-role="pw-message" aria-live="polite"></p>
 
-        <button type="submit" class="btn-submit">비밀번호 재설정</button>
+        <button type="submit" class="btn-submit" data-role="pw-submit">임시 비밀번호 받기</button>
       </form>
 
-      <div class="find-result" data-role="pw-reset" hidden>
-        <div class="field">
-          <label for="newPw">새 비밀번호 <span class="req">*</span></label>
-          <input type="password" id="newPw" placeholder="영문, 숫자, 특수문자 포함 8~20자">
+      <div class="find-result" data-role="pw-result" hidden>
+        <p class="result-label">임시 비밀번호 발급 완료</p>
+        <p class="result-description" data-role="pw-result-message">
+          가입 이메일로 임시 비밀번호를 발송했습니다.
+        </p>
+        <div class="result-actions single">
+          <a href="login.html" class="btn-submit">로그인하기</a>
         </div>
-        <div class="field">
-          <label for="newPwConfirm">새 비밀번호 확인 <span class="req">*</span></label>
-          <input type="password" id="newPwConfirm" placeholder="비밀번호 재입력">
-          <p class="field-msg" data-role="new-pw-msg"></p>
-        </div>
-        <button type="button" class="btn-submit" data-action="reset-pw">비밀번호 변경 완료</button>
       </div>
     </div>
-
   </section>
-
-<!-- ▲▲▲ 여기까지 ▲▲▲ -->
-
 </main>
 
 <!-- ================= 공통 푸터 시작 (수정 금지) ================= -->
@@ -232,4 +189,3 @@
 <script src="js/navigation.js"></script>
 </body>
 </html>
-

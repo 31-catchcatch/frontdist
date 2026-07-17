@@ -19,10 +19,11 @@ document.addEventListener("DOMContentLoaded", () => {
   if (!summaryGrid || !window.CatchAuth || !CatchAuth.requireLogin()) return;
 
   const API_BASE = (window.CATCHCATCH_API_BASE_URL || "/api/v1").replace(/\/$/, "");
+  // 최근 본 상품(U-MY-008)은 백엔드 API 없이 localStorage로만 관리한다.
+  // (product.js의 CatchProduct.pushRecentlyViewed/getRecentlyViewed 참고)
   const endpoints = {
     coupons: "/users/me/coupons",
     points: "/users/me/points",
-    recentProducts: "/users/me/recent-products",
     reviews: "/users/me/reviews"
   };
 
@@ -125,7 +126,7 @@ document.addEventListener("DOMContentLoaded", () => {
     renderValue(summaryElements.points, getPointBalance(dataByKey.points), "P");
     renderValue(
       summaryElements.recentProducts,
-      getCollectionCount(dataByKey.recentProducts, ["recentProductCount", "productCount", "totalElements", "count"], ["recentProducts", "products", "items", "content", "list"]),
+      window.CatchProduct ? CatchProduct.getRecentlyViewed().length : undefined,
       "개"
     );
     renderValue(

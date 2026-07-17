@@ -82,33 +82,16 @@
 
       <div class="filter-group">
         <h5>카테고리</h5>
-        <label><input type="checkbox" data-filter="cat" value="outer"> 아우터</label>
-        <label><input type="checkbox" data-filter="cat" value="top"> 상의</label>
-        <label><input type="checkbox" data-filter="cat" value="shirts"> 셔츠</label>
-        <label><input type="checkbox" data-filter="cat" value="knit"> 니트</label>
-        <label><input type="checkbox" data-filter="cat" value="pants"> 팬츠</label>
-        <label><input type="checkbox" data-filter="cat" value="denim"> 데님</label>
-        <label><input type="checkbox" data-filter="cat" value="shoes"> 신발</label>
-        <label><input type="checkbox" data-filter="cat" value="bag"> 가방</label>
-        <label><input type="checkbox" data-filter="cat" value="acc"> 액세서리</label>
-      </div>
-
-      <div class="filter-group">
-        <h5>가격</h5>
-        <label><input type="checkbox" data-filter="price" value="0-30000"> 3만원 이하</label>
-        <label><input type="checkbox" data-filter="price" value="30000-50000"> 3~5만원</label>
-        <label><input type="checkbox" data-filter="price" value="50000-100000"> 5~10만원</label>
-        <label><input type="checkbox" data-filter="price" value="100000-"> 10만원 이상</label>
-      </div>
-
-      <div class="filter-group">
-        <h5>사이즈</h5>
-        <div class="size-chips">
-          <label><input type="checkbox" data-filter="size" value="S"><span>S</span></label>
-          <label><input type="checkbox" data-filter="size" value="M"><span>M</span></label>
-          <label><input type="checkbox" data-filter="size" value="L"><span>L</span></label>
-          <label><input type="checkbox" data-filter="size" value="XL"><span>XL</span></label>
-        </div>
+        <label><input type="radio" name="cat" data-filter="cat" value="" checked> 전체</label>
+        <label><input type="radio" name="cat" data-filter="cat" value="outer"> 아우터</label>
+        <label><input type="radio" name="cat" data-filter="cat" value="top"> 상의</label>
+        <label><input type="radio" name="cat" data-filter="cat" value="shirts"> 셔츠</label>
+        <label><input type="radio" name="cat" data-filter="cat" value="knit"> 니트</label>
+        <label><input type="radio" name="cat" data-filter="cat" value="pants"> 팬츠</label>
+        <label><input type="radio" name="cat" data-filter="cat" value="denim"> 데님</label>
+        <label><input type="radio" name="cat" data-filter="cat" value="shoes"> 신발</label>
+        <label><input type="radio" name="cat" data-filter="cat" value="bag"> 가방</label>
+        <label><input type="radio" name="cat" data-filter="cat" value="acc"> 액세서리</label>
       </div>
 
       <button type="button" class="btn-outline btn-reset" data-action="reset-filter">필터 초기화</button>
@@ -120,11 +103,9 @@
       <!-- 정렬 -->
       <div class="plist-toolbar">
         <select data-role="sort">
-          <option value="popular">인기순</option>
           <option value="new">최신순</option>
           <option value="low">낮은 가격순</option>
           <option value="high">높은 가격순</option>
-          <option value="review">리뷰 많은순</option>
         </select>
       </div>
 
@@ -136,6 +117,11 @@
       <!-- 결과 없을 때 -->
       <div class="empty-msg" data-role="empty" hidden>
         <p>검색 결과가 없습니다. 다른 검색어로 시도해 보세요.</p>
+      </div>
+
+      <!-- 조회 실패 -->
+      <div class="empty-msg" data-role="error" hidden>
+        <p>상품을 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.</p>
       </div>
 
       <!-- 페이지네이션 -->
@@ -184,6 +170,9 @@
 <!-- ================= 공통 푸터 끝 ================= -->
 
 <script src="js/auth.js"></script>
+<script src="js/api.js"></script>
+<script src="js/catalog.js"></script>
+<script src="js/product.js"></script>
 <script src="js/product-list.js"></script>
 <script src="js/navigation.js"></script>
 </body>

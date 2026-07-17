@@ -52,7 +52,7 @@
     rowsEl.innerHTML = list.map((u) => `
       <tr data-id="${AdminUI.escape(u.id)}">
         <td class="chk"><input type="checkbox" aria-label="${AdminUI.escape(u.name)} 선택"></td>
-        <td class="num">${AdminUI.escape(u.id)}</td>
+        <td class="strong">${AdminUI.escape(u.username)}</td>
         <td class="strong">${AdminUI.escape(u.name)}</td>
         <td class="muted">${AdminUI.escape(u.email)}</td>
         <td><span class="tag role">${ROLE[u.role] || u.role}</span></td>
@@ -79,7 +79,7 @@
     listController.setItems(USERS.filter((u) =>
       (!role || u.role === role) &&
       (!status || u.status === status) &&
-      (!q || u.name.toLowerCase().includes(q) || u.email.toLowerCase().includes(q) || String(u.id).toLowerCase().includes(q))
+      (!q || u.name.toLowerCase().includes(q) || u.email.toLowerCase().includes(q) || (u.username || "").toLowerCase().includes(q))
     ));
   }
 
@@ -106,7 +106,7 @@
     const suspend = btn.dataset.act === "suspend";
     const ok = await AdminUI.confirm({
       title: suspend ? "사용자 정지" : "정지 해제",
-      message: `${user.name}(${user.id}) 계정을 ${suspend ? "정지" : "정상 복구"}하시겠습니까?`,
+      message: `${user.name}(${user.username}) 계정을 ${suspend ? "정지" : "정상 복구"}하시겠습니까?`,
       okText: suspend ? "정지" : "해제",
       danger: suspend,
     });

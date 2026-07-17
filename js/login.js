@@ -1,7 +1,15 @@
 (() => {
+  // api.js의 BASE 결정 로직과 동일하게 맞춘다.
+  // (이 페이지는 api.js/auth.js를 로드하지 않으므로 여기서 자체적으로 계산)
+  const API_BASE =
+    window.CATCHCATCH_API_BASE_URL ||
+    (location.protocol === "file:" || location.port === "5500"
+      ? "http://localhost:8080/api/v1"
+      : "/api/v1");
+
   const apiMap = {
-    user: "/api/v1/auth/user/login",
-    seller: "/api/v1/auth/seller/login"
+    user: `${API_BASE}/auth/user/login`,
+    seller: `${API_BASE}/auth/seller/login`
   };
 
   const tabs = document.querySelectorAll(".login-tab");

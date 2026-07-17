@@ -15,6 +15,18 @@
 (function (global) {
   "use strict";
 
+  // api.js의 BASE 결정 로직과 동일하게 맞춰 전역에 노출한다.
+  // auth.js는 거의 모든 페이지에서 페이지별 스크립트보다 먼저 로드되므로,
+  // 여기서 한 번 설정해두면 자체적으로 "window.CATCHCATCH_API_BASE_URL || '/api/v1'"
+  // 패턴을 쓰는 다른 스크립트(mypage.js, checkout.js, seller-*.js 등)도
+  // 각자 따로 수정할 필요 없이 로컬 개발 환경(file://, Live Server 5500)에서 정상 동작한다.
+  if (!global.CATCHCATCH_API_BASE_URL) {
+    global.CATCHCATCH_API_BASE_URL =
+      location.protocol === "file:" || location.port === "5500"
+        ? "http://localhost:8080/api/v1"
+        : "/api/v1";
+  }
+
   const KEY_FLAG = "catchcatch.loggedIn";
   const KEY_TOKEN = "catchcatch.accessToken";
   const KEY_REFRESH = "catchcatch.refreshToken";

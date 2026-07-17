@@ -25,7 +25,6 @@
   const modalOrderDetailId = document.getElementById("modalOrderDetailId");
   const courierCompany = document.getElementById("courierCompany");
   const trackingNumber = document.getElementById("trackingNumber");
-  const deliveryStatus = document.getElementById("deliveryStatus");
   const modalMessage = document.getElementById("modalMessage");
   const modalCancelButton = document.getElementById("modalCancelButton");
   const modalSubmitButton = document.getElementById("modalSubmitButton");
@@ -45,7 +44,7 @@
       buyerName: "김민수",
       quantity: 2,
       paymentAmount: 39800,
-      status: "PAID"
+      status: "PAYMENT_COMPLETED"
     },
     {
       orderDetailId: 1202,
@@ -168,10 +167,10 @@
   }
 
   function normalizeStatus(rawStatus) {
-    const code = String(rawStatus || "PAID").toUpperCase();
+    const code = String(rawStatus || "PAYMENT_COMPLETED").toUpperCase();
 
     const map = {
-      PAID: {
+      PAYMENT_COMPLETED: {
         label: "결제 완료",
         className: "status-paid"
       },
@@ -187,7 +186,11 @@
         label: "배송 완료",
         className: "status-delivered"
       },
-      CANCELLED: {
+      CONFIRMED: {
+        label: "구매 확정",
+        className: "status-delivered"
+      },
+      CANCELED: {
         label: "취소",
         className: "status-cancelled"
       }
@@ -195,7 +198,7 @@
 
     return {
       code,
-      ...(map[code] || map.PAID)
+      ...(map[code] || map.PAYMENT_COMPLETED)
     };
   }
 
@@ -294,7 +297,8 @@
   }
 
   function canUpdateDelivery(status) {
-    return !["DELIVERED", "CANCELLED"].includes(status.code);
+    // 백엔드는 결제완료/배송준비 상태에서만 택배사·운송장 등록을 허용한다.
+    return ["PAYMENT_COMPLETED", "PREPARING"].includes(status.code);
   }
 
   function renderDesktop(orders) {
@@ -490,17 +494,15 @@
       return;
     }
 
+    // 백엔드(SellerOrderSearchRequest)는 page/size/deliveryStatus만 지원한다.
+    // keyword/sort는 서버에 없는 파라미터라 보내지 않고, keyword는 받아온 페이지 안에서만 클라이언트 필터링한다.
     const params = new URLSearchParams({
       page: String(page),
-      size: String(PAGE_SIZE),
-      sort: sortFilter.value
+      size: String(PAGE_SIZE)
     });
 
-    const keyword = keywordInput.value.trim();
     const status = statusFilter.value;
-
-    if (keyword) params.set("keyword", keyword);
-    if (status) params.set("status", status);
+    if (status) params.set("deliveryStatus", status);
 
     try {
       const response = await fetch(
@@ -525,8 +527,14 @@
       }
 
       const pageData = extractPageData(data);
+      const keyword = keywordInput.value.trim().toLowerCase();
 
-      currentOrders = pageData.orders;
+      currentOrders = keyword
+        ? pageData.orders.filter((order) =>
+            order.orderNumber.toLowerCase().includes(keyword) ||
+            order.buyerName.toLowerCase().includes(keyword) ||
+            order.productName.toLowerCase().includes(keyword))
+        : pageData.orders;
       currentPage = pageData.page;
       totalPages = Math.max(1, pageData.totalPages);
 
@@ -562,10 +570,6 @@
     modalOrderNumber.textContent = order.orderNumber;
     courierCompany.value = order.courierCompany || "";
     trackingNumber.value = order.trackingNumber || "";
-    deliveryStatus.value =
-      order.status.code === "PAID"
-        ? "PREPARING"
-        : order.status.code;
 
     clearModalMessage();
     deliveryModal.hidden = false;
@@ -591,8 +595,7 @@
     const orderDetailId = modalOrderDetailId.value;
     const payload = {
       courierCompany: courierCompany.value,
-      trackingNumber: trackingNumber.value.trim(),
-      deliveryStatus: deliveryStatus.value
+      trackingNumber: trackingNumber.value.trim()
     };
 
     modalSubmitButton.disabled = true;
@@ -607,7 +610,7 @@
         if (previewOrder) {
           previewOrder.courierCompany = payload.courierCompany;
           previewOrder.trackingNumber = payload.trackingNumber;
-          previewOrder.status = payload.deliveryStatus;
+          previewOrder.status = "SHIPPING";
         }
 
         closeDeliveryModal();

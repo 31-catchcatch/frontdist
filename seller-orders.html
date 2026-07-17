@@ -106,11 +106,12 @@
         <div class="filter-group">
           <select id="statusFilter" aria-label="주문 상태 필터">
             <option value="">전체 상태</option>
-            <option value="PAID">결제 완료</option>
+            <option value="PAYMENT_COMPLETED">결제 완료</option>
             <option value="PREPARING">배송 준비</option>
             <option value="SHIPPING">배송 중</option>
             <option value="DELIVERED">배송 완료</option>
-            <option value="CANCELLED">취소</option>
+            <option value="CONFIRMED">구매 확정</option>
+            <option value="CANCELED">취소</option>
           </select>
 
           <select id="sortFilter" aria-label="정렬 기준">
@@ -188,14 +189,7 @@
         >
       </div>
 
-      <div class="modal-field">
-        <label for="deliveryStatus">변경 상태 <strong>*</strong></label>
-        <select id="deliveryStatus" required>
-          <option value="PREPARING">배송 준비</option>
-          <option value="SHIPPING" selected>배송 중</option>
-          <option value="DELIVERED">배송 완료</option>
-        </select>
-      </div>
+      <p class="modal-description">택배사와 운송장 번호를 저장하면 자동으로 &quot;배송 중&quot; 상태로 전환됩니다.</p>
 
       <div class="modal-message" id="modalMessage" role="alert"></div>
 
