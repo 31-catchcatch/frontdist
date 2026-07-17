@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>내 상품 목록 — 캐치캐치</title>
 <link rel="stylesheet" href="css/common.css">
+<link rel="stylesheet" href="css/seller-nav.css">
 <link rel="stylesheet" href="css/seller-products.css">
 </head>
 <body>
@@ -63,19 +64,29 @@
       <div>
         <p class="kicker">Seller products</p>
         <h3>내 상품 목록</h3>
-        <p>등록한 상품을 조회하고 판매 상태를 확인하거나 상품을 수정·삭제할 수 있습니다.</p>
       </div>
       <div class="head-links">
         <a class="register-button" href="seller-product-form.html">상품 등록</a>
-        <a class="seller-dashboard-link" href="seller-dashboard.html">← 대시보드</a>
       </div>
     </div>
 
+    <!-- 판매자 공통 메뉴 : 6개 판매자 페이지에 동일하게 복사되어 있습니다.
+         고치려면 6곳 모두 (css/seller-nav.css 주석 참고) -->
+    <nav class="seller-page-links" aria-label="판매자 관리 메뉴">
+      <a href="seller-dashboard.html">대시보드</a>
+      <a class="active" aria-current="page" href="seller-products.html">상품 관리</a>
+      <a href="seller-sales.html?tab=sales">매출·정산</a>
+      <a href="seller-qna.html?status=wait">Q&amp;A 관리</a>
+      <a href="seller-claims.html">교환·환불</a>
+      <a href="seller-notifications.html">쿠폰관리</a>
+    </nav>
+
+    <!-- 판매중/품절/판매중지 카드는 없앴다.
+         백엔드 SellerProductResponse 에 status·stock 이 없고 목록 쿼리가 deleted=false 만
+         돌려주므로 모든 상품이 "판매 중"으로만 판정된다. 즉 품절·판매중지는 항상 0 이었다.
+         백엔드가 status/stock 을 주면 그때 되살릴 것. -->
     <section class="summary-grid" aria-label="상품 현황">
       <article><span>전체 상품</span><strong id="totalCount">0</strong></article>
-      <article><span>판매 중</span><strong id="sellingCount">0</strong></article>
-      <article><span>품절</span><strong id="soldOutCount">0</strong></article>
-      <article><span>판매 중지</span><strong id="stoppedCount">0</strong></article>
     </section>
 
     <section class="product-panel">
@@ -86,29 +97,25 @@
           <button type="submit">검색</button>
         </form>
 
-        <select id="statusFilter" aria-label="판매 상태 필터">
-          <option value="">전체 상태</option>
-          <option value="SELLING">판매 중</option>
-          <option value="SOLD_OUT">품절</option>
-          <option value="STOPPED">판매 중지</option>
-        </select>
+        <!-- 상태 필터는 없앴다. 백엔드 GET /seller/products 는 page·size 만 받아
+             status 파라미터를 조용히 무시했다. 상태 데이터 자체도 내려오지 않는다. -->
       </div>
 
       <div class="table-wrap">
         <table class="product-table">
           <thead>
+            <!-- 재고·상태 컬럼은 없앴다. 백엔드가 stock·status 를 안 내려줘서
+                 각각 항상 "-" 와 "판매 중" 만 찍히고 있었다. -->
             <tr>
               <th scope="col">상품</th>
               <th scope="col">상품번호</th>
               <th scope="col">판매가</th>
-              <th scope="col">재고</th>
-              <th scope="col">상태</th>
               <th scope="col">등록일</th>
               <th scope="col">관리</th>
             </tr>
           </thead>
           <tbody id="productTableBody">
-            <tr><td class="state-cell" colspan="7">상품 목록을 불러오는 중입니다.</td></tr>
+            <tr><td class="state-cell" colspan="5">상품 목록을 불러오는 중입니다.</td></tr>
           </tbody>
         </table>
       </div>

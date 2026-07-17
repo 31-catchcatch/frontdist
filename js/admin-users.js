@@ -23,7 +23,8 @@
       role: u.role,
       point: u.point,
       deleted: u.deleted,
-      status: u.suspended ? "stop" : "ok",
+      // 별도 정지 플래그 없이 is_deleted를 그대로 재사용한다 (탈퇴=정지 동일 취급).
+      status: u.deleted ? "stop" : "ok",
       joined: (u.createdAt || "").slice(0, 10),
       createdAt: u.createdAt,
     };
@@ -38,7 +39,7 @@
       ["이메일", user.email],
       ["권한", ROLE[user.role] || user.role],
       ["보유 포인트", `${AdminUI.num(user.point || 0)} P`],
-      ["계정 상태", user.deleted ? "탈퇴" : STATUS[user.status]],
+      ["계정 상태", STATUS[user.status]],
       ["가입일시", (user.createdAt || "-").replace("T", " ").slice(0, 19)],
     ]);
   }

@@ -12,6 +12,21 @@ document.addEventListener("DOMContentLoaded", () => {
   const esc = (v) => CatchApi.escape(v);
   const won = (n) => CatchApi.won(n);
 
+  // 판매자 계정은 구매 기능(장바구니/바로구매)을 쓸 수 없다.
+  // 백엔드 SecurityConfig는 /carts, /orders 를 authenticated 로만 막고 역할은 보지 않으므로
+  // 서버는 판매자 요청도 그대로 처리한다. 즉 이 차단은 프론트 전용이다.
+  // 역할 판별은 login.js가 심어두는 loginType 을 읽는 기존 관례를 따른다.
+  //
+  // isLoggedIn() 을 먼저 보는 이유: CatchAuth.logout() 이 loginType 을 지우지 않아
+  // 판매자가 로그아웃해도 값이 "seller" 로 남는다. 이때 비로그인 방문자가 이 버튼을 누르면
+  // 로그인 유도 대신 판매자 안내가 떠버리므로, 로그인 상태일 때만 역할을 따진다.
+  function blockIfSeller() {
+    if (!CatchAuth.isLoggedIn()) return false;
+    if (sessionStorage.getItem("catchcatch.loginType") !== "seller") return false;
+    alert("판매자는 해당 기능을 사용할 수 없습니다.");
+    return true;
+  }
+
   let product = null; // fetchDetail 결과
   let selectedOption = null; // { optionId, additionalPrice }
   let qty = 1;
@@ -257,6 +272,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // 장바구니 담기
     $('[data-action="add-cart"]').addEventListener("click", async () => {
+      if (blockIfSeller()) return;
       if (!requireOption()) return;
       if (!CatchAuth.requireLogin()) return;
       try {
@@ -275,6 +291,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // 바로구매 → 장바구니 담고 주문서로
     $('[data-action="buy-now"]').addEventListener("click", async () => {
+      if (blockIfSeller()) return;
       if (!requireOption()) return;
       if (!CatchAuth.requireLogin()) return;
       try {

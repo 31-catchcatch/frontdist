@@ -32,7 +32,7 @@ document.addEventListener("DOMContentLoaded", () => {
     EXCHANGE: "교환",
     RETURN: "환불",
   };
-  // 화면 → 백엔드 (상태 변경/필터 보낼 때)
+  // 화면 → 백엔드 (조회 필터 보낼 때)
   const STATUS_EN = {
     "신청": "REQUESTED",
     "접수": "ACCEPTED",
@@ -41,15 +41,65 @@ document.addEventListener("DOMContentLoaded", () => {
     "완료": "COMPLETED",
   };
 
+  // 백엔드가 PUT /seller/claims/{id}/status 로 허용하는 전이가 이게 전부다.
+  // (SellerClaimService.validateStatusChange 기준 — 상태뿐 아니라 "유형"까지 본다)
+  //   신청  → 접수 / 반려      (교환·환불 공통)
+  //   접수  → 처리중           (교환·환불 공통)
+  //   처리중 → 완료            (교환 전용!)
+  //
+  // 환불(RETURN)의 완료는 이 API로 못 간다. 결제 취소·포인트 복원이 얽혀 있어
+  // POST /seller/refunds 로만 처리된다. (switch 의 default 가 INVALID_CLAIM_STATUS)
+  function nextStatuses(claim) {
+    switch (claim.status) {
+      case "REQUESTED":
+        return ["ACCEPTED", "REJECTED"];
+      case "ACCEPTED":
+        return ["PROCESSING"];
+      case "PROCESSING":
+        // 교환만 여기서 완료된다. 환불은 아래 canRefund 경로로.
+        return claim.claimType === "EXCHANGE" ? ["COMPLETED"] : [];
+      default:
+        return []; // 반려·완료는 종료 상태
+    }
+  }
+
+  // 환불 완료 가능 조건 (SellerRefundService.validateRefundableClaim 기준)
+  const canRefund = (claim) =>
+    claim.claimType === "RETURN" &&
+    ["ACCEPTED", "PROCESSING"].includes(claim.status);
+
   const $ = (id) => document.getElementById(id);
   const won = (n) => (n == null ? "-" : n.toLocaleString("ko-KR") + "원");
 
   const filterMessage = $("claimFilterMessage");
   const statusFilter = $("claimStatusFilter");
   const statusSelect = $("claimStatusSelect");
+  const listView = $("claimList");
+  const detailView = $("claimDetail");
+  const filterBox = $("claimFilterBox");
+  const statusSection = $("claimStatusSection");
+  const refundSection = $("claimRefundSection");
+  const noAction = $("claimNoAction");
 
   let claims = [];         // 전체 클레임
   let selected = null;     // 지금 선택된 클레임
+
+  // ===== 화면 전환 (목록 ↔ 상세) =====
+  // 목록에서 처리할 클레임을 골라 들어가면 상세 처리 화면으로 바뀐다.
+  // 둘을 동시에 띄우지 않으므로 레이아웃은 1단(css .claim-dashboard-layout)이다.
+  function showList() {
+    selected = null;
+    listView.hidden = false;
+    detailView.hidden = true;
+    filterBox.hidden = false;
+  }
+
+  function showDetail() {
+    listView.hidden = true;
+    detailView.hidden = false;
+    filterBox.hidden = true;   // 조회 필터는 목록 전용
+    window.scrollTo({ top: 0 });
+  }
 
   // 상태에 따른 뱃지 색 클래스
   const statusClass = (ko) =>
@@ -86,12 +136,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
       renderList();
 
-      // 첫 번째 자동 선택
-      if (claims.length > 0) {
-        selectClaim(claims[0].claimId);
-      } else {
-        selected = null;
-      }
+      // 목록을 새로 불러오면(최초 진입·조회·처리 후) 항상 목록 화면으로 돌아온다.
+      // 예전에는 여기서 첫 건을 자동 선택해 상세가 곧바로 떴다.
+      showList();
 
       return claims.length;
     } catch (err) {
@@ -103,7 +150,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // ===== 목록 표 그리기 =====
   function renderList() {
-    const tbody = document.querySelector(".claim-list tbody");
+    const tbody = $("claimListBody");
 
     if (claims.length === 0) {
       tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;padding:30px;color:#999;">조회된 클레임이 없습니다.</td></tr>`;
@@ -154,10 +201,38 @@ document.addEventListener("DOMContentLoaded", () => {
     const statusEl = $("claimStatus");
     if (statusEl) statusEl.textContent = statusKo;
 
-    // 상태 드롭다운: 동일한 옵션이 있으면 맞추고, 없으면(신청 등) 그대로 둔다
-    const hasOption = [...statusSelect.options]
-      .some((o) => o.value === statusKo || o.text.trim() === statusKo);
-    if (hasOption) statusSelect.value = statusKo;
+    // 최종 환불 안내의 금액도 선택된 건에 맞춘다 (예전에는 45,000원이 하드코딩돼 있었다)
+    const refundEl = $("refundAmount");
+    if (refundEl) refundEl.textContent = won(selected.claimAmount);
+
+    renderActions(selected);
+
+    showDetail();
+  }
+
+  // ===== 현재 상태에서 실제로 가능한 처리만 노출 =====
+  // 예전에는 접수/처리중/반려/완료를 항상 띄우고 현재 상태를 그대로 선택해 뒀다.
+  // 그래서 아무것도 안 바꾸고 [상태 변경]을 누르면 접수→접수 처럼 백엔드가 막는 전이가
+  // 그대로 나가 "현재 상태에서는 클레임을 변경할 수 없습니다" 가 떴다.
+  function renderActions(claim) {
+    const next = nextStatuses(claim);
+    const refundable = canRefund(claim);
+
+    statusSelect.innerHTML = next
+      .map((en) => `<option value="${en}">${STATUS_KO[en]}</option>`)
+      .join("");
+
+    statusSection.hidden = next.length === 0;
+    refundSection.hidden = !refundable;
+
+    // 상태 변경도 환불도 불가능한 경우엔 이유를 알려준다.
+    // (지금은 반려·완료 같은 종료 상태에서만 여기 걸린다)
+    if (next.length === 0 && !refundable) {
+      noAction.hidden = false;
+      noAction.textContent = `이미 ${STATUS_KO[claim.status] || claim.status}된 클레임이라 더 진행할 처리가 없습니다.`;
+    } else {
+      noAction.hidden = true;
+    }
   }
 
   // ===== 상태 변경 (PUT) =====
@@ -167,18 +242,13 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    const statusKo = (statusSelect.value || "").trim();
-    const statusEn = STATUS_EN[statusKo];
+    // 드롭다운 option 의 value 가 곧 백엔드 enum 이다. (renderActions 가 채운다)
+    const statusEn = (statusSelect.value || "").trim();
+    const statusKo = STATUS_KO[statusEn] || statusEn;
 
     if (!statusEn) {
       alert("변경할 상태를 선택해 주세요.");
       return;
-    }
-
-    // "완료"는 유형별로 처리 경로가 다르다.
-    if (statusEn === "COMPLETED" && selected.claimType === "RETURN") {
-      // 환불 완료는 결제 취소가 얽혀 있어 별도 API로만 처리 (S-CLAIM-003)
-      return completeRefund();
     }
 
     const reason = prompt("처리 사유를 입력해 주세요.", "판매자 처리");
@@ -273,6 +343,7 @@ document.addEventListener("DOMContentLoaded", () => {
   $("claimSearchButton").addEventListener("click", searchClaims);
   $("updateClaimStatusButton").addEventListener("click", updateStatus);
   $("completeRefundButton").addEventListener("click", completeRefund);
+  $("claimBackButton").addEventListener("click", showList);
 
   // ===== 시작 =====
   loadClaims();

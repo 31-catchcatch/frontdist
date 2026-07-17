@@ -6,13 +6,9 @@ document.addEventListener("DOMContentLoaded", () => {
   const DASHBOARD_API = `${API_BASE}/seller/dashboard`;
   const SALES_API = `${API_BASE}/seller/sales`;
   const QNA_API = `${API_BASE}/seller/qna`;
-  const COUPON_REQUEST_API = `${API_BASE}/seller/coupons/request`;
 
   const FILE_PREVIEW_MODE = location.protocol === "file:";
 
-  const form = document.getElementById("couponRequestForm");
-  const message = document.getElementById("couponMessage");
-  const submitButton = document.getElementById("couponRequestSubmit");
 
   const dashboardMessage =
     document.getElementById("dashboardMessage");
@@ -75,15 +71,6 @@ document.addEventListener("DOMContentLoaded", () => {
     return;
   }
 
-  function showCouponMessage(text, type = "error") {
-    if (!message) return;
-
-    message.textContent = text;
-    message.classList.toggle(
-      "success",
-      type === "success"
-    );
-  }
 
   function showDashboardMessage(text) {
     if (!dashboardMessage) return;
@@ -333,159 +320,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  if (form) {
-    form.addEventListener(
-      "submit",
-      async (event) => {
-        event.preventDefault();
-
-        const requiredFieldIds = [
-          "couponName",
-          "discount",
-          "minPrice",
-          "quantity",
-          "startDate",
-          "endDate"
-        ];
-
-        const missingField =
-          requiredFieldIds
-            .map((id) =>
-              document.getElementById(id)
-            )
-            .find(
-              (field) =>
-                !field ||
-                !field.value.trim()
-            );
-
-        if (missingField) {
-          showCouponMessage(
-            "쿠폰 발행에 필요한 항목을 모두 입력해주세요."
-          );
-
-          missingField.focus();
-          return;
-        }
-
-        const startDate =
-          document.getElementById(
-            "startDate"
-          ).value;
-
-        const endDate =
-          document.getElementById(
-            "endDate"
-          ).value;
-
-        if (startDate >= endDate) {
-          showCouponMessage(
-            "사용 종료일은 시작일보다 이후여야 합니다."
-          );
-
-          document.getElementById(
-            "endDate"
-          ).focus();
-
-          return;
-        }
-
-        const maxDiscount =
-          document.getElementById(
-            "maxDiscount"
-          ).value;
-
-        const payload = {
-          couponName:
-            document
-              .getElementById(
-                "couponName"
-              )
-              .value.trim(),
-
-          discountType:
-            document.getElementById(
-              "couponType"
-            ).value,
-
-          discountValue:
-            Number(
-              document.getElementById(
-                "discount"
-              ).value
-            ),
-
-          minimumOrderAmount:
-            Number(
-              document.getElementById(
-                "minPrice"
-              ).value
-            ),
-
-          maximumDiscountAmount:
-            maxDiscount
-              ? Number(maxDiscount)
-              : 0,
-
-          totalQuantity:
-            Number(
-              document.getElementById(
-                "quantity"
-              ).value
-            ),
-
-          validFrom: startDate,
-          validUntil: endDate
-        };
-
-        try {
-          if (submitButton) {
-            submitButton.disabled = true;
-            submitButton.textContent =
-              "요청 등록 중...";
-          }
-
-          await request(
-            COUPON_REQUEST_API,
-            {
-              method: "POST",
-              body: JSON.stringify(payload)
-            }
-          );
-
-          form.reset();
-
-          showCouponMessage(
-            "쿠폰 발행 승인 요청이 등록되었습니다.",
-            "success"
-          );
-
-          await loadDashboard();
-        } catch (error) {
-          console.error(
-            "쿠폰 발행 요청 오류:",
-            error
-          );
-
-          if (
-            error.message !==
-            "UNAUTHORIZED"
-          ) {
-            showCouponMessage(
-              error.message ||
-              "쿠폰 발행 승인 요청에 실패했습니다."
-            );
-          }
-        } finally {
-          if (submitButton) {
-            submitButton.disabled = false;
-            submitButton.textContent =
-              "쿠폰 발행 승인 요청";
-          }
-        }
-      }
-    );
-  }
 
   loadDashboard();
 });

@@ -19,6 +19,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>판매자 대시보드 — 캐치캐치</title>
 <link rel="stylesheet" href="css/common.css">
+<link rel="stylesheet" href="css/seller-nav.css">
 <link rel="stylesheet" href="css/seller-dashboard.css">
 </head>
 <body>
@@ -88,12 +89,15 @@
       </div>
     </div>
 
+    <!-- 판매자 공통 메뉴 : 6개 판매자 페이지에 동일하게 복사되어 있습니다.
+         고치려면 6곳 모두 (css/seller-nav.css 주석 참고) -->
     <nav class="seller-page-links" aria-label="판매자 관리 메뉴">
-      <a class="active" href="seller-dashboard.html">대시보드</a>
+      <a class="active" aria-current="page" href="seller-dashboard.html">대시보드</a>
       <a href="seller-products.html">상품 관리</a>
       <a href="seller-sales.html?tab=sales">매출·정산</a>
       <a href="seller-qna.html?status=wait">Q&amp;A 관리</a>
-      <a href="seller-claims.html?status=검토중">교환·환불</a>
+      <a href="seller-claims.html">교환·환불</a>
+      <a href="seller-notifications.html">쿠폰관리</a>
     </nav>
 
     <div class="dashboard-panel">
@@ -141,106 +145,6 @@
 
   </section>
 
-
-  <!-- ================= 쿠폰 발행 요청 ================= -->
-  <section class="block" id="couponRequestSection">
-
-    <div class="sec-head">
-      <div>
-        <p class="kicker">Promotion</p>
-        <h3>쿠폰 발행 요청</h3>
-      </div>
-    </div>
-
-    <form class="coupon-form" id="couponRequestForm">
-
-      <div class="form-grid">
-
-        <div class="form-group">
-          <label for="couponName">쿠폰명</label>
-          <input
-            type="text"
-            id="couponName"
-            placeholder="예) 여름 시즌 10% 할인">
-        </div>
-
-        <div class="form-group">
-          <label for="couponType">할인 유형</label>
-          <select id="couponType">
-            <option value="PERCENTAGE">정률 할인 (%)</option>
-            <option value="FIXED_AMOUNT">정액 할인 (원)</option>
-          </select>
-        </div>
-
-        <div class="form-group">
-          <label for="discount">할인 금액 / 할인율</label>
-          <input
-            type="number"
-            id="discount"
-            placeholder="10">
-        </div>
-
-        <div class="form-group">
-          <label for="minPrice">최소 주문금액</label>
-          <input
-            type="number"
-            id="minPrice"
-            placeholder="30000">
-        </div>
-
-        <div class="form-group">
-          <label for="maxDiscount">최대 할인금액</label>
-          <input
-            type="number"
-            id="maxDiscount"
-            placeholder="10000">
-        </div>
-
-        <div class="form-group">
-          <label for="quantity">발급 수량</label>
-          <input
-            type="number"
-            id="quantity"
-            placeholder="100">
-        </div>
-
-        <div class="form-group">
-          <label for="startDate">사용 시작일</label>
-          <input
-            type="datetime-local"
-            id="startDate">
-        </div>
-
-        <div class="form-group">
-          <label for="endDate">사용 종료일</label>
-          <input
-            type="datetime-local"
-            id="endDate">
-        </div>
-
-      </div>
-
-      <div class="request-box">
-
-        <div>
-          <h4>관리자 승인 안내</h4>
-          <p>
-            쿠폰은 관리자 승인 후 발행됩니다.<br>
-            승인 결과는 알림센터에서 확인할 수 있습니다.
-          </p>
-        </div>
-
-        <button type="submit" class="btn-primary" id="couponRequestSubmit">
-          쿠폰 발행 승인 요청
-        </button>
-
-      </div>
-
-      <p class="coupon-message" id="couponMessage" aria-live="polite"></p>
-
-    </form>
-
-  </section>
 
   <!-- ▲▲▲ 여기까지 ▲▲▲ -->
 

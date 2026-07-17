@@ -19,6 +19,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>판매자 클레임 관리 — 캐치캐치</title>
 <link rel="stylesheet" href="css/common.css">
+<link rel="stylesheet" href="css/seller-nav.css">
 <link rel="stylesheet" href="css/seller-claims.css">
 </head>
 <body>
@@ -86,13 +87,23 @@
     <p class="kicker">Claim Management</p>
     <h3>교환 / 환불 관리</h3>
   </div>
-  <a class="seller-dashboard-link" href="seller-dashboard.html">← 대시보드</a>
 </div>
 
+<!-- 판매자 공통 메뉴 : 6개 판매자 페이지에 동일하게 복사되어 있습니다.
+     고치려면 6곳 모두 (css/seller-nav.css 주석 참고) -->
+<nav class="seller-page-links" aria-label="판매자 관리 메뉴">
+  <a href="seller-dashboard.html">대시보드</a>
+  <a href="seller-products.html">상품 관리</a>
+  <a href="seller-sales.html?tab=sales">매출·정산</a>
+  <a href="seller-qna.html?status=wait">Q&amp;A 관리</a>
+  <a class="active" aria-current="page" href="seller-claims.html">교환·환불</a>
+  <a href="seller-notifications.html">쿠폰관리</a>
+</nav>
 
-<!-- 검색 영역 -->
 
-<div class="filter-box">
+<!-- 검색 영역 : 목록 화면에서만 쓰이므로 상세로 들어가면 함께 숨는다 -->
+
+<div class="filter-box" id="claimFilterBox">
 
   <div class="filter-row">
 
@@ -150,7 +161,7 @@
 
 <!-- 요청 목록 -->
 
-<div class="claim-list">
+<div class="claim-list" id="claimList">
 
 
 <h4>
@@ -172,53 +183,8 @@
 </thead>
 
 
-<tbody>
-
-
-<tr class="claim-item active" data-id="C001" data-product="와이드 데님 팬츠" data-type="교환" data-reason="사이즈 변경" data-amount="45,000원" data-status="검토중" data-date="2026-07-14">
-
-<tbody>
-  <!-- JS가 채웁니다 -->
-</tbody>
-<td>
-<span class="status wait">
-검토중
-</span>
-</td>
-
-</tr>
-
-
-
-<tr class="claim-item" data-id="C002" data-product="오버핏 셔츠" data-type="환불" data-reason="상품 불량" data-amount="32,000원" data-status="접수" data-date="2026-07-13">
-
-<tbody>
-  <!-- JS가 채웁니다 -->
-</tbody>
-<td>
-<span class="status">
-접수
-</span>
-</td>
-
-</tr>
-
-
-
-<tr class="claim-item" data-id="C003" data-product="코튼 니트" data-type="환불" data-reason="단순 변심" data-amount="29,000원" data-status="완료" data-date="2026-07-10">
-
-<tbody>
-  <!-- JS가 채웁니다 -->
-</tbody>
-<td>
-<span class="status done">
-완료
-</span>
-</td>
-
-</tr>
-
-
+<tbody id="claimListBody">
+  <!-- JS(renderList)가 채웁니다 -->
 </tbody>
 
 </table>
@@ -231,14 +197,22 @@
 
 
 
-<!-- 상세 처리 영역 -->
+<!-- 상세 처리 영역 : 목록에서 클레임을 선택해야 열린다 (JS가 hidden 토글) -->
 
-<div class="claim-detail">
+<div class="claim-detail" id="claimDetail" hidden>
 
+
+<div class="claim-detail-head">
+
+<button type="button" class="btn-back" id="claimBackButton">
+← 목록으로
+</button>
 
 <h4>
 클레임 상세 처리
 </h4>
+
+</div>
 
 
 
@@ -249,7 +223,7 @@
 
 <label>요청번호</label>
 
-<p id="claimId">C001</p>
+<p id="claimId">-</p>
 
 </div>
 
@@ -258,7 +232,7 @@
 
 <label>상품명</label>
 
-<p id="claimProduct">와이드 데님 팬츠</p>
+<p id="claimProduct">-</p>
 
 </div>
 
@@ -268,7 +242,7 @@
 
 <label>요청 유형</label>
 
-<p id="claimType">교환</p>
+<p id="claimType">-</p>
 
 </div>
 
@@ -278,7 +252,7 @@
 
 <label>요청 사유</label>
 
-<p id="claimReason">사이즈 변경</p>
+<p id="claimReason">-</p>
 
 </div>
 
@@ -288,7 +262,7 @@
 
 <label>환불 금액</label>
 
-<p id="claimAmount">45,000원</p>
+<p id="claimAmount">-</p>
 
 </div>
 
@@ -311,7 +285,7 @@
 <!-- 상태 변경 -->
 
 
-<div class="action-section">
+<div class="action-section" id="claimStatusSection">
 
 
 <h5>
@@ -322,25 +296,9 @@
 <div class="action-row">
 
 
-<select id="claimStatusSelect">
-
-<option>
-접수
-</option>
-
-<option>
-처리중
-</option>
-
-<option>
-반려
-</option>
-
-<option>
-완료
-</option>
-
-</select>
+<!-- 선택지는 JS가 현재 상태에 맞춰 채운다.
+     백엔드가 허용하는 전이만 넣으므로 여기에 고정 목록을 두지 않는다. -->
+<select id="claimStatusSelect"></select>
 
 
 <button type="button" class="btn-primary" id="updateClaimStatusButton">
@@ -354,13 +312,17 @@
 </div>
 
 
+<!-- 더 이상 진행할 수 있는 처리가 없을 때 -->
+<p class="claim-no-action" id="claimNoAction" hidden></p>
 
 
 
 
-<!-- 최종 환불 -->
 
-<div class="action-section">
+
+<!-- 최종 환불 : 환불(RETURN) + 접수/처리중 일 때만 JS가 보여준다 -->
+
+<div class="action-section" id="claimRefundSection" hidden>
 
 
 <h5>
@@ -372,17 +334,31 @@
 
 
 <p>
-✓ PG 결제 취소
+✓ 환불 금액 : <span id="refundAmount">-</span>
 </p>
 
 
 <p>
-✓ 사용 포인트 회수
+✓ 배송 상태를 환불 완료로 변경
+</p>
+
+
+<!-- 아래 둘은 주문 전체가 환불될 때만 동작한다. (SellerRefundService: order.isFullyRefunded)
+     부분 환불이면 포인트·쿠폰은 그대로 둔다. -->
+<p>
+✓ 사용 포인트 복원 <span class="refund-note">(주문 전체 환불 시)</span>
 </p>
 
 
 <p>
-✓ 환불 금액 : 45,000원
+✓ 사용 쿠폰 복원 <span class="refund-note">(주문 전체 환불 시)</span>
+</p>
+
+
+<!-- 백엔드가 가상결제 구조라 PG 취소는 대상에서 제외돼 있다.
+     ("NOTE: PG 결제 취소는 별도 PG 연동이 없는 가상결제 구조라 대상에서 제외한다") -->
+<p class="refund-warn">
+※ 실제 결제(PG) 취소는 이루어지지 않습니다.
 </p>
 
 

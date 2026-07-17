@@ -6,7 +6,7 @@
 <meta name="description" content="캐치캐치 — 예쁜 옷을 한눈에 캐치하는 패션 스토어">
 <title>캐치캐치 — 의류 쇼핑몰</title>
 <link rel="stylesheet" href="css/common.css">
-<link rel="stylesheet" href="css/main.css">
+<link rel="stylesheet" href="css/html.css">
 </head>
 <body>
 
@@ -85,62 +85,23 @@
 </nav>
 
 <main class="wrap">
-  <!-- HERO: 세 개의 광고/이벤트가 4초마다 가로로 자동 전환됩니다. -->
+  <!-- 활성 배너는 GET /api/v1/banners 응답으로 구성됩니다. -->
   <section class="hero" aria-label="프로모션 배너">
-    <div class="ad-slider" id="adSlider">
-      <div class="ad-track" id="adTrack">
-        <a class="ad-slide s1" href="product-list.html?cat=outer">
-          <svg class="ad-silo" viewBox="0 0 130 110" aria-hidden="true"><use href="#g-jacket"/></svg>
-          <div class="ad-copy">
-            <p class="eyebrow">CATCHCATCH SUMMER</p>
-            <h2>예쁜 옷을<br>한눈에 캐치</h2>
-            <p>캐치캐치가 제안하는 이번 시즌 데일리 스타일을 만나보세요.</p>
-          </div>
-        </a>
-        <a class="ad-slide s2" href="product-list.html?view=best">
-          <svg class="ad-silo" viewBox="0 0 130 110" aria-hidden="true"><use href="#g-tee"/></svg>
-          <div class="ad-copy">
-            <p class="eyebrow">WEEKLY EVENT</p>
-            <h2>이번 주 베스트<br>스타일 모음</h2>
-            <p>지금 가장 많이 선택받는 아이템을 한곳에서 확인해보세요.</p>
-          </div>
-        </a>
-        <a class="ad-slide s3" href="product-list.html">
-          <svg class="ad-silo" viewBox="0 0 130 110" aria-hidden="true"><use href="#g-pants"/></svg>
-          <div class="ad-copy">
-            <p class="eyebrow">SPECIAL PROMOTION</p>
-            <h2>캐치하면 끝<br>한정 이벤트</h2>
-            <p>기간 한정 혜택과 특별 프로모션을 놓치지 마세요.</p>
-          </div>
-        </a>
-      </div>
-      <div class="slider-dots" aria-label="배너 선택">
-        <button class="slider-dot on" type="button" aria-label="첫 번째 배너"></button>
-        <button class="slider-dot" type="button" aria-label="두 번째 배너"></button>
-        <button class="slider-dot" type="button" aria-label="세 번째 배너"></button>
-      </div>
+    <div class="ad-slider" id="adSlider" role="region" aria-roledescription="캐러셀" aria-busy="true">
+      <div class="banner-state" id="bannerState" role="status">배너를 불러오는 중입니다.</div>
+      <div class="ad-track" id="adTrack"></div>
+      <button class="slider-arrow slider-prev" id="sliderPrev" type="button" aria-label="이전 배너" hidden>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5 8 12l7 7"/></svg>
+      </button>
+      <button class="slider-arrow slider-next" id="sliderNext" type="button" aria-label="다음 배너" hidden>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 5 7 7-7 7"/></svg>
+      </button>
+      <div class="slider-dots" id="sliderDots" aria-label="배너 선택" hidden></div>
     </div>
   </section>
 
-  <!-- 신상품 -->
-  <section class="block">
-    <div class="sec-head">
-      <div>
-        <p class="kicker">New Arrivals</p>
-        <h3>신상품</h3>
-      </div>
-      <a class="more" href="product-list.html?view=best">전체보기 →</a>
-    </div>
-    <div class="chips">
-      <a class="chip on" href="product-list.html">전체</a>
-      <a class="chip" href="product-list.html?cat=outer">아우터</a>
-      <a class="chip" href="product-list.html?cat=top">상의</a>
-      <a class="chip" href="product-list.html?cat=pants">팬츠</a>
-      <a class="chip" href="product-list.html?cat=shoes">신발</a>
-      <a class="chip" href="product-list.html?cat=bag">가방</a>
-      <a class="chip" href="product-list.html?cat=acc">액세서리</a>
-    </div>
-    <div class="grid" id="grid"></div>
+  <section class="block product-showcase" aria-label="현재 판매 중인 상품">
+    <div class="grid" id="grid" aria-live="polite" aria-busy="true"></div>
   </section>
 </main>
 

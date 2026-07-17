@@ -22,6 +22,16 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const $ = (selector) => document.querySelector(selector);
 
+  // 판매자 계정은 장바구니 기능을 쓸 수 없다. (product-detail.js 와 동일 정책)
+  // 이 페이지의 "장바구니 담기"는 실제로 담지 않고 상세 페이지로 보내기만 하지만,
+  // 판매자에게는 이동 없이 같은 안내를 보여줘야 동작이 일관된다.
+  function blockIfSeller() {
+    if (!CatchAuth.isLoggedIn()) return false;
+    if (sessionStorage.getItem("catchcatch.loginType") !== "seller") return false;
+    alert("판매자는 해당 기능을 사용할 수 없습니다.");
+    return true;
+  }
+
   const won = (value) =>
     `${Number(value ?? 0).toLocaleString("ko-KR")}원`;
 
@@ -479,6 +489,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       if (action === "add-cart") {
+        if (blockIfSeller()) return;
         location.href =
           `product-detail.html?id=${productId}`;
       }
@@ -651,6 +662,8 @@ document.addEventListener("DOMContentLoaded", () => {
   addCartCheckedButton?.addEventListener(
     "click",
     () => {
+      if (blockIfSeller()) return;
+
       const selectedItems =
         wishItems.filter(
           (item) => item.checked

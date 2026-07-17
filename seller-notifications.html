@@ -3,8 +3,9 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>판매자 알림센터 — 캐치캐치</title>
+<title>판매자 쿠폰 관리 — 캐치캐치</title>
 <link rel="stylesheet" href="css/common.css">
+<link rel="stylesheet" href="css/seller-nav.css">
 <link rel="stylesheet" href="css/seller-notifications.css">
 </head>
 <body>
@@ -61,11 +62,91 @@
   <section class="block seller-notification-page">
     <div class="sec-head">
       <div>
-        <p class="kicker">Seller Notification</p>
-        <h3>알림센터</h3>
-        <p class="page-copy">쿠폰 발행 요청의 승인·반려 결과와 판매자 주요 알림을 확인할 수 있습니다.</p>
+        <p class="kicker">Coupon Management</p>
+        <h3>쿠폰 관리</h3>
       </div>
-      <a class="seller-dashboard-link" href="seller-dashboard.html">← 대시보드</a>
+    </div>
+
+    <!-- 판매자 공통 메뉴 : 6개 판매자 페이지에 동일하게 복사되어 있습니다.
+         고치려면 6곳 모두 (css/seller-nav.css 주석 참고) -->
+    <nav class="seller-page-links" aria-label="판매자 관리 메뉴">
+      <a href="seller-dashboard.html">대시보드</a>
+      <a href="seller-products.html">상품 관리</a>
+      <a href="seller-sales.html?tab=sales">매출·정산</a>
+      <a href="seller-qna.html?status=wait">Q&amp;A 관리</a>
+      <a href="seller-claims.html">교환·환불</a>
+      <a class="active" aria-current="page" href="seller-notifications.html">쿠폰관리</a>
+    </nav>
+
+    <!-- ===== 쿠폰 발행 요청 ===== -->
+    <section class="coupon-panel" aria-labelledby="couponPanelTitle">
+      <div class="coupon-panel-head">
+        <h4 id="couponPanelTitle">쿠폰 발행 요청</h4>
+        <p>쿠폰은 관리자 승인 후 발행됩니다. <span class="req-mark">*</span> 는 필수 항목입니다.</p>
+      </div>
+
+      <form class="coupon-form" id="couponRequestForm" novalidate>
+        <div class="form-grid">
+
+          <div class="form-group form-group-wide">
+            <label for="couponName">쿠폰명 <span class="req-mark">*</span></label>
+            <input type="text" id="couponName" maxlength="100" placeholder="예) 여름 시즌 10% 할인">
+          </div>
+
+          <div class="form-group">
+            <label for="couponType">할인 유형 <span class="req-mark">*</span></label>
+            <select id="couponType">
+              <option value="PERCENTAGE">정률 할인 (%)</option>
+              <option value="FIXED_AMOUNT">정액 할인 (원)</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="discount">할인 금액 / 할인율 <span class="req-mark">*</span></label>
+            <input type="number" id="discount" min="1" step="1" placeholder="10">
+            <span class="field-hint" data-role="discount-hint">정률 할인은 1~100 사이로 입력하세요.</span>
+          </div>
+
+          <div class="form-group">
+            <label for="quantity">발급 수량 <span class="req-mark">*</span></label>
+            <input type="number" id="quantity" min="1" step="1" placeholder="100">
+          </div>
+
+          <div class="form-group">
+            <label for="minPrice">최소 주문금액</label>
+            <input type="number" id="minPrice" min="0" step="1000" placeholder="30000">
+            <span class="field-hint">비워두면 0원으로 등록됩니다.</span>
+          </div>
+
+          <div class="form-group">
+            <label for="maxDiscount">최대 할인금액</label>
+            <input type="number" id="maxDiscount" min="0" step="1000" placeholder="10000">
+            <span class="field-hint">정률 할인의 상한값입니다. 선택 항목.</span>
+          </div>
+
+          <div class="form-group">
+            <label for="startDate">사용 시작일 <span class="req-mark">*</span></label>
+            <input type="datetime-local" id="startDate">
+          </div>
+
+          <div class="form-group">
+            <label for="endDate">사용 종료일 <span class="req-mark">*</span></label>
+            <input type="datetime-local" id="endDate">
+          </div>
+
+        </div>
+
+        <div class="coupon-form-foot">
+          <p class="coupon-message" id="couponMessage" aria-live="polite"></p>
+          <button type="submit" class="btn-primary" id="couponRequestSubmit">쿠폰 발행 승인 요청</button>
+        </div>
+      </form>
+    </section>
+
+    <!-- ===== 발행 요청 결과 (알림) ===== -->
+    <div class="coupon-result-head">
+      <h4>발행 요청 결과</h4>
+      <p>승인·반려 결과가 알림으로 도착하면 아래에 표시됩니다.</p>
     </div>
 
     <div class="notification-summary" aria-live="polite" aria-busy="true">
@@ -102,7 +183,6 @@
     <div class="notification-empty" data-role="notification-empty" hidden>
       <strong>표시할 알림이 없습니다.</strong>
       <p>쿠폰 발행 요청이 승인 또는 반려되면 이곳에서 확인할 수 있습니다.</p>
-      <a href="seller-dashboard.html#couponRequestSection">쿠폰 발행 요청하러 가기</a>
     </div>
 
     <p class="notification-message" data-role="notification-message" role="status" hidden></p>

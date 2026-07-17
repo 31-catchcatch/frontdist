@@ -1,14 +1,14 @@
 .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
 .seller-products-page{padding:68px 0 20px}
-.sec-head{display:flex;align-items:flex-start;justify-content:space-between;gap:24px;margin-bottom:28px}
-.sec-head .kicker{margin:0 0 9px;color:var(--point);font-size:11px;font-weight:800;letter-spacing:.2em;text-transform:uppercase}
+/* margin-bottom 은 22px 고정 — 판매자 6개 페이지의 nav 세로 위치를 맞추기 위함 (css/seller-nav.css 참고) */
+.sec-head{display:flex;align-items:flex-start;justify-content:space-between;gap:24px;margin-bottom:22px}
+/* margin 은 common.css 와 동일한 8px — 이 1px 차이로 nav 세로 위치가 어긋났었다 */
+.sec-head .kicker{margin:0 0 8px;color:var(--point);font-size:11px;font-weight:800;letter-spacing:.2em;text-transform:uppercase}
 .sec-head h3{margin:0;font-size:clamp(20px,2.3vw,26px);font-weight:800;letter-spacing:-.01em}
 .sec-head>div>p:last-child{margin:13px 0 0;color:var(--mid);font-size:13px;line-height:1.7}
 .head-links{display:flex;align-items:center;gap:8px;flex-shrink:0}
 .register-button{display:inline-flex;align-items:center;justify-content:center;min-width:118px;height:44px;padding:0 20px;border:1px solid var(--ink);border-radius:8px;background:var(--ink);color:#fff;font-size:13px;font-weight:800;text-decoration:none}
 .register-button:hover{opacity:.88}
-.seller-dashboard-link{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:0 16px;border:1px solid #ddd;border-radius:8px;color:#444;font-size:14px;font-weight:600;text-decoration:none}
-.seller-dashboard-link:hover{border-color:#111;color:#111}
 .modal-kicker{margin:0 0 9px;color:var(--point);font-size:11px;font-weight:800;letter-spacing:.2em;text-transform:uppercase}
 .summary-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px}
 .summary-grid article{padding:21px;border:1px solid var(--hairline);background:var(--surface)}
@@ -31,6 +31,9 @@
 .product-info{display:flex;align-items:center;gap:13px;min-width:220px}
 .product-thumb{flex:0 0 auto;width:62px;height:76px;border:1px solid var(--hairline);background:var(--tile-1);object-fit:cover}
 .product-copy{min-width:0}
+.product-thumb-link{flex:0 0 auto;line-height:0}
+.product-name-link{display:block;min-width:0;color:inherit;text-decoration:none}
+.product-name-link:hover strong{text-decoration:underline}
 .product-copy strong{display:block;margin-bottom:6px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px}
 .product-copy span{display:block;color:var(--mid);font-size:11.5px}
 .status-badge{display:inline-flex;align-items:center;justify-content:center;min-width:66px;padding:6px 8px;border-radius:999px;font-size:10.5px;font-weight:800}
@@ -61,4 +64,4 @@
 .modal-cancel{border:1px solid var(--hairline-strong);background:var(--surface);color:var(--ink)}
 .modal-delete{border:1px solid var(--point);background:var(--point);color:#fff}
 @media(max-width:860px){.summary-grid{grid-template-columns:repeat(2,1fr)}.product-table th:nth-child(4),.product-table td:nth-child(4),.product-table th:nth-child(6),.product-table td:nth-child(6){display:none}}
-@media(max-width:680px){.seller-products-page{padding-top:48px}.sec-head{align-items:stretch;flex-direction:column}.head-links{width:100%}.register-button,.seller-dashboard-link{flex:1}.summary-grid{gap:8px}.summary-grid article{padding:17px}.panel-tools{flex-direction:column}.product-search,.panel-tools select{width:100%}.table-wrap{display:none}.mobile-product-list{display:block;padding:0 16px}.mobile-state{padding:70px 0;color:var(--mid);text-align:center;font-size:12.5px}.mobile-product-card{display:grid;grid-template-columns:74px 1fr;gap:13px;padding:17px 0;border-bottom:1px solid var(--hairline)}.mobile-product-card .product-thumb{width:74px;height:92px}.mobile-card-body{min-width:0}.mobile-card-head{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}.mobile-card-head strong{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px}.mobile-meta{display:grid;grid-template-columns:auto 1fr;gap:5px 12px;margin-top:10px;color:var(--mid);font-size:11.5px}.mobile-meta b{color:var(--ink);font-weight:700}.mobile-product-card .manage-buttons{margin-top:12px}}
+@media(max-width:680px){.seller-products-page{padding-top:48px}.sec-head{align-items:stretch;flex-direction:column}.summary-grid{gap:8px}.summary-grid article{padding:17px}.panel-tools{flex-direction:column}.product-search,.panel-tools select{width:100%}.table-wrap{display:none}.mobile-product-list{display:block;padding:0 16px}.mobile-state{padding:70px 0;color:var(--mid);text-align:center;font-size:12.5px}.mobile-product-card{display:grid;grid-template-columns:74px 1fr;gap:13px;padding:17px 0;border-bottom:1px solid var(--hairline)}.mobile-product-card .product-thumb{width:74px;height:92px}.mobile-card-body{min-width:0}.mobile-card-head{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}.mobile-card-head strong{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px}.mobile-meta{display:grid;grid-template-columns:auto 1fr;gap:5px 12px;margin-top:10px;color:var(--mid);font-size:11.5px}.mobile-meta b{color:var(--ink);font-weight:700}.mobile-product-card .manage-buttons{margin-top:12px}}

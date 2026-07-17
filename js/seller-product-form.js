@@ -215,7 +215,7 @@
     const row = document.createElement("div");
     row.className = "option-row";
     row.innerHTML = `
-      <input type="text" class="option-name" placeholder="옵션명 (예: M / 블랙)" maxlength="100" value="${data?.optionName ?? ""}">
+      <input type="text" class="option-name" placeholder="사이즈 등 옵션명 (예: M / 블랙)" maxlength="100" required value="${data?.optionName ?? ""}">
       <input type="number" class="option-price" placeholder="추가 금액" min="0" step="100" value="${data?.additionalPrice ?? 0}">
       <input type="number" class="option-stock" placeholder="재고 수량" min="0" step="1" value="${data?.stockQuantity ?? ""}">
       <button type="button" class="option-remove" aria-label="옵션 삭제">×</button>
@@ -514,7 +514,7 @@
 
     const options = collectOptions();
     if (!options.length || options.some((option) => !option.optionName)) {
-      showMessage("옵션명을 포함해 최소 1개 이상의 옵션을 등록해 주세요.");
+      showMessage("사이즈 등 옵션명을 반드시 입력해 최소 1개 이상의 옵션을 등록해 주세요.");
       return;
     }
 

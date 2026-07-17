@@ -19,6 +19,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>판매자 Q&A 관리 — 캐치캐치</title>
 <link rel="stylesheet" href="css/common.css">
+<link rel="stylesheet" href="css/seller-nav.css">
 <link rel="stylesheet" href="css/seller-qna.css">
 </head>
 <body>
@@ -102,11 +103,20 @@
 답변 완료 <b aria-live="polite"></b>
 </button>
 
-<a class="seller-dashboard-link" href="seller-dashboard.html">← 대시보드</a>
-
 </div>
 
 </div>
+
+<!-- 판매자 공통 메뉴 : 6개 판매자 페이지에 동일하게 복사되어 있습니다.
+     고치려면 6곳 모두 (css/seller-nav.css 주석 참고) -->
+<nav class="seller-page-links" aria-label="판매자 관리 메뉴">
+<a href="seller-dashboard.html">대시보드</a>
+<a href="seller-products.html">상품 관리</a>
+<a href="seller-sales.html?tab=sales">매출·정산</a>
+<a class="active" aria-current="page" href="seller-qna.html?status=wait">Q&amp;A 관리</a>
+<a href="seller-claims.html">교환·환불</a>
+<a href="seller-notifications.html">쿠폰관리</a>
+</nav>
 
 
 
