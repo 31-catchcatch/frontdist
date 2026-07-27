@@ -182,6 +182,12 @@
     return value.slice(0, 10).replaceAll("-", ".");
   }
 
+  function escapeHtml(value) {
+    return String(value ?? "").replace(/[&<>"']/g, (char) => ({
+      "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+    })[char]);
+  }
+
   function flattenOrders(orders) {
     const flattened = [];
     orders.forEach((order) => {
@@ -193,6 +199,7 @@
           orderDetailId: detail.orderDetailId,
           productId: detail.productId,
           productName: detail.productName,
+          thumbnailUrl: detail.thumbnailUrl,
           quantity: detail.quantity,
           totalPrice: detail.totalPrice,
           deliveryStatus: detail.deliveryStatus
@@ -213,9 +220,13 @@
     } else if (row.deliveryStatus === "CANCELED" || row.deliveryStatus === "REFUNDED") {
       action = "";
     }
+    // 썸네일이 없는 상품은 기존처럼 CSS로 그린 회색 박스를 유지한다.
+    const thumb = row.thumbnailUrl
+      ? `<img src="${escapeHtml(row.thumbnailUrl)}" alt="">`
+      : `<span></span>`;
     return `<article class="order-card" id="order-${row.orderDetailId}" data-order-id="${row.orderId}" data-order-detail-id="${row.orderDetailId}">
       <header class="order-card-head"><div><time>${formatDate(row.createdAt)}</time><span class="order-no">주문번호 ${row.orderNumber}</span></div><a href="#" data-action="order-detail" data-id="${row.orderDetailId}">주문 상세 <span aria-hidden="true">›</span></a></header>
-      <div class="order-product"><div class="product-thumb" aria-hidden="true"><span></span></div><div class="product-info"><strong>${row.productName}</strong><p>${row.quantity}개</p><b>${money.format(row.totalPrice)}원</b></div><span class="status ${statusClass}">${statusLabel}</span></div>
+      <div class="order-product"><div class="product-thumb" aria-hidden="true">${thumb}</div><div class="product-info"><strong>${row.productName}</strong><p>${row.quantity}개</p><b>${money.format(row.totalPrice)}원</b></div><span class="status ${statusClass}">${statusLabel}</span></div>
       <div class="order-actions"><div class="document-actions"><button type="button" class="text-btn" data-action="delivery" data-id="${row.orderDetailId}">배송 조회</button><button type="button" class="text-btn" data-action="receipt" data-id="${row.orderDetailId}">전자 영수증</button><button type="button" class="text-btn" data-action="statement" data-id="${row.orderDetailId}">거래명세서</button></div><div class="primary-actions">${action}</div></div>
     </article>`;
   }

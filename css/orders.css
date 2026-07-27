@@ -26,6 +26,7 @@
 .order-product { align-items: center; display: flex; gap: 18px; min-height: 132px; padding: 19px 20px; }
 .product-thumb { align-items: center; background: var(--tile-1); display: flex; flex: 0 0 92px; height: 92px; justify-content: center; overflow: hidden; position: relative; }
 .product-thumb::before, .product-thumb::after, .product-thumb span { background: color-mix(in srgb, var(--ink) 36%, transparent); content: ""; display: block; position: absolute; }
+.product-thumb img { height: 100%; object-fit: cover; width: 100%; }
 .product-thumb.shirt::before { border-radius: 4px 4px 9px 9px; height: 55px; transform: translateY(6px); width: 38px; }
 .product-thumb.shirt::after { border: 5px solid color-mix(in srgb, var(--ink) 36%, transparent); border-bottom: 0; height: 18px; top: 18px; transform: rotate(45deg); width: 18px; }
 .product-thumb.bag { background: var(--tile-4); }.product-thumb.bag::before { border-radius: 4px; height: 43px; top: 34px; width: 52px; }.product-thumb.bag::after { background: none; border: 5px solid color-mix(in srgb, var(--ink) 36%, transparent); border-bottom: 0; border-radius: 20px 20px 0 0; height: 26px; top: 20px; width: 28px; }

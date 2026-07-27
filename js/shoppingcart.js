@@ -2,7 +2,17 @@
   "use strict";
 
   const CART_API = "/api/v1/carts";
+  const CHECKOUT_API = "/api/v1/orders/checkout";
   const FILE_PREVIEW_MODE = location.protocol === "file:";
+
+  // 배송비 정책의 SSOT는 백엔드(OrderService)다. 아래 값은 서버에서 정책을 받지 못했을 때만 쓰는 폴백이다.
+  const FALLBACK_SHIPPING_FEE = 3000;
+  const FALLBACK_FREE_SHIPPING_THRESHOLD = 50000;
+
+  let shippingPolicy = {
+    fee: FALLBACK_SHIPPING_FEE,
+    threshold: FALLBACK_FREE_SHIPPING_THRESHOLD
+  };
 
   const cartList = document.getElementById("cartList");
   const selectAll = document.getElementById("selectAll");
@@ -210,7 +220,10 @@
     );
 
     const discount = Math.max(0, normalTotal - saleTotal);
-    const delivery = saleTotal === 0 || saleTotal >= 50000 ? 0 : 3000;
+    const delivery =
+      saleTotal === 0 || saleTotal >= shippingPolicy.threshold
+        ? 0
+        : shippingPolicy.fee;
     const total = saleTotal + delivery;
 
     productAmount.textContent = formatPrice(normalTotal);
@@ -221,6 +234,31 @@
     checkoutButton.disabled = selectedItems.length === 0;
   }
 
+  /**
+   * 배송비 정책을 서버에서 받아온다. 체크아웃 페이지와 같은 값을 쓰기 위한 것이므로
+   * 실패해도 장바구니 자체는 폴백 값으로 계속 동작시킨다(로그인 처리는 loadCart가 담당).
+   */
+  async function loadShippingPolicy() {
+    try {
+      const response = await fetch(CHECKOUT_API, {
+        method: "GET",
+        credentials: "include"
+      });
+
+      if (!response.ok) return;
+
+      const payload = await response.json();
+      const body = payload?.data ?? payload ?? {}; // extractItems와 같은 봉투 처리
+      const fee = Number(body.shippingFee);
+      const threshold = Number(body.freeShippingThreshold);
+
+      if (Number.isFinite(fee)) shippingPolicy.fee = fee;
+      if (Number.isFinite(threshold)) shippingPolicy.threshold = threshold;
+    } catch (_) {
+      // 폴백 값 유지
+    }
+  }
+
   async function loadCart() {
     clearMessage();
 
@@ -229,6 +267,8 @@
       renderCart();
       return;
     }
+
+    await loadShippingPolicy();
 
     try {
       const response = await fetch(CART_API, {

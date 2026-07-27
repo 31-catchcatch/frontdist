@@ -3,10 +3,17 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="description" content="캐치캐치 주문서와 결제 정보를 확인하세요.">
-<title>주문/결제 | 캐치캐치</title>
+<meta name="description" content="캐치캐치 결제 결과를 확인하세요.">
+<title>결제 실패 | 캐치캐치</title>
 <link rel="stylesheet" href="css/common.css">
 <link rel="stylesheet" href="css/checkout.css">
+<style>
+  /* 결제 결과 페이지에서만 쓰는 최소한의 배치. 나머지는 checkout.css 를 그대로 재사용한다. */
+  .result-panel { max-width: 560px; margin: 0 auto; }
+  .result-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 28px; }
+  .result-actions a { flex: 1 1 180px; text-decoration: none; }
+  .result-actions a.pay-button { display: inline-flex; align-items: center; justify-content: center; margin-top: 0; }
+</style>
 </head>
 <body>
 
@@ -59,97 +66,36 @@
 
 <main class="wrap checkout-page">
   <nav class="breadcrumb" aria-label="현재 위치">
-    <a href="index.html">홈</a><span aria-hidden="true">/</span><span aria-current="page">주문/결제</span>
+    <a href="index.html">홈</a><span aria-hidden="true">/</span><span aria-current="page">결제 결과</span>
   </nav>
 
   <header class="checkout-heading">
-    <p class="kicker">Order</p>
-    <h1>주문/결제</h1>
-    <p>주문 상품과 결제 정보를 확인해 주세요.</p>
+    <p class="kicker">Payment</p>
+    <h1 id="failTitle">결제가 완료되지 않았습니다</h1>
+    <p id="failLead">결제가 중단되어 주문이 확정되지 않았습니다.</p>
   </header>
 
-  <p id="checkoutNotice" class="checkout-notice" role="alert" aria-live="assertive" hidden></p>
+  <p id="failNotice" class="checkout-notice" role="alert" aria-live="assertive" hidden></p>
 
-  <div id="checkoutLoading" class="checkout-loading" aria-live="polite">
-    <span class="loading-dot" aria-hidden="true"></span>
-    주문 정보를 불러오고 있습니다.
-  </div>
+  <div class="result-panel">
+    <p class="section-empty">
+      결제가 진행되지 않았으므로 <strong>금액은 청구되지 않았습니다.</strong>
+      주문서에서 다시 결제하실 수 있습니다.
+    </p>
 
-  <div id="checkoutContent" class="checkout-layout" hidden>
-    <div class="checkout-main">
-      <section class="checkout-section" aria-labelledby="itemsTitle">
-        <div class="section-title-row">
-          <h2 id="itemsTitle">주문 상품 <span id="itemCount" class="count"></span></h2>
-        </div>
-        <div id="orderItems" class="order-items"></div>
-        <div id="emptyCart" class="empty-cart" hidden>
-          <strong>주문할 상품이 없습니다.</strong>
-          <p>장바구니에서 주문할 상품을 선택해 주세요.</p>
-          <a href="shoppingcart.html" class="line-button">장바구니로 이동</a>
-        </div>
-      </section>
-
-      <section class="checkout-section" aria-labelledby="addressTitle">
-        <div class="section-title-row">
-          <h2 id="addressTitle">배송지</h2>
-          <button id="openAddressDialog" type="button" class="text-button">배송지 변경</button>
-        </div>
-        <div id="selectedAddress" class="selected-address" aria-live="polite"></div>
-      </section>
-
-      <section class="checkout-section benefits-section" aria-labelledby="benefitTitle">
-        <h2 id="benefitTitle">할인/포인트</h2>
-        <div class="benefit-row">
-          <label for="couponSelect">쿠폰</label>
-          <select id="couponSelect" disabled>
-            <option value="">쿠폰을 불러오는 중입니다.</option>
-          </select>
-        </div>
-        <div class="benefit-row point-row">
-          <label for="pointAmount">포인트</label>
-          <div class="point-control">
-            <input id="pointAmount" type="number" min="0" inputmode="numeric" placeholder="0" disabled>
-            <span id="availablePoints" class="point-balance">보유 포인트 0P</span>
-          </div>
-          <button id="applyPoints" type="button" class="line-button small" disabled>적용</button>
-        </div>
-        <p class="benefit-help">쿠폰과 포인트를 변경하면 최종 결제 금액이 다시 계산됩니다.</p>
-      </section>
-
-      <section class="checkout-section" aria-labelledby="paymentTitle">
-        <h2 id="paymentTitle">결제수단</h2>
-        <div id="paymentMethods" class="payment-methods" aria-label="결제수단 선택"></div>
-        <p id="paymentEmpty" class="section-empty" hidden></p>
-      </section>
-    </div>
-
-    <aside class="payment-summary" aria-labelledby="summaryTitle">
-      <h2 id="summaryTitle">결제 금액</h2>
+    <section class="checkout-section" aria-label="실패 정보">
       <dl class="price-list">
-        <div><dt>상품 금액</dt><dd id="itemTotal">0원</dd></div>
-        <div><dt>배송비</dt><dd id="shippingFee">0원</dd></div>
-        <div class="discount"><dt>쿠폰 할인</dt><dd id="couponDiscount">-0원</dd></div>
-        <div class="discount"><dt>포인트 사용</dt><dd id="pointsUsed">-0원</dd></div>
+        <div><dt>주문번호</dt><dd id="failOrderNumber">-</dd></div>
+        <div><dt>오류 코드</dt><dd id="failCode">-</dd></div>
       </dl>
-      <div class="final-price"><span>최종 결제 금액</span><strong id="finalAmount">0원</strong></div>
-      <button id="payButton" type="button" class="pay-button" disabled>결제하기</button>
-      <p id="payHelp" class="pay-help" aria-live="polite">주문 정보를 불러오는 중입니다.</p>
-    </aside>
+    </section>
+
+    <div class="result-actions">
+      <a class="pay-button" href="checkout.html">주문서로 돌아가기</a>
+      <a class="line-button" href="shoppingcart.html">장바구니로 이동</a>
+    </div>
   </div>
 </main>
-
-<dialog id="addressDialog" class="address-dialog" aria-labelledby="addressDialogTitle">
-  <form method="dialog" class="dialog-shell">
-    <div class="dialog-top">
-      <div>
-        <p class="dialog-kicker">DELIVERY ADDRESS</p>
-        <h2 id="addressDialogTitle">배송지 선택</h2>
-      </div>
-      <button id="closeAddressDialog" class="dialog-close" type="submit" aria-label="닫기">×</button>
-    </div>
-    <div id="addressOptions" class="address-options" role="radiogroup" aria-label="배송지 목록"></div>
-  </form>
-</dialog>
 
 <!-- ================= 공통 푸터 시작 (수정 금지) ================= -->
 <footer>
@@ -184,10 +130,8 @@
 </footer>
 <!-- ================= 공통 푸터 끝 ================= -->
 
-<!-- 토스페이먼츠 결제창 SDK(v2). checkout.js 가 window.TossPayments 를 쓰므로 반드시 먼저 로드한다. -->
-<script src="https://js.tosspayments.com/v2/standard"></script>
 <script src="js/auth.js"></script>
-<script src="js/checkout.js"></script>
+<script src="js/payment-fail.js"></script>
 <script src="js/navigation.js"></script>
 </body>
 </html>

@@ -65,6 +65,7 @@
 .payment-type { position: relative; display: grid; place-items: center; min-height: 70px; border: 1px solid var(--hairline-strong); background: var(--surface); color: var(--ink-soft); cursor: pointer; text-align: center; }
 .payment-type:has(input:checked) { border-color: var(--ink); color: var(--ink); background: #fcfcfc; }
 .payment-type input { position: absolute; opacity: 0; pointer-events: none; }
+.payment-type:has(input:disabled) { background: #f7f7f7; color: var(--mid); cursor: not-allowed; }
 .payment-type strong { font-size: 12px; line-height: 1.35; }
 .payment-type span { margin-top: 4px; color: var(--mid); font-size: 10.5px; }
 .payment-method { position: relative; display: flex; align-items: center; gap: 12px; min-height: 58px; border: 1px solid var(--hairline-strong); padding: 12px 14px; cursor: pointer; }
