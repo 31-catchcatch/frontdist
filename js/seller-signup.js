@@ -3,6 +3,10 @@
 
 document.addEventListener("DOMContentLoaded", () => {
 
+  // API base: auth.js 가 환경(file://·:5500 → localhost:8080, 그 외 → /api/v1)을 판별해
+  // 넣어둔 값을 쓴다. 상대경로를 하드코딩하면 file:// 로 열었을 때 백엔드에 못 닿는다.
+  const API_BASE = window.CATCHCATCH_API_BASE_URL || "/api/v1";
+
   const form = document.getElementById("signupForm");
 
   // ===== STEP 전환 =====
@@ -41,6 +45,11 @@ document.addEventListener("DOMContentLoaded", () => {
       alert("필수 약관에 동의해 주세요.");
       return;
     }
+
+    // 본인인증용 번호는 STEP1에서 입력한 대표자 전화번호를 그대로 쓴다 (중복 입력 방지).
+    const ceoPhoneEl = document.getElementById("ceoPhone");
+    const authPhoneEl = document.getElementById("authPhone");
+    if (ceoPhoneEl && authPhoneEl) authPhoneEl.value = ceoPhoneEl.value;
 
     showStep(2);
   });
@@ -97,13 +106,24 @@ document.addEventListener("DOMContentLoaded", () => {
       // TODO: 이메일 → POST /api/v1/auth/email-verification
       //       휴대폰 → POST /api/v1/auth/seller/verify
       group.hidden = false;
-      let sec = 180;
       clearInterval(interval);
-      interval = setInterval(() => {
-        sec -= 1;
+
+      let sec = 180;
+      const render = () => {
         const m = String(Math.floor(sec / 60)).padStart(2, "0");
         const s = String(sec % 60).padStart(2, "0");
         timerEl.textContent = `${m}:${s}`;
+      };
+
+      // 재발송 시 이전 만료 메시지를 지우고 즉시 03:00으로 리셋해 표시한다.
+      // (setInterval 첫 tick은 1초 뒤라, 즉시 render 하지 않으면 옛 값이 1초간 남는다)
+      msgEl.textContent = "";
+      msgEl.className = "field-msg";
+      render();
+
+      interval = setInterval(() => {
+        sec -= 1;
+        render();
         if (sec <= 0) {
           clearInterval(interval);
           msgEl.textContent = "인증 시간이 만료되었습니다. 다시 요청해 주세요.";
@@ -144,6 +164,18 @@ document.addEventListener("DOMContentLoaded", () => {
     msg: '[data-role="auth-msg"]',
   });
 
+  // ===== 대표자 전화번호 입력 중 하이픈 자동 포맷 (표시용 — 전송 시엔 숫자만 보냄) =====
+  const ceoPhoneInput = document.getElementById("ceoPhone");
+  if (ceoPhoneInput) {
+    ceoPhoneInput.addEventListener("input", () => {
+      const n = ceoPhoneInput.value.replace(/\D/g, "").slice(0, 11);
+      ceoPhoneInput.value =
+        n.length < 4 ? n :
+        n.length < 8 ? `${n.slice(0, 3)}-${n.slice(3)}` :
+        `${n.slice(0, 3)}-${n.slice(3, 7)}-${n.slice(7)}`;
+    });
+  }
+
   // ===== 최종 제출 (S-AUTH-003) — 회원가입 + 입점신청 동시 =====
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
@@ -158,26 +190,30 @@ document.addEventListener("DOMContentLoaded", () => {
       }
       const fd = new FormData();
       fd.append("file", $("bizFile").files[0]);
-      const upRes = await fetch("/api/v1/files/upload", { method: "POST", body: fd });
+      const upRes = await fetch(`${API_BASE}/files/upload`, { method: "POST", body: fd });
       const upData = await upRes.json().catch(() => null);
       const fileUrl = upData?.data?.fileUrl;
       if (!upRes.ok || !fileUrl) { alert("파일 업로드에 실패했습니다."); return; }
 
       // ② 판매자 회원가입 = 계정(role=SELLER) + 입점신청(PENDING) 동시 처리
+      // 사람 이름/전화는 모두 대표자 정보로 통합한다.
+      //  - 이름  : 대표자명(ceoName)      → name / representativeName
+      //  - 전화  : 대표자 전화번호(ceoPhone) → phoneNumber / contactNumber
+      const ceoPhone = digits($("ceoPhone").value);
       const payload = {
         username: $("userId").value.trim(),
         password: $("pw").value,
-        name: $("managerName").value.trim(),
+        name: $("ceoName").value.trim(),
         email: $("email").value.trim(),
-        phoneNumber: digits($("managerPhone").value),
+        phoneNumber: ceoPhone,
         businessName: $("companyName").value.trim(),
         businessRegistrationNumber: digits($("bizNumber").value),
         representativeName: $("ceoName").value.trim(),
-        contactNumber: digits($("managerPhone").value),
+        contactNumber: ceoPhone,
         businessAddress: $("businessAddress").value.trim(),
         businessRegistrationFileUrl: fileUrl,
       };
-      const res = await fetch("/api/v1/auth/seller/signup", {
+      const res = await fetch(`${API_BASE}/auth/seller/signup`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),

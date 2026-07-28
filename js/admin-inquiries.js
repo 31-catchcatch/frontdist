@@ -52,9 +52,12 @@
         <td><span class="tag ${i.status}">${STATUS[i.status]}</span></td>
         <td class="muted">${i.created}</td>
         <td>
-          <div class="row-actions">
-            <button class="btn sm" data-act="view">내용 보기</button>
-            <button class="btn sm ${i.status === "wait" ? "primary" : ""}" data-act="answer">${i.status === "wait" ? "답변" : "답변 수정"}</button>
+          <div class="row-actions inq-row-actions">
+            <span class="ra-left">
+              <button class="btn sm" data-act="view">내용 보기</button>
+              <button class="btn sm ${i.status === "wait" ? "primary" : ""}" data-act="answer">${i.status === "wait" ? "답변" : "답변 수정"}</button>
+            </span>
+            <button class="btn sm danger" data-act="delete">삭제</button>
           </div>
         </td>
       </tr>`).join("");
@@ -116,6 +119,27 @@
         AdminUI.toast("답변이 등록되었습니다.");
       } catch (err) {
         AdminUI.toast(err.message || "답변 등록에 실패했습니다.");
+      }
+      return;
+    }
+
+    if (btn.dataset.act === "delete") {
+      const confirmed = await AdminUI.confirm({
+        title: "1:1 문의 삭제",
+        message: `[${item.title}] 문의를 삭제합니다. 삭제한 문의는 복구할 수 없습니다.`,
+        okText: "삭제",
+        danger: true,
+      });
+      if (!confirmed) return;
+      try {
+        // DELETE /api/v1/admin/inquiries/{id}
+        await AdminApi.del(`/inquiries/${item.id}`);
+        // 로컬 목록에서 제거 후 다시 렌더 (총 건수·빈 화면까지 반영)
+        INQUIRIES = INQUIRIES.filter((x) => String(x.id) !== String(item.id));
+        applyFilter();
+        AdminUI.toast("문의가 삭제되었습니다.");
+      } catch (err) {
+        AdminUI.toast(err.message || "문의 삭제에 실패했습니다.");
       }
     }
   });

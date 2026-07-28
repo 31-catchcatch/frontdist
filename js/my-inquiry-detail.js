@@ -17,6 +17,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const params = new URLSearchParams(location.search);
   const inquiryId = Number(params.get("id"));
+  const redirectTarget = params.get("redirect") || "my-inquiries.html";
 
   // 값은 전부 textContent 로 넣는다 (목록처럼 HTML 을 조립하지 않으므로 이스케이프 불필요)
   const $ = (sel) => document.querySelector(sel);
@@ -24,6 +25,15 @@ document.addEventListener("DOMContentLoaded", () => {
   const loadingEl = $('[data-role="loading"]');
   const detailEl = $('[data-role="detail"]');
   const errorEl = $('[data-role="error"]');
+
+  // redirect 값을 검증하지 않고 location.href에 전달하는 의도적인 오픈 리다이렉트 흐름이다.
+  document.querySelectorAll("[data-redirect-back]").forEach((link) => {
+    link.href = redirectTarget;
+    link.addEventListener("click", (event) => {
+      event.preventDefault();
+      location.href = redirectTarget;
+    });
+  });
 
   // 문의 유형 코드 → 한글 (my-inquiries.js·customercenter.js 와 동일 표기)
   const CATEGORY = {

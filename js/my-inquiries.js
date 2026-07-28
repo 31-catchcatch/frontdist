@@ -12,6 +12,19 @@ document.addEventListener("DOMContentLoaded", () => {
   const errorEl = document.querySelector('[data-role="inquiry-error"]');
   const totalEl = document.querySelector('[data-role="total"]');
 
+  // 목록 URL의 redirect 값을 상세 페이지까지 그대로 전달한다.
+  // 값을 검증하지 않으므로 외부 URL도 상세 페이지의 복귀 목적지가 된다.
+  const pageParams = new URLSearchParams(location.search);
+  const redirectTarget = pageParams.get("redirect") || "my-inquiries.html";
+
+  function detailUrl(inquiryId) {
+    const detailParams = new URLSearchParams({
+      id: String(inquiryId),
+      redirect: redirectTarget,
+    });
+    return `my-inquiry-detail.html?${detailParams.toString()}`;
+  }
+
   // 문의 유형 코드 → 한글 (customercenter.js 의 유형과 정합)
   const CATEGORY = {
     ORDER: "주문",
@@ -38,33 +51,52 @@ document.addEventListener("DOMContentLoaded", () => {
     const statusBadge = answered
       ? '<span class="inq-status answered">답변완료</span>'
       : '<span class="inq-status waiting">접수</span>';
-    const orderRow = inq.orderNumber
-      ? `<span class="inq-order">주문번호 ${inq.orderNumber}</span>`
-      : "";
-    const answerBlock = answered && inq.answer
-      ? `<div class="inq-answer">
-           <div class="inq-answer-head"><b>관리자 답변</b><span class="inq-answer-date">${fmtDate(inq.answeredAt)}</span></div>
-           <p>${inq.answer}</p>
-         </div>`
-      : "";
-    // 항목 전체가 상세 페이지로 가는 링크다. 내용·답변은 CSS 로 2줄까지만 보여주고
-    // 전문은 상세에서 확인한다.
+    // 문의 내용·주문번호·관리자 답변은 목록에 노출하지 않고
+    // 상세 페이지(my-inquiry-detail)에서만 보여준다.
+    // 목록에는 유형·상태 배지·작성일과 제목까지만 표시한다.
+    // 항목 전체가 상세 페이지로 가는 링크다.
+    // 삭제 버튼은 링크(<a>) 바깥에 두어야 클릭 시 상세로 이동하지 않는다.
     return `
-      <li class="inquiry-item">
-        <a class="inq-link" href="my-inquiry-detail.html?id=${encodeURIComponent(inq.id)}">
+      <li class="inquiry-item" data-inquiry-id="${inq.id}">
+        <a class="inq-link" href="${detailUrl(inq.id)}">
           <div class="inq-top">
             <span class="inq-category">${categoryLabel(inq.category)}</span>
             ${statusBadge}
             <span class="inq-date">${fmtDate(inq.createdAt)}</span>
           </div>
           <p class="inq-title">${inq.title}</p>
-          ${orderRow}
-          <p class="inq-content">${inq.content}</p>
-          ${answerBlock}
         </a>
+        <div class="inq-actions">
+          <button type="button" class="inq-delete" data-action="delete" data-id="${inq.id}"
+            ${answered ? 'disabled title="답변이 완료된 문의는 삭제할 수 없습니다."' : ""}>삭제</button>
+        </div>
       </li>
     `;
   }
+
+  // 문의 삭제 (본인 문의만) — DELETE /customer-center/inquiries/{id}
+  async function deleteInquiry(inquiryId, buttonEl) {
+    if (!confirm("이 문의를 삭제할까요?\n삭제한 문의는 복구할 수 없습니다.")) return;
+
+    buttonEl.disabled = true;
+    buttonEl.textContent = "삭제 중…";
+    try {
+      await CatchApi.del("/customer-center/inquiries/" + encodeURIComponent(inquiryId));
+      // 목록을 다시 불러와 총 건수·빈 화면 처리까지 한 번에 반영한다.
+      await load();
+    } catch (err) {
+      alert(err.message || "문의 삭제에 실패했습니다. 잠시 후 다시 시도해 주세요.");
+      buttonEl.disabled = false;
+      buttonEl.textContent = "삭제";
+    }
+  }
+
+  // 삭제 버튼은 목록을 다시 그려도 유지되도록 컨테이너에 위임한다.
+  listEl.addEventListener("click", (e) => {
+    const btn = e.target.closest('[data-action="delete"]');
+    if (!btn || btn.disabled) return; // 답변완료 문의는 버튼이 disabled 라 여기서도 무시
+    deleteInquiry(btn.dataset.id, btn);
+  });
 
   async function load() {
     errorEl.hidden = true;

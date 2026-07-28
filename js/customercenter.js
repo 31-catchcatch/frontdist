@@ -288,10 +288,31 @@
       }
 
       resetInquiryForm();
-      showMessage(
-        "문의가 등록되었습니다. 답변은 마이페이지에서 확인해 주세요.",
-        "success"
-      );
+      alert("등록되었습니다.");
+
+      // 등록 응답에 생성된 문의 ID가 없어서(백엔드가 data:null 반환),
+      // 방금 등록한 문의 = 최신순 목록의 첫 건을 조회해 그 상세로 이동한다.
+      // 조회에 실패하면 문의 내역 목록으로 폴백한다.
+      let newInquiryId = null;
+      try {
+        const listResponse = await fetch(`${INQUIRY_API}?page=0&size=1`, {
+          headers: { Accept: "application/json" },
+          credentials: "include"
+        });
+        const listData = await listResponse.json().catch(() => null);
+        const latest =
+          listData && listData.data && Array.isArray(listData.data.content)
+            ? listData.data.content[0]
+            : null;
+        if (latest && latest.id != null) newInquiryId = latest.id;
+      } catch (_) {
+        /* 조회 실패 → 아래에서 목록으로 폴백 */
+      }
+
+      location.href = newInquiryId
+        ? `my-inquiry-detail.html?id=${encodeURIComponent(newInquiryId)}`
+        : "my-inquiries.html";
+      return;
     } catch (error) {
       showMessage(
         error instanceof TypeError

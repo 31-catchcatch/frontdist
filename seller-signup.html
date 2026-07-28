@@ -133,11 +133,6 @@
         </div> 
 
         <div class="field">
-          <label for="brandName">브랜드명 <span class="req">*</span></label>
-          <input type="text" id="brandName" name="brandName" placeholder="쇼핑몰에 노출될 브랜드명" required>
-        </div>  
-
-        <div class="field">
           <label for="bizNumber">사업자등록번호 <span class="req">*</span></label>
           <input type="text" id="bizNumber" name="bizNumber" placeholder="숫자 10자리 (- 없이)" maxlength="10" required>
         </div>        
@@ -145,6 +140,11 @@
         <div class="field">
           <label for="ceoName">대표자명 <span class="req">*</span></label>
           <input type="text" id="ceoName" name="ceoName" placeholder="대표자 실명" required>
+        </div>
+
+        <div class="field">
+          <label for="ceoPhone">대표자 전화번호 <span class="req">*</span></label>
+          <input type="tel" id="ceoPhone" name="ceoPhone" inputmode="tel" maxlength="13" placeholder="010-0000-0000" required>
         </div>
 
         <div class="field">
@@ -163,20 +163,6 @@
         
       </fieldset>
 
-      <!-- 담당자 정보 (S-AUTH-003: "담당자 정보를 포함해") -->
-      <fieldset class="form-section">
-        <legend>담당자 정보</legend>
-
-        <div class="field">
-          <label for="managerName">담당자명 <span class="req">*</span></label>
-          <input type="text" id="managerName" name="managerName" placeholder="실명 입력" required>
-        </div>
-
-        <div class="field">
-          <label for="managerPhone">담당자 연락처 <span class="req">*</span></label>
-          <input type="tel" id="managerPhone" name="managerPhone" placeholder="숫자만 입력" required>
-        </div>
-      </fieldset>
 
       <!-- 약관 동의 -->
       <fieldset class="form-section">
@@ -219,7 +205,7 @@
     <!-- ===== STEP 2 : 본인인증 (S-AUTH-004) ===== -->
     <div class="step-panel" data-step-panel="2" hidden>
       <fieldset class="form-section">
-        <legend>담당자 본인인증</legend>
+        <legend>대표자 본인인증</legend>
 
         <div class="field">
           <label for="telecom">통신사</label>
@@ -235,7 +221,7 @@
         <div class="field">
           <label for="authPhone">휴대폰번호</label>
           <div class="field-row">
-            <input type="tel" id="authPhone" name="authPhone" placeholder="숫자만 입력">
+            <input type="tel" id="authPhone" name="authPhone" placeholder="대표자 전화번호가 자동 입력됩니다" readonly>
             <button type="button" class="btn-outline" data-action="send-auth-code">인증요청</button>
           </div>
         </div>

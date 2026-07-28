@@ -2,6 +2,10 @@
 
 document.addEventListener("DOMContentLoaded", () => {
 
+  // API base: auth.js 가 환경(file://·:5500 → localhost:8080, 그 외 → /api/v1)을 판별해
+  // 넣어둔 값을 쓴다. 상대경로를 하드코딩하면 file:// 로 열었을 때 백엔드에 못 닿는다.
+  const API_BASE = window.CATCHCATCH_API_BASE_URL || "/api/v1";
+
   // ===== 유형 선택 =====
   const typeSelect = document.getElementById("signupTypeSelect");
   const formBlock = document.getElementById("signupFormBlock");
@@ -96,7 +100,7 @@ document.addEventListener("DOMContentLoaded", () => {
     try {
       // 백엔드가 @RequestParam 이라 body가 아니라 쿼리스트링으로 보내야 한다.
       const res = await fetch(
-        `/api/v1/auth/check-username?username=${encodeURIComponent(val)}`,
+        `${API_BASE}/auth/check-username?username=${encodeURIComponent(val)}`,
         { method: "POST" }
       );
       const data = await res.json().catch(() => null);
@@ -137,13 +141,24 @@ document.addEventListener("DOMContentLoaded", () => {
     sendBtn.addEventListener("click", () => {
       // TODO: 인증코드 발송 API 호출
       group.hidden = false;
-      let sec = 180;
       clearInterval(interval);
-      interval = setInterval(() => {
-        sec -= 1;
+
+      let sec = 180;
+      const render = () => {
         const m = String(Math.floor(sec / 60)).padStart(2, "0");
         const s = String(sec % 60).padStart(2, "0");
         timerEl.textContent = `${m}:${s}`;
+      };
+
+      // 재발송 시 이전 만료 메시지를 지우고 즉시 03:00으로 리셋해 표시한다.
+      // (setInterval 첫 tick은 1초 뒤라, 즉시 render 하지 않으면 옛 값이 1초간 남는다)
+      msgEl.textContent = "";
+      msgEl.className = "field-msg";
+      render();
+
+      interval = setInterval(() => {
+        sec -= 1;
+        render();
         if (sec <= 0) {
           clearInterval(interval);
           msgEl.textContent = "인증 시간이 만료되었습니다. 다시 요청해 주세요.";
@@ -198,7 +213,7 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   try {
-    const res = await fetch("/api/v1/auth/user/signup", {
+    const res = await fetch(`${API_BASE}/auth/user/signup`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),

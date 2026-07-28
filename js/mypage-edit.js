@@ -145,7 +145,8 @@
     username.value = profile.username;
     nameInput.value = profile.name;
     email.value = profile.email;
-    phone.value = profile.phone;
+    // 저장된 번호에 하이픈이 없을 수 있으므로 로드 시에도 전화번호 양식을 적용한다.
+    phone.value = formatPhoneNumber(profile.phone);
     postalCode.value = profile.postalCode;
     address.value = profile.address;
     addressDetail.value = profile.addressDetail;
