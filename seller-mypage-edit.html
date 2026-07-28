@@ -93,7 +93,7 @@
       <div>
         <p class="page-kicker">Seller account settings</p>
         <h1>판매자 회원정보 수정</h1>
-        <p>계정 정보와 사업자 정보, 담당자 정보를 변경할 수 있습니다.</p>
+        <p>계정 정보와 사업자 정보를 변경할 수 있습니다.</p>
       </div>
 
       <a class="dashboard-link" href="seller-dashboard.html">
@@ -287,6 +287,19 @@
               type="text"
               maxlength="50"
               placeholder="대표자 실명"
+              required
+            >
+          </div>
+
+          <div class="field">
+            <label for="representativePhone">대표자 전화번호 <strong>*</strong></label>
+            <input
+              id="representativePhone"
+              name="representativePhone"
+              type="tel"
+              inputmode="tel"
+              maxlength="13"
+              placeholder="010-0000-0000"
               required
             >
           </div>

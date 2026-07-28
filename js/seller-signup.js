@@ -28,15 +28,10 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
+    // 형식(이메일·비밀번호·사업자번호·전화번호) 검증은 백엔드가 최종 제출 시 처리한다.
+    // 프론트에서는 백엔드가 볼 수 없는 비밀번호 일치 / 약관만 확인한다.
     if (document.getElementById("pw").value !== document.getElementById("pwConfirm").value) {
       alert("비밀번호가 일치하지 않습니다.");
-      return;
-    }
-
-    // 사업자등록번호 10자리 숫자 체크
-    const biz = document.getElementById("bizNumber").value.trim();
-    if (!/^\d{10}$/.test(biz)) {
-      alert("사업자등록번호는 숫자 10자리로 입력해 주세요.");
       return;
     }
 
@@ -79,8 +74,9 @@ document.addEventListener("DOMContentLoaded", () => {
     })
   );
 
-  // ===== 아이디 중복확인 (mock) =====
-  form.querySelector('[data-action="check-username"]').addEventListener("click", () => {
+  // ===== 아이디 중복확인 (실제 API) =====
+  const checkUsernameBtn = form.querySelector('[data-action="check-username"]');
+  checkUsernameBtn.addEventListener("click", async () => {
     const val = document.getElementById("userId").value.trim();
     const msg = form.querySelector('[data-role="username-msg"]');
     if (!val) {
@@ -88,9 +84,36 @@ document.addEventListener("DOMContentLoaded", () => {
       msg.className = "field-msg error";
       return;
     }
-    // TODO: POST /api/v1/auth/check-username
-    msg.textContent = `'${val}' 사용 가능한 아이디입니다.`;
-    msg.className = "field-msg ok";
+
+    checkUsernameBtn.disabled = true;
+    try {
+      // 백엔드가 @RequestParam 이라 body가 아니라 쿼리스트링으로 보낸다.
+      const res = await fetch(
+        `${API_BASE}/auth/check-username?username=${encodeURIComponent(val)}`,
+        { method: "POST" }
+      );
+      const data = await res.json().catch(() => null);
+
+      if (!res.ok || !data || data.success === false) {
+        msg.textContent = (data && data.message) || "중복확인에 실패했습니다.";
+        msg.className = "field-msg error";
+        return;
+      }
+
+      // data.data === true 가 "사용 가능"
+      if (data.data) {
+        msg.textContent = `'${val}' 사용 가능한 아이디입니다.`;
+        msg.className = "field-msg ok";
+      } else {
+        msg.textContent = `'${val}' 이미 사용 중인 아이디입니다.`;
+        msg.className = "field-msg error";
+      }
+    } catch (err) {
+      msg.textContent = "서버에 연결할 수 없습니다.";
+      msg.className = "field-msg error";
+    } finally {
+      checkUsernameBtn.disabled = false;
+    }
   });
 
   // ===== 인증코드 공통 로직 =====

@@ -39,6 +39,8 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
+    // 형식(이메일·비밀번호·전화번호) 검증은 백엔드가 최종 제출 시 처리한다.
+    // 프론트에서는 백엔드가 볼 수 없는 것만 확인한다: 비밀번호 일치 / 아이디 중복확인 / 약관.
     if (document.getElementById("pw").value !== document.getElementById("pwConfirm").value) {
       alert("비밀번호가 일치하지 않습니다.");
       return;
