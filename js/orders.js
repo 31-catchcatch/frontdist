@@ -171,6 +171,15 @@
         dialogKicker.textContent = 'ORDER DETAIL'; dialogTitle.textContent = '주문 상세';
         // 주문 전체를 불러와 상품별 금액과 배송비 포함 합계를 함께 보여준다.
         const order = await apiFetch(`/orders/${row.orderId}`);
+
+        // 최종 결제 금액은 거래명세서와 동일하게 전자 영수증(결제 승인액)을 기준으로 통일한다.
+        // 영수증 조회가 안 되면 주문의 최종 결제 금액으로 폴백.
+        let finalAmount = order.finalPaymentAmount;
+        try {
+          const receipt = await apiFetch(`/orders/${row.orderId}/receipt`);
+          if (receipt && receipt.amount != null) finalAmount = receipt.amount;
+        } catch (_) { /* 폴백 유지 */ }
+
         const items = (order.orderDetails || [])
           .map((d) => `<div><dt>${d.productName} · ${d.quantity}개 <em>(${STATUS_LABEL[d.deliveryStatus] || d.deliveryStatus})</em></dt><dd>${money.format(d.totalPrice)}원</dd></div>`)
           .join("");
@@ -178,7 +187,7 @@
           ? `<div><dt>쿠폰 할인</dt><dd>-${money.format(order.couponDiscountAmount)}원</dd></div>` : "";
         const point = order.usedPointAmount > 0
           ? `<div><dt>포인트 사용</dt><dd>-${money.format(order.usedPointAmount)}원</dd></div>` : "";
-        dialogContent.innerHTML = `${summary}<dl class="receipt-list">${items}<div class="detail-sum"><dt>상품 금액</dt><dd>${money.format(order.totalProductAmount)}원</dd></div><div><dt>배송비</dt><dd>${money.format(order.shippingFee)}원</dd></div>${discount}${point}<div class="detail-total"><dt>최종 결제 금액</dt><dd>${money.format(order.finalPaymentAmount)}원</dd></div></dl>`;
+        dialogContent.innerHTML = `${summary}<dl class="receipt-list">${items}<div class="detail-sum"><dt>상품 금액</dt><dd>${money.format(order.totalProductAmount)}원</dd></div><div><dt>배송비</dt><dd>${money.format(order.shippingFee)}원</dd></div>${discount}${point}<div class="detail-total"><dt>최종 결제 금액</dt><dd>${money.format(finalAmount)}원</dd></div></dl>`;
       }
     } catch (error) {
       dialogContent.innerHTML = `${summary}<p class="dialog-note">${error.message}</p>`;
