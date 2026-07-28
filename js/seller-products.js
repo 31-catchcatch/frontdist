@@ -113,15 +113,6 @@
     pageMessage.classList.remove("show", "success");
   }
 
-  function escapeHtml(value) {
-    return String(value ?? "")
-      .replaceAll("&", "&amp;")
-      .replaceAll("<", "&lt;")
-      .replaceAll(">", "&gt;")
-      .replaceAll('"', "&quot;")
-      .replaceAll("'", "&#039;");
-  }
-
   function formatPrice(value) {
     const price = Number(value);
     return Number.isFinite(price) ? `${price.toLocaleString("ko-KR")}원` : "-";
@@ -209,7 +200,7 @@
   function renderDesktop(products) {
     if (!products.length) {
       const label = STATUS_META[activeStatus]?.label ?? STATUS_META.all.label;
-      tableBody.innerHTML = `<tr><td class="state-cell" colspan="6">${escapeHtml(label)}에 해당하는 상품이 없습니다.</td></tr>`;
+      tableBody.innerHTML = `<tr><td class="state-cell" colspan="6">${label}에 해당하는 상품이 없습니다.</td></tr>`;
       return;
     }
     tableBody.innerHTML = products.map((product) => `
@@ -218,27 +209,27 @@
           <div class="product-info">
             <a class="product-thumb-link" href="product-detail.html?id=${encodeURIComponent(product.productId)}">
               ${product.imageUrl
-                ? `<img class="product-thumb" src="${escapeHtml(product.imageUrl)}" alt="">`
+                ? `<img class="product-thumb" src="${product.imageUrl}" alt="">`
                 : `<div class="product-thumb" aria-hidden="true"></div>`}
             </a>
             <div class="product-copy">
               <a class="product-name-link" href="product-detail.html?id=${encodeURIComponent(product.productId)}">
-                <strong title="${escapeHtml(product.productName)}">${escapeHtml(product.productName)}</strong>
+                <strong title="${product.productName}">${product.productName}</strong>
               </a>
-              <span>${escapeHtml(product.brandName || "정보 없음")}</span>
+              <span>${product.brandName || "정보 없음"}</span>
             </div>
           </div>
         </td>
-        <td>${escapeHtml(product.productId)}</td>
+        <td>${product.productId}</td>
         <td>${formatPrice(product.price)}</td>
         <td>${statusBadge(product)}</td>
-        <td>${escapeHtml(formatDate(product.createdAt))}</td>
+        <td>${formatDate(product.createdAt)}</td>
         <td>
           <div class="manage-buttons">
             <a href="${editHref(product)}">수정</a>
             <button class="delete-button" type="button"
-              data-delete-id="${escapeHtml(product.productId)}"
-              data-delete-name="${escapeHtml(product.productName)}">삭제</button>
+              data-delete-id="${product.productId}"
+              data-delete-name="${product.productName}">삭제</button>
           </div>
         </td>
       </tr>
@@ -248,33 +239,33 @@
   function renderMobile(products) {
     if (!products.length) {
       const label = STATUS_META[activeStatus]?.label ?? STATUS_META.all.label;
-      mobileList.innerHTML = `<p class="mobile-state">${escapeHtml(label)}에 해당하는 상품이 없습니다.</p>`;
+      mobileList.innerHTML = `<p class="mobile-state">${label}에 해당하는 상품이 없습니다.</p>`;
       return;
     }
     mobileList.innerHTML = products.map((product) => `
       <article class="mobile-product-card">
         <a class="product-thumb-link" href="product-detail.html?id=${encodeURIComponent(product.productId)}">
           ${product.imageUrl
-            ? `<img class="product-thumb" src="${escapeHtml(product.imageUrl)}" alt="">`
+            ? `<img class="product-thumb" src="${product.imageUrl}" alt="">`
             : `<div class="product-thumb" aria-hidden="true"></div>`}
         </a>
         <div class="mobile-card-body">
           <div class="mobile-card-head">
             <a class="product-name-link" href="product-detail.html?id=${encodeURIComponent(product.productId)}">
-              <strong>${escapeHtml(product.productName)}</strong>
+              <strong>${product.productName}</strong>
             </a>
             ${statusBadge(product)}
           </div>
           <div class="mobile-meta">
-            <span>상품번호</span><b>${escapeHtml(product.productId)}</b>
+            <span>상품번호</span><b>${product.productId}</b>
             <span>판매가</span><b>${formatPrice(product.price)}</b>
-            <span>등록일</span><b>${escapeHtml(formatDate(product.createdAt))}</b>
+            <span>등록일</span><b>${formatDate(product.createdAt)}</b>
           </div>
           <div class="manage-buttons">
             <a href="${editHref(product)}">수정</a>
             <button class="delete-button" type="button"
-              data-delete-id="${escapeHtml(product.productId)}"
-              data-delete-name="${escapeHtml(product.productName)}">삭제</button>
+              data-delete-id="${product.productId}"
+              data-delete-name="${product.productName}">삭제</button>
           </div>
         </div>
       </article>

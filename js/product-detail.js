@@ -11,7 +11,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const thumbFromQuery = params.get("thumb"); // 목록에서 넘어온 썸네일(상세 이미지 없을 때 폴백)
 
   const $ = (sel) => document.querySelector(sel);
-  const esc = (v) => CatchApi.escape(v);
   const won = (n) => CatchApi.won(n);
 
   // 판매자 계정은 구매 기능(장바구니/바로구매)을 쓸 수 없다.
@@ -33,6 +32,8 @@ document.addEventListener("DOMContentLoaded", () => {
   let selectedOption = null; // { optionId, additionalPrice }
   let qty = 1;
   let liked = false;
+  let galleryImages = []; // 렌더된 갤러리 이미지 URL 목록
+  let currentImageIndex = 0; // 큰 이미지에 보이는 썸네일 위치
 
   const mainEl = document.querySelector("main");
 
@@ -41,7 +42,7 @@ document.addEventListener("DOMContentLoaded", () => {
       mainEl.innerHTML =
         '<div class="wrap" style="padding:80px 0;text-align:center;color:#666">' +
         '<p style="font-size:18px;margin-bottom:16px">' +
-        esc(message) +
+        message +
         "</p>" +
         '<a href="product-list.html" class="btn-outline" style="display:inline-block;padding:12px 28px">상품 목록으로</a>' +
         "</div>";
@@ -70,6 +71,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // 브랜드 라벨: 목록에서 넘어온 brand 우선, 없으면 판매자명
     $('[data-role="brand"]').textContent = brandFromQuery || product.sellerName || "";
+    // 판매자(상호명): 상세 응답의 sellerName. 브랜드 라벨과 별개로 항상 표시한다.
+    $('[data-role="seller"]').textContent = product.sellerName || "정보 없음";
     $('[data-role="name"]').textContent = product.name;
     $('[data-role="description"]').textContent = product.description || "";
     $('[data-role="point"]').textContent = Math.floor(finalPrice * 0.01).toLocaleString("ko-KR");
@@ -110,10 +113,13 @@ document.addEventListener("DOMContentLoaded", () => {
     thumbs.innerHTML = images
       .map(
         (src, i) =>
-          `<button type="button" class="${i === 0 ? "is-active" : ""}" data-img="${esc(src)}">` +
-          `<img src="${esc(src)}" alt="상품 이미지 ${i + 1}" onerror="this.onerror=null;this.src=CatchApi.PLACEHOLDER"></button>`
+          `<button type="button" class="${i === 0 ? "is-active" : ""}" data-img="${src}" data-index="${i}">` +
+          `<img src="${src}" alt="상품 이미지 ${i + 1}" onerror="this.onerror=null;this.src=CatchApi.PLACEHOLDER"></button>`
       )
       .join("");
+    galleryImages = images;
+    currentImageIndex = 0;
+    syncDownloadButton();
 
     // 옵션 → 사이즈 칩 (품절 disabled)
     const sizeChips = $('[data-role="size-chips"]');
@@ -127,7 +133,7 @@ document.addEventListener("DOMContentLoaded", () => {
           const addTxt = o.additionalPrice ? ` (+${o.additionalPrice.toLocaleString("ko-KR")})` : "";
           return (
             `<button type="button" data-option-id="${o.optionId}" data-add="${o.additionalPrice || 0}" ${soldOut ? "disabled" : ""}>` +
-            `${esc(o.optionName)}${addTxt}${soldOut ? " (품절)" : ""}</button>`
+            `${o.optionName}${addTxt}${soldOut ? " (품절)" : ""}</button>`
           );
         })
         .join("");
@@ -181,9 +187,9 @@ document.addEventListener("DOMContentLoaded", () => {
         (r) =>
           "<li><div class=\"review-head\">" +
           `<span class="stars">${stars(r.rating)}</span>` +
-          `<span>${esc(r.reviewerName)}</span>` +
+          `<span>${r.reviewerName}</span>` +
           `<span>${fmtDate(r.createdAt)}</span></div>` +
-          `<p class="review-body">${esc(r.content)}</p></li>`
+          `<p class="review-body">${r.content}</p></li>`
       )
       .join("");
   }
@@ -208,16 +214,81 @@ document.addEventListener("DOMContentLoaded", () => {
         const answered = q.answered;
         const answer =
           answered && (q.answerContent || q.answer)
-            ? `<div class="qna-a"><b>판매자 답변</b><br>${esc(q.answerContent || q.answer)}</div>`
+            ? `<div class="qna-a"><b>판매자 답변</b><br>${q.answerContent || q.answer}</div>`
             : "";
         return (
           "<li><div class=\"qna-q\">" +
           `<span class="badge${answered ? " is-answered" : ""}">${answered ? "답변완료" : "답변대기"}</span>` +
-          `<div class="qna-q-body"><p class="qna-title">${esc(q.title)}</p>` +
+          `<div class="qna-q-body"><p class="qna-title">${q.title}</p>` +
           `<span class="qna-date">${fmtDate(q.createdAt)}</span></div></div>${answer}</li>`
         );
       })
       .join("");
+  }
+
+  // ===== 이미지 다운로드 =====
+  // 플레이스홀더(인라인 SVG)는 내려받을 실물이 없으므로 그때만 버튼을 감춘다.
+  function syncDownloadButton() {
+    const wrap = $('[data-role="download-wrap"]');
+    if (!wrap) return;
+    const src = galleryImages[currentImageIndex];
+    wrap.hidden = !src || src === CatchApi.PLACEHOLDER;
+  }
+
+  // 저장 파일명: URL 마지막 경로를 쓰고, 확장자가 없으면 응답 MIME 으로 보완한다.
+  function imageFileName(src, index, mimeType) {
+    let name = "";
+    try {
+      name = decodeURIComponent(new URL(src, location.href).pathname.split("/").pop() || "");
+    } catch (_) {
+      /* URL 파싱 실패 → 아래 기본 이름 사용 */
+    }
+    name = name.replace(/[\\/:*?"<>|]/g, "_").trim();
+    if (!/\.[a-z0-9]{2,5}$/i.test(name)) {
+      // 확장자 보완은 image/* 응답일 때만. 확장자 없는 파일은 서버가
+      // application/octet-stream 으로 내려주는데 그걸 그대로 붙이면 이상한 이름이 된다.
+      const sub = /^image\/[a-z0-9.+-]+$/i.test(mimeType || "") ? mimeType.split("/")[1].split("+")[0] : "";
+      const ext = /^[a-z0-9]{2,5}$/i.test(sub) ? sub : "jpg";
+      name = `catchcatch-${productId}-${index + 1}.${ext}`;
+    }
+    return name;
+  }
+
+  function saveBlob(blob, fileName) {
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = fileName;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    // 클릭 직후 해제하면 저장이 취소되는 브라우저가 있어 한 박자 뒤에 해제한다.
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  }
+
+  // 이미지가 API 서버(다른 오리진)에 있으면 <a download> 속성은 무시되고 그냥 이동해버린다.
+  // 그래서 blob 으로 받아 같은 오리진의 blob: URL 로 저장하고,
+  // CORS 등으로 못 받으면 새 탭으로 열어 사용자가 직접 저장하도록 안내한다.
+  async function downloadCurrentImage(btn) {
+    const index = currentImageIndex;
+    const src = galleryImages[index];
+    if (!src || src === CatchApi.PLACEHOLDER) return;
+
+    const label = btn.innerHTML;
+    btn.disabled = true;
+    btn.textContent = "저장 중…";
+    try {
+      const response = await fetch(src, { cache: "no-store" });
+      if (!response.ok) throw new Error("HTTP " + response.status);
+      const blob = await response.blob();
+      saveBlob(blob, imageFileName(src, index, blob.type));
+    } catch (_) {
+      window.open(src, "_blank", "noopener");
+      alert("이미지를 바로 저장하지 못해 새 탭에서 열었습니다. 사진 위에서 마우스 오른쪽 버튼 → '이미지를 다른 이름으로 저장'을 이용해 주세요.");
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = label;
+    }
   }
 
   // ===== 이벤트 바인딩 (product 로드 후) =====
@@ -231,7 +302,15 @@ document.addEventListener("DOMContentLoaded", () => {
       mainImg.src = btn.dataset.img;
       thumbs.querySelectorAll("button").forEach((b) => b.classList.remove("is-active"));
       btn.classList.add("is-active");
+      currentImageIndex = Number(btn.dataset.index) || 0;
+      syncDownloadButton();
     });
+
+    // 현재 보고 있는 이미지 저장
+    const downloadBtn = $('[data-action="download-image"]');
+    if (downloadBtn) {
+      downloadBtn.addEventListener("click", () => downloadCurrentImage(downloadBtn));
+    }
 
     // 옵션 선택
     const sizeChips = $('[data-role="size-chips"]');

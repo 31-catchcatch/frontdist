@@ -35,14 +35,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const won = (value) =>
     `${Number(value ?? 0).toLocaleString("ko-KR")}원`;
 
-  const escapeHtml = (value) =>
-    String(value ?? "")
-      .replaceAll("&", "&amp;")
-      .replaceAll("<", "&lt;")
-      .replaceAll(">", "&gt;")
-      .replaceAll('"', "&quot;")
-      .replaceAll("'", "&#039;");
-
   const getResponseData = (response) => {
     return response?.data ?? response;
   };
@@ -111,8 +103,8 @@ document.addEventListener("DOMContentLoaded", () => {
           class="wish-thumb"
         >
           <img
-            src="${escapeHtml(imageUrl)}"
-            alt="${escapeHtml(productName)}"
+            src="${imageUrl}"
+            alt="${productName}"
             onerror="this.onerror=null;this.src=CatchApi.PLACEHOLDER"
           >
         </a>
@@ -121,7 +113,7 @@ document.addEventListener("DOMContentLoaded", () => {
           type="checkbox"
           class="wish-check"
           data-action="check-item"
-          aria-label="${escapeHtml(productName)} 선택"
+          aria-label="${productName} 선택"
           ${item.checked ? "checked" : ""}
         >
 
@@ -129,7 +121,7 @@ document.addEventListener("DOMContentLoaded", () => {
           type="button"
           class="wish-remove"
           data-action="remove"
-          aria-label="${escapeHtml(productName)} 찜 해제"
+          aria-label="${productName} 찜 해제"
         >
           ✕
         </button>
@@ -138,7 +130,7 @@ document.addEventListener("DOMContentLoaded", () => {
           href="product-detail.html?id=${productId}"
           class="wish-name"
         >
-          ${escapeHtml(productName)}
+          ${productName}
         </a>
 
         <div class="wish-price">

@@ -51,14 +51,14 @@
       return;
     }
     rowsEl.innerHTML = list.map((u) => `
-      <tr data-id="${AdminUI.escape(u.id)}">
-        <td class="chk"><input type="checkbox" aria-label="${AdminUI.escape(u.name)} 선택"></td>
-        <td class="strong">${AdminUI.escape(u.username)}</td>
-        <td class="strong">${AdminUI.escape(u.name)}</td>
-        <td class="muted">${AdminUI.escape(u.email)}</td>
+      <tr data-id="${u.id}">
+        <td class="chk"><input type="checkbox" aria-label="${u.name} 선택"></td>
+        <td class="strong">${u.username}</td>
+        <td class="strong">${u.name}</td>
+        <td class="muted">${u.email}</td>
         <td><span class="tag role">${ROLE[u.role] || u.role}</span></td>
         <td><span class="tag ${u.status}">${STATUS[u.status]}</span></td>
-        <td class="muted">${AdminUI.escape(u.joined)}</td>
+        <td class="muted">${u.joined}</td>
         <td>
           <div class="row-actions">
             <button class="btn sm" data-act="detail">상세</button>
@@ -130,7 +130,7 @@
       USERS = data.filter((u) => u.role !== "ADMIN").map(mapUser);
       applyFilter();
     } catch (err) {
-      rowsEl.innerHTML = `<tr class="empty-row"><td colspan="8">${AdminUI.escape(err.message || "목록을 불러오지 못했습니다.")}</td></tr>`;
+      rowsEl.innerHTML = `<tr class="empty-row"><td colspan="8">${err.message || "목록을 불러오지 못했습니다."}</td></tr>`;
       countEl.textContent = 0;
     }
   }

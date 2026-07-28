@@ -138,15 +138,6 @@
     modalMessage.classList.remove("show");
   }
 
-  function escapeHtml(value) {
-    return String(value ?? "")
-      .replaceAll("&", "&amp;")
-      .replaceAll("<", "&lt;")
-      .replaceAll(">", "&gt;")
-      .replaceAll('"', "&quot;")
-      .replaceAll("'", "&#039;");
-  }
-
   function formatPrice(value) {
     const number = Number(value);
     return Number.isFinite(number)
@@ -311,7 +302,7 @@
   function renderStatus(status) {
     return `
       <span class="status-badge ${status.className}">
-        ${escapeHtml(status.label)}
+        ${status.label}
       </span>
     `;
   }
@@ -332,7 +323,7 @@
   //   배송중            → 배송 완료
   //   그 외(완료/취소/반품 등) → 처리할 배송 액션 없음
   function renderActionButton(order, mobile) {
-    const id = escapeHtml(order.orderDetailId);
+    const id = order.orderDetailId;
     if (canUpdateDelivery(order.status)) {
       return `<button class="delivery-button" type="button" data-action="register" data-order-detail-id="${id}">${mobile ? "배송 정보 등록" : "배송 등록"}</button>`;
     }
@@ -355,25 +346,25 @@
     tableBody.innerHTML = orders.map((order) => `
       <tr>
         <td>
-          <strong class="order-number">${escapeHtml(order.orderNumber)}</strong>
-          <span class="order-date">${escapeHtml(formatDate(order.orderedAt))}</span>
+          <strong class="order-number">${order.orderNumber}</strong>
+          <span class="order-date">${formatDate(order.orderedAt)}</span>
         </td>
         <td>
           <div class="product-info">
             ${
               order.imageUrl
-                ? `<img class="product-thumb" src="${escapeHtml(order.imageUrl)}" alt="">`
+                ? `<img class="product-thumb" src="${order.imageUrl}" alt="">`
                 : `<div class="product-thumb" aria-hidden="true"></div>`
             }
             <div class="product-copy">
-              <strong>${escapeHtml(order.productName)}</strong>
-              <span>${escapeHtml(order.optionText || "옵션 없음")}</span>
+              <strong>${order.productName}</strong>
+              <span>${order.optionText || "옵션 없음"}</span>
             </div>
           </div>
         </td>
         <td>
-          <strong class="buyer-name">${escapeHtml(order.buyerName)}</strong>
-          ${order.buyerUsername ? `<span class="buyer-id">@${escapeHtml(order.buyerUsername)}</span>` : ""}
+          <strong class="buyer-name">${order.buyerName}</strong>
+          ${order.buyerUsername ? `<span class="buyer-id">@${order.buyerUsername}</span>` : ""}
         </td>
         <td>${Number(order.quantity).toLocaleString("ko-KR")}개</td>
         <td>${formatPrice(order.paymentAmount)}</td>
@@ -394,8 +385,8 @@
       <article class="mobile-order-card">
         <div class="mobile-order-head">
           <div>
-            <strong class="order-number">${escapeHtml(order.orderNumber)}</strong>
-            <span class="order-date">${escapeHtml(formatDate(order.orderedAt))}</span>
+            <strong class="order-number">${order.orderNumber}</strong>
+            <span class="order-date">${formatDate(order.orderedAt)}</span>
           </div>
           ${renderStatus(order.status)}
         </div>
@@ -403,17 +394,17 @@
         <div class="mobile-product-row">
           ${
             order.imageUrl
-              ? `<img class="product-thumb" src="${escapeHtml(order.imageUrl)}" alt="">`
+              ? `<img class="product-thumb" src="${order.imageUrl}" alt="">`
               : `<div class="product-thumb" aria-hidden="true"></div>`
           }
           <div class="product-copy">
-            <strong>${escapeHtml(order.productName)}</strong>
-            <span>${escapeHtml(order.optionText || "옵션 없음")}</span>
+            <strong>${order.productName}</strong>
+            <span>${order.optionText || "옵션 없음"}</span>
           </div>
         </div>
 
         <div class="mobile-order-meta">
-          <span>구매자</span><b>${escapeHtml(order.buyerName)}${order.buyerUsername ? ` <span class="buyer-id-inline">@${escapeHtml(order.buyerUsername)}</span>` : ""}</b>
+          <span>구매자</span><b>${order.buyerName}${order.buyerUsername ? ` <span class="buyer-id-inline">@${order.buyerUsername}</span>` : ""}</b>
           <span>수량</span><b>${Number(order.quantity).toLocaleString("ko-KR")}개</b>
           <span>결제 금액</span><b>${formatPrice(order.paymentAmount)}</b>
         </div>

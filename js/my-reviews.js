@@ -8,7 +8,6 @@ document.addEventListener("DOMContentLoaded", () => {
   if (!CatchAuth.requireLogin()) return;
 
   const $ = (sel) => document.querySelector(sel);
-  const esc = (v) => CatchApi.escape(v); // 공통 HTML 이스케이프
   // rating 이 null/범위밖이어도 repeat() RangeError 로 렌더가 깨지지 않도록 0~5 로 클램프
   const stars = (n) => {
     const v = Math.max(0, Math.min(5, Number(n) || 0));
@@ -23,9 +22,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // ===== 리뷰 하나 HTML =====
   function itemHTML(r) {
-    // 리뷰에 첨부한 사진 (있을 때만) — 리뷰 본문/상품명/URL 은 모두 사용자 입력이라 반드시 이스케이프
+    // 리뷰에 첨부한 사진 (있을 때만)
     const photoHTML = r.imageUrl
-      ? `<div class="ri-photos"><img src="${esc(r.imageUrl)}" alt="리뷰 사진"></div>`
+      ? `<div class="ri-photos"><img src="${r.imageUrl}" alt="리뷰 사진"></div>`
       : "";
 
     // 상품 썸네일 (없으면 회색 박스)
@@ -35,21 +34,21 @@ document.addEventListener("DOMContentLoaded", () => {
     const date = r.createdAt ? r.createdAt.substring(0, 10) : "";
 
     return `
-      <li class="review-item" data-id="${esc(r.reviewId)}">
+      <li class="review-item" data-id="${r.reviewId}">
         <a href="product-detail.html?id=${encodeURIComponent(r.productId)}" class="ri-thumb">
-          <img src="${esc(thumb)}" alt="${esc(r.productName)}">
+          <img src="${thumb}" alt="${r.productName}">
         </a>
         <div class="ri-body">
           <div class="ri-product">
-            <a href="product-detail.html?id=${encodeURIComponent(r.productId)}" class="ri-name">${esc(r.productName)}</a>
+            <a href="product-detail.html?id=${encodeURIComponent(r.productId)}" class="ri-name">${r.productName}</a>
           </div>
 
           <div class="ri-meta">
             <span class="ri-stars">${stars(r.rating)}</span>
-            <span class="ri-date">${esc(date)}</span>
+            <span class="ri-date">${date}</span>
           </div>
 
-          <p class="ri-text">${esc(r.content)}</p>
+          <p class="ri-text">${r.content}</p>
           ${photoHTML}
 
           <div class="ri-actions">
@@ -113,7 +112,7 @@ document.addEventListener("DOMContentLoaded", () => {
     } catch (err) {
       console.error(err);
       $('[data-role="review-list"]').innerHTML =
-        `<li style="text-align:center;padding:60px;color:#e02020;">리뷰를 불러오지 못했습니다.<br>${esc(err.message)}</li>`;
+        `<li style="text-align:center;padding:60px;color:#e02020;">리뷰를 불러오지 못했습니다.<br>${err.message}</li>`;
       if (pagination) pagination.innerHTML = "";
     }
   }

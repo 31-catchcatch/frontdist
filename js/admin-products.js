@@ -71,20 +71,20 @@
     rowsEl.innerHTML = list
       .map(
         (product) => `
-          <tr data-id="${AdminUI.escape(product.id)}">
+          <tr data-id="${product.id}">
             <td class="chk">
               <input
                 type="checkbox"
-                aria-label="${AdminUI.escape(product.name)} 선택"
+                aria-label="${product.name} 선택"
               >
             </td>
 
             <td class="num">
-              ${AdminUI.escape(product.id)}
+              ${product.id}
             </td>
 
             <td class="strong">
-              ${AdminUI.escape(product.name)}
+              ${product.name}
             </td>
 
             <td class="muted">-</td>
@@ -321,10 +321,8 @@
       rowsEl.innerHTML = `
         <tr class="empty-row">
           <td colspan="9">
-            ${AdminUI.escape(
-              error.message ||
-              "목록을 불러오지 못했습니다."
-            )}
+            ${error.message ||
+              "목록을 불러오지 못했습니다."}
           </td>
         </tr>
       `;

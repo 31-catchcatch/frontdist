@@ -37,14 +37,14 @@
       return;
     }
     rowsEl.innerHTML = list.map((a) => `
-      <tr data-id="${AdminUI.escape(a.id)}">
-        <td class="num">${AdminUI.escape(a.id)}</td>
-        <td class="strong">${AdminUI.escape(a.company)}</td>
-        <td class="muted">${AdminUI.escape(a.biz)}</td>
-        <td>${AdminUI.escape(a.ceo)}</td>
-        <td class="muted">${AdminUI.escape(a.category)}</td>
+      <tr data-id="${a.id}">
+        <td class="num">${a.id}</td>
+        <td class="strong">${a.company}</td>
+        <td class="muted">${a.biz}</td>
+        <td>${a.ceo}</td>
+        <td class="muted">${a.category}</td>
         <td><button class="btn sm ghost" data-act="docs">서류 보기</button></td>
-        <td class="muted">${AdminUI.escape(a.created)}</td>
+        <td class="muted">${a.created}</td>
         <td><span class="tag ${a.status}">${STATUS[a.status]}</span></td>
         <td>
           ${a.status === "wait"
@@ -118,7 +118,7 @@
       APPS = data.map(mapRow);
       applySearch();
     } catch (err) {
-      rowsEl.innerHTML = `<tr class="empty-row"><td colspan="9">${AdminUI.escape(err.message || "목록을 불러오지 못했습니다.")}</td></tr>`;
+      rowsEl.innerHTML = `<tr class="empty-row"><td colspan="9">${err.message || "목록을 불러오지 못했습니다."}</td></tr>`;
       countEl.textContent = 0;
     }
   }

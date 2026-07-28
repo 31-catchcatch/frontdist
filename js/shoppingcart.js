@@ -96,15 +96,6 @@
     pageMessage.classList.remove("show");
   }
 
-  function escapeHtml(value) {
-    return String(value ?? "")
-      .replaceAll("&", "&amp;")
-      .replaceAll("<", "&lt;")
-      .replaceAll(">", "&gt;")
-      .replaceAll('"', "&quot;")
-      .replaceAll("'", "&#039;");
-  }
-
   function formatPrice(value) {
     return `${Number(value || 0).toLocaleString("ko-KR")}원`;
   }
@@ -158,30 +149,30 @@
         <input
           class="cart-select"
           type="checkbox"
-          data-select-id="${escapeHtml(item.cartItemId)}"
+          data-select-id="${item.cartItemId}"
           ${item.selected ? "checked" : ""}
-          aria-label="${escapeHtml(item.productName)} 선택"
+          aria-label="${item.productName} 선택"
         >
 
         ${
           item.imageUrl
-            ? `<img class="cart-thumb" src="${escapeHtml(item.imageUrl)}" alt="">`
+            ? `<img class="cart-thumb" src="${item.imageUrl}" alt="">`
             : '<div class="cart-thumb" aria-hidden="true"></div>'
         }
 
         <div class="cart-info">
-          <span class="cart-brand">${escapeHtml(item.brandName)}</span>
-          <strong class="cart-name">${escapeHtml(item.productName)}</strong>
-          <span class="cart-option">${escapeHtml(item.optionText || "옵션 없음")}</span>
+          <span class="cart-brand">${item.brandName}</span>
+          <strong class="cart-name">${item.productName}</strong>
+          <span class="cart-option">${item.optionText || "옵션 없음"}</span>
 
           <div class="cart-controls">
             <div class="quantity-control">
-              <button type="button" data-qty-action="minus" data-cart-id="${escapeHtml(item.cartItemId)}" aria-label="수량 감소">−</button>
+              <button type="button" data-qty-action="minus" data-cart-id="${item.cartItemId}" aria-label="수량 감소">−</button>
               <input type="text" value="${item.quantity}" readonly aria-label="수량">
-              <button type="button" data-qty-action="plus" data-cart-id="${escapeHtml(item.cartItemId)}" aria-label="수량 증가">＋</button>
+              <button type="button" data-qty-action="plus" data-cart-id="${item.cartItemId}" aria-label="수량 증가">＋</button>
             </div>
 
-            <button class="item-delete" type="button" data-delete-id="${escapeHtml(item.cartItemId)}">
+            <button class="item-delete" type="button" data-delete-id="${item.cartItemId}">
               삭제
             </button>
           </div>

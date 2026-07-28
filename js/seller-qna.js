@@ -111,18 +111,6 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   /**
-   * HTML 특수문자 처리
-   */
-  function escapeHTML(value) {
-    return String(value ?? "")
-      .replaceAll("&", "&amp;")
-      .replaceAll("<", "&lt;")
-      .replaceAll(">", "&gt;")
-      .replaceAll('"', "&quot;")
-      .replaceAll("'", "&#039;");
-  }
-
-  /**
    * 필터에 해당하는 answered 값
    */
   function getAnsweredValue(filter) {
@@ -222,7 +210,7 @@ document.addEventListener("DOMContentLoaded", () => {
             </td>
 
             <td>
-              ${escapeHTML(qna.productName)}
+              ${qna.productName}
             </td>
 
             <td>
@@ -240,15 +228,13 @@ document.addEventListener("DOMContentLoaded", () => {
                   text-align:left;
                 "
               >
-                ${escapeHTML(
-                  qna.questionTitle ||
-                  qna.questionContent
-                )}
+                ${qna.questionTitle ||
+                  qna.questionContent}
               </button>
             </td>
 
             <td>
-              ${escapeHTML(writer)}
+              ${writer}
             </td>
 
             <td>

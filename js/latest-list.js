@@ -19,21 +19,20 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function itemHTML(p) {
-    const esc = CatchApi.escape;
     const brand = p.brandName
-      ? `<p class="brand-name">${esc(p.brandName)}</p>`
+      ? `<p class="brand-name">${p.brandName}</p>`
       : `<p class="brand-name">&nbsp;</p>`;
     const detailUrl = "product-detail.html?id=" + p.productId +
       (p.brandName ? "&brand=" + encodeURIComponent(p.brandName) : "");
     return `
-      <div class="product-item" data-href="${esc(detailUrl)}">
+      <div class="product-item" data-href="${detailUrl}">
         <div class="product-image">
-          <img src="${esc(CatchApi.thumb(p.thumbnailUrl))}" alt="${esc(p.name)}"
+          <img src="${CatchApi.thumb(p.thumbnailUrl)}" alt="${p.name}"
                onerror="this.onerror=null;this.src=CatchApi.PLACEHOLDER">
         </div>
         <div class="product-info">
           ${brand}
-          <h4>${esc(p.name)}</h4>
+          <h4>${p.name}</h4>
           <p class="price">${CatchApi.won(p.finalPrice)}</p>
           <p class="view-time">방문일시 : ${fmtTime(p.viewedAt)}</p>
         </div>

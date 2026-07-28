@@ -145,11 +145,6 @@
   });
 
   function validateFile(file) {
-    if (!ALLOWED_TYPES.includes(file.type)) {
-      throw new Error(
-        `${file.name}: JPG, PNG, WEBP 파일만 등록할 수 있습니다.`
-      );
-    }
 
     if (file.size > MAX_FILE_SIZE) {
       throw new Error(

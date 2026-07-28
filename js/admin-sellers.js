@@ -37,12 +37,12 @@
       return;
     }
     rowsEl.innerHTML = list.map((s) => `
-      <tr data-id="${AdminUI.escape(s.id)}">
-        <td class="num">${AdminUI.escape(s.id)}</td>
-        <td class="strong">${AdminUI.escape(s.company)}</td>
-        <td>${AdminUI.escape(s.ceo)}</td>
+      <tr data-id="${s.id}">
+        <td class="num">${s.id}</td>
+        <td class="strong">${s.company}</td>
+        <td>${s.ceo}</td>
         <td class="num muted">-</td>
-        <td class="muted">${AdminUI.escape(s.joined)}</td>
+        <td class="muted">${s.joined}</td>
         <td><span class="tag ${s.status}">${STATUS[s.status]}</span></td>
         <td>
           <div class="row-actions">
@@ -120,7 +120,7 @@
       SELLERS = data.map(mapRow);
       applyFilter();
     } catch (err) {
-      rowsEl.innerHTML = `<tr class="empty-row"><td colspan="7">${AdminUI.escape(err.message || "목록을 불러오지 못했습니다.")}</td></tr>`;
+      rowsEl.innerHTML = `<tr class="empty-row"><td colspan="7">${err.message || "목록을 불러오지 못했습니다."}</td></tr>`;
       countEl.textContent = 0;
     }
   }

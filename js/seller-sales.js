@@ -41,15 +41,6 @@ document.addEventListener("DOMContentLoaded", () => {
     return true;
   };
 
-  const escapeHtml = (value) => {
-    return String(value ?? "")
-      .replaceAll("&", "&amp;")
-      .replaceAll("<", "&lt;")
-      .replaceAll(">", "&gt;")
-      .replaceAll('"', "&quot;")
-      .replaceAll("'", "&#039;");
-  };
-
   const renderSalesSummary = (data) => {
     const totalSalesAmount = Number(data.totalSalesAmount ?? 0);
     const orderCount = Number(data.orderCount ?? 0);
@@ -91,7 +82,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         return `
           <tr data-product-id="${item.productId ?? ""}">
-            <td>${escapeHtml(productName)}</td>
+            <td>${productName}</td>
             <td>${orderCount.toLocaleString("ko-KR")}건</td>
             <td>${soldQuantity.toLocaleString("ko-KR")}개</td>
             <td>${currency.format(salesAmount)}</td>

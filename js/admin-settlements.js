@@ -35,8 +35,8 @@
       return;
     }
     rowsEl.innerHTML = list.map((s) => `
-      <tr data-id="${AdminUI.escape(s.id)}">
-        <td class="strong">${AdminUI.escape(s.company)}</td>
+      <tr data-id="${s.id}">
+        <td class="strong">${s.company}</td>
         <td class="num">${AdminUI.won(s.sale)}</td>
         <td class="num">${AdminUI.won(s.fee)}</td>
         <td class="num">${AdminUI.won(s.pending)}</td>
@@ -107,7 +107,7 @@
 
       applyFilter();
     } catch (err) {
-      rowsEl.innerHTML = `<tr class="empty-row"><td colspan="7">${AdminUI.escape(err.message || "정산 데이터를 불러오지 못했습니다.")}</td></tr>`;
+      rowsEl.innerHTML = `<tr class="empty-row"><td colspan="7">${err.message || "정산 데이터를 불러오지 못했습니다."}</td></tr>`;
       countEl.textContent = 0;
     }
   }

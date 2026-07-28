@@ -182,12 +182,6 @@
     return value.slice(0, 10).replaceAll("-", ".");
   }
 
-  function escapeHtml(value) {
-    return String(value ?? "").replace(/[&<>"']/g, (char) => ({
-      "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
-    })[char]);
-  }
-
   function flattenOrders(orders) {
     const flattened = [];
     orders.forEach((order) => {
@@ -222,7 +216,7 @@
     }
     // 썸네일이 없는 상품은 기존처럼 CSS로 그린 회색 박스를 유지한다.
     const thumb = row.thumbnailUrl
-      ? `<img src="${escapeHtml(row.thumbnailUrl)}" alt="">`
+      ? `<img src="${row.thumbnailUrl}" alt="">`
       : `<span></span>`;
     return `<article class="order-card" id="order-${row.orderDetailId}" data-order-id="${row.orderId}" data-order-detail-id="${row.orderDetailId}">
       <header class="order-card-head"><div><time>${formatDate(row.createdAt)}</time><span class="order-no">주문번호 ${row.orderNumber}</span></div><a href="#" data-action="order-detail" data-id="${row.orderDetailId}">주문 상세 <span aria-hidden="true">›</span></a></header>

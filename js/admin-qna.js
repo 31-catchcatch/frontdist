@@ -34,14 +34,14 @@
       return;
     }
     rowsEl.innerHTML = list.map((q) => `
-      <tr data-id="${AdminUI.escape(q.id)}">
-        <td class="num">${AdminUI.escape(q.id)}</td>
+      <tr data-id="${q.id}">
+        <td class="num">${q.id}</td>
         <td><span class="tag role">상품문의</span></td>
-        <td class="strong">${AdminUI.escape(q.title)}</td>
-        <td>${AdminUI.escape(q.author)}</td>
-        <td class="muted">${AdminUI.escape(q.product)}</td>
+        <td class="strong">${q.title}</td>
+        <td>${q.author}</td>
+        <td class="muted">${q.product}</td>
         <td><span class="tag ${q.status}">${STATUS[q.status]}</span></td>
-        <td class="muted">${AdminUI.escape(q.created)}</td>
+        <td class="muted">${q.created}</td>
         <td><button class="btn sm" data-act="view">내용 보기</button></td>
       </tr>`).join("");
     countEl.textContent = total;
@@ -81,7 +81,7 @@
       QNA = data.map(mapRow);
       applyFilter();
     } catch (err) {
-      rowsEl.innerHTML = `<tr class="empty-row"><td colspan="8">${AdminUI.escape(err.message || "목록을 불러오지 못했습니다.")}</td></tr>`;
+      rowsEl.innerHTML = `<tr class="empty-row"><td colspan="8">${err.message || "목록을 불러오지 못했습니다."}</td></tr>`;
       countEl.textContent = 0;
     }
   }

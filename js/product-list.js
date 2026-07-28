@@ -71,8 +71,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function cardHTML(p) {
-    const esc = CatchApi.escape;
-    const brand = p.brandName ? `<p class="card-brand">${esc(p.brandName)}</p>` : "";
+    const brand = p.brandName ? `<p class="card-brand">${p.brandName}</p>` : "";
     const discount =
       p.discountRate > 0
         ? `<span class="card-origin"><s>${CatchApi.won(p.price)}</s></span> <span class="card-rate">${p.discountRate}%</span>`
@@ -82,11 +81,11 @@ document.addEventListener("DOMContentLoaded", () => {
       <div class="product-card">
         <a href="${p.detailUrl}">
           <div class="card-thumb">
-            <img src="${esc(CatchApi.thumb(p.thumbnailUrl))}" alt="${esc(p.name)}"
+            <img src="${CatchApi.thumb(p.thumbnailUrl)}" alt="${p.name}"
                  onerror="this.onerror=null;this.src=CatchApi.PLACEHOLDER">
           </div>
           ${brand}
-          <p class="card-name">${esc(p.name)}</p>
+          <p class="card-name">${p.name}</p>
           <div class="card-price">
             <span class="card-final">${CatchApi.won(p.finalPrice)}</span>
             ${discount}

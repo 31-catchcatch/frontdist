@@ -73,12 +73,6 @@
     return payload && typeof payload === "object" && "data" in payload ? payload.data : payload;
   }
 
-  function escapeHtml(value) {
-    return String(value ?? "").replace(/[&<>'\"]/g, (character) => ({
-      "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", "\"": "&quot;",
-    }[character]));
-  }
-
   function formatMoney(value) {
     return `${money.format(Math.max(0, Number(value) || 0))}원`;
   }
@@ -201,16 +195,16 @@
     elements.orderItems.hidden = items.length === 0;
     elements.emptyCart.hidden = items.length !== 0;
     elements.orderItems.innerHTML = items.map((item) => {
-      const name = escapeHtml(item.productName || "상품명 없음");
+      const name = item.productName || "상품명 없음";
       // 썸네일이 없는 상품은 기존처럼 상품명 첫 글자를 그린다.
       const thumb = item.thumbnailUrl
-        ? `<img src="${escapeHtml(item.thumbnailUrl)}" alt="">`
-        : `<span aria-hidden="true">${escapeHtml(name.charAt(0) || "C")}</span>`;
+        ? `<img src="${item.thumbnailUrl}" alt="">`
+        : `<span aria-hidden="true">${name.charAt(0) || "C"}</span>`;
       return `<article class="order-item">
         <div class="item-thumb">${thumb}</div>
         <div>
           <strong class="item-name">${name}</strong>
-          <p class="item-option">${escapeHtml(item.optionName || "옵션 없음")} · ${Number(item.quantity) || 1}개</p>
+          <p class="item-option">${item.optionName || "옵션 없음"} · ${Number(item.quantity) || 1}개</p>
         </div>
         <strong class="item-price">${formatMoney(item.totalPrice)}</strong>
       </article>`;
@@ -228,15 +222,15 @@
       elements.selectedAddress.innerHTML = '<p class="address-empty">선택할 배송지가 없습니다. 배송지 관리에서 배송지를 등록해 주세요.</p>';
       return;
     }
-    elements.selectedAddress.innerHTML = `<strong class="address-name">${escapeHtml(address.recipientName)}</strong><span class="address-phone">${escapeHtml(address.recipientPhone)}</span><p class="address-detail">${escapeHtml(formatAddressDetail(address))}</p>`;
+    elements.selectedAddress.innerHTML = `<strong class="address-name">${address.recipientName}</strong><span class="address-phone">${address.recipientPhone}</span><p class="address-detail">${formatAddressDetail(address)}</p>`;
   }
 
   function renderAddressOptions() {
     elements.addressOptions.innerHTML = state.addresses.map((address) => {
       const checked = String(address.id) === String(state.selectedAddressId) ? " checked" : "";
       return `<label class="address-option">
-        <input type="radio" name="address" value="${escapeHtml(address.id)}"${checked}>
-        <span><strong>${escapeHtml(address.recipientName)}</strong><span>${escapeHtml(address.recipientPhone)}</span><p>${escapeHtml(formatAddressDetail(address))}</p></span>
+        <input type="radio" name="address" value="${address.id}"${checked}>
+        <span><strong>${address.recipientName}</strong><span>${address.recipientPhone}</span><p>${formatAddressDetail(address)}</p></span>
       </label>`;
     }).join("") || '<p class="section-empty">등록된 배송지가 없습니다.</p>';
   }
@@ -252,7 +246,7 @@
     elements.couponSelect.disabled = !state.ready;
     elements.couponSelect.innerHTML = `<option value="">쿠폰을 선택하지 않음</option>${state.coupons.map((coupon) => {
       const selected = String(coupon.userCouponId) === String(state.selectedCouponId) ? " selected" : "";
-      return `<option value="${escapeHtml(coupon.userCouponId)}"${selected}>${escapeHtml(couponOptionLabel(coupon))}</option>`;
+      return `<option value="${coupon.userCouponId}"${selected}>${couponOptionLabel(coupon)}</option>`;
     }).join("")}`;
 
     const availablePoints = Number(state.defaults && state.defaults.availablePoint) || 0;
@@ -270,12 +264,12 @@
       const badge = type.enabled ? "" : "<span>준비 중</span>";
       return `<label class="payment-type">
         <input type="radio" name="paymentType" value="${type.id}"${checked}${disabled}>
-        <strong>${escapeHtml(type.label)}</strong>
+        <strong>${type.label}</strong>
         ${badge}
       </label>`;
     }).join("");
     const selectedType = PAYMENT_TYPES.find((type) => type.id === state.selectedPaymentType) || PAYMENT_TYPES[0];
-    elements.paymentMethods.innerHTML = `<div class="payment-type-grid" role="radiogroup" aria-label="결제수단">${typeOptions}</div><div class="payment-detail"><p>${escapeHtml(selectedType.detail)}</p></div>`;
+    elements.paymentMethods.innerHTML = `<div class="payment-type-grid" role="radiogroup" aria-label="결제수단">${typeOptions}</div><div class="payment-detail"><p>${selectedType.detail}</p></div>`;
     elements.paymentEmpty.hidden = true;
   }
 

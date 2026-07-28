@@ -31,15 +31,6 @@ document.addEventListener("DOMContentLoaded", () => {
   let editingAddressId = null;
   let addressInputTarget = null;
 
-  function escapeHtml(value) {
-    return String(value ?? "")
-      .replaceAll("&", "&amp;")
-      .replaceAll("<", "&lt;")
-      .replaceAll(">", "&gt;")
-      .replaceAll('"', "&quot;")
-      .replaceAll("'", "&#39;");
-  }
-
   function setMessage(element, message = "", type = "") {
     if (!element) return;
     element.textContent = message;
@@ -127,17 +118,17 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     rowsElement.innerHTML = addresses.map((address) => `
-      <tr data-address-id="${escapeHtml(address.id)}">
-        <td>${escapeHtml(address.addressName)}</td>
-        <td>${escapeHtml(address.recipientName)}</td>
-        <td>${escapeHtml(fullAddress(address))}</td>
-        <td>${escapeHtml(address.recipientPhone)}</td>
+      <tr data-address-id="${address.id}">
+        <td>${address.addressName}</td>
+        <td>${address.recipientName}</td>
+        <td>${fullAddress(address)}</td>
+        <td>${address.recipientPhone}</td>
         <td class="default-cell">
           <input
             type="checkbox"
             class="default-address"
             data-action="default"
-            aria-label="${escapeHtml(address.addressName)}을 기본 배송지로 설정"
+            aria-label="${address.addressName}을 기본 배송지로 설정"
             ${address.defaultAddress ? "checked" : ""}
           >
         </td>

@@ -40,14 +40,14 @@
       return;
     }
     rowsEl.innerHTML = list.map((c) => `
-      <tr data-id="${AdminUI.escape(c.id)}">
-        <td class="num">${AdminUI.escape(c.id)}</td>
-        <td class="muted">${AdminUI.escape(c.seller)}</td>
-        <td class="strong">${AdminUI.escape(c.name)}</td>
-        <td class="num">${AdminUI.escape(c.discount)}</td>
+      <tr data-id="${c.id}">
+        <td class="num">${c.id}</td>
+        <td class="muted">${c.seller}</td>
+        <td class="strong">${c.name}</td>
+        <td class="num">${c.discount}</td>
         <td class="num">${AdminUI.num(c.qty)}</td>
-        <td class="muted">${AdminUI.escape(c.period)}</td>
-        <td class="muted">${AdminUI.escape(c.created)}</td>
+        <td class="muted">${c.period}</td>
+        <td class="muted">${c.created}</td>
         <td><span class="tag ${c.status}">${STATUS[c.status]}</span></td>
         <td>
           ${c.status === "wait"
@@ -106,7 +106,7 @@
       COUPONS = data.map(mapRow);
       applyFilter();
     } catch (err) {
-      rowsEl.innerHTML = `<tr class="empty-row"><td colspan="9">${AdminUI.escape(err.message || "목록을 불러오지 못했습니다.")}</td></tr>`;
+      rowsEl.innerHTML = `<tr class="empty-row"><td colspan="9">${err.message || "목록을 불러오지 못했습니다."}</td></tr>`;
       countEl.textContent = 0;
     }
   }

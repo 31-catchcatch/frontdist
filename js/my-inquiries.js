@@ -34,31 +34,34 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function itemHTML(inq) {
-    const esc = CatchApi.escape;
     const answered = inq.status === "ANSWERED";
     const statusBadge = answered
       ? '<span class="inq-status answered">답변완료</span>'
       : '<span class="inq-status waiting">접수</span>';
     const orderRow = inq.orderNumber
-      ? `<span class="inq-order">주문번호 ${esc(inq.orderNumber)}</span>`
+      ? `<span class="inq-order">주문번호 ${inq.orderNumber}</span>`
       : "";
     const answerBlock = answered && inq.answer
       ? `<div class="inq-answer">
            <div class="inq-answer-head"><b>관리자 답변</b><span class="inq-answer-date">${fmtDate(inq.answeredAt)}</span></div>
-           <p>${esc(inq.answer)}</p>
+           <p>${inq.answer}</p>
          </div>`
       : "";
+    // 항목 전체가 상세 페이지로 가는 링크다. 내용·답변은 CSS 로 2줄까지만 보여주고
+    // 전문은 상세에서 확인한다.
     return `
       <li class="inquiry-item">
-        <div class="inq-top">
-          <span class="inq-category">${esc(categoryLabel(inq.category))}</span>
-          ${statusBadge}
-          <span class="inq-date">${fmtDate(inq.createdAt)}</span>
-        </div>
-        <p class="inq-title">${esc(inq.title)}</p>
-        ${orderRow}
-        <p class="inq-content">${esc(inq.content)}</p>
-        ${answerBlock}
+        <a class="inq-link" href="my-inquiry-detail.html?id=${encodeURIComponent(inq.id)}">
+          <div class="inq-top">
+            <span class="inq-category">${categoryLabel(inq.category)}</span>
+            ${statusBadge}
+            <span class="inq-date">${fmtDate(inq.createdAt)}</span>
+          </div>
+          <p class="inq-title">${inq.title}</p>
+          ${orderRow}
+          <p class="inq-content">${inq.content}</p>
+          ${answerBlock}
+        </a>
       </li>
     `;
   }

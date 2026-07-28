@@ -122,15 +122,6 @@
       `login.html?redirect=${encodeURIComponent("customercenter.html?tab=inquiry")}`;
   }
 
-  function escapeHtml(value) {
-    return String(value ?? "")
-      .replaceAll("&", "&amp;")
-      .replaceAll("<", "&lt;")
-      .replaceAll(">", "&gt;")
-      .replaceAll('"', "&quot;")
-      .replaceAll("'", "&#039;");
-  }
-
   function renderFaqs() {
     const filteredFaqs = faqData.filter((faq) => {
       const categoryMatched =
@@ -156,12 +147,12 @@
           aria-controls="faqAnswer${index}"
         >
           <span class="question-mark">Q</span>
-          <strong>${escapeHtml(faq.question)}</strong>
+          <strong>${faq.question}</strong>
           <span class="toggle-mark" aria-hidden="true">＋</span>
         </button>
 
         <div class="faq-answer" id="faqAnswer${index}" hidden>
-          ${escapeHtml(faq.answer)}
+          ${faq.answer}
         </div>
       </article>
     `).join("");

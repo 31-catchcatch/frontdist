@@ -55,15 +55,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   ];
 
-  function escapeHTML(value) {
-    return String(value ?? "")
-      .replaceAll("&", "&amp;")
-      .replaceAll("<", "&lt;")
-      .replaceAll(">", "&gt;")
-      .replaceAll('"', "&quot;")
-      .replaceAll("'", "&#039;");
-  }
-
   function getBody(result) {
     return result?.data ?? result ?? {};
   }
@@ -225,21 +216,21 @@ document.addEventListener("DOMContentLoaded", () => {
 
     listElement.innerHTML = items.map((item) => {
       const meta = [
-        item.couponName ? `쿠폰명: ${escapeHTML(item.couponName)}` : "",
-        item.requestId !== "" ? `요청 ID: ${escapeHTML(item.requestId)}` : "",
-        item.rejectionReason ? `반려 사유: ${escapeHTML(item.rejectionReason)}` : ""
+        item.couponName ? `쿠폰명: ${item.couponName}` : "",
+        item.requestId !== "" ? `요청 ID: ${item.requestId}` : "",
+        item.rejectionReason ? `반려 사유: ${item.rejectionReason}` : ""
       ].filter(Boolean);
 
       return `
-        <article class="notification-item ${item.isRead ? "" : "is-unread"}" data-id="${escapeHTML(item.id)}" data-result="${item.result}">
+        <article class="notification-item ${item.isRead ? "" : "is-unread"}" data-id="${item.id}" data-result="${item.result}">
           <div class="notification-icon" aria-hidden="true">${resultIcon(item.result)}</div>
 
           <div class="notification-content">
             <div class="notification-headline">
-              <h4>${escapeHTML(item.title)}</h4>
+              <h4>${item.title}</h4>
               <span class="notification-badge ${item.result}">${resultText(item.result)}</span>
             </div>
-            <p class="notification-text">${escapeHTML(item.message)}</p>
+            <p class="notification-text">${item.message}</p>
             ${meta.length ? `<div class="notification-meta">${meta.map((value) => `<span>${value}</span>`).join("")}</div>` : ""}
           </div>
 

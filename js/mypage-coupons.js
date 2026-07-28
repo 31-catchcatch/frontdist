@@ -99,15 +99,6 @@
     pageMessage.classList.remove("show");
   }
 
-  function escapeHtml(value) {
-    return String(value ?? "")
-      .replaceAll("&", "&amp;")
-      .replaceAll("<", "&lt;")
-      .replaceAll(">", "&gt;")
-      .replaceAll('"', "&quot;")
-      .replaceAll("'", "&#039;");
-  }
-
   function formatPrice(value) {
     return `${Number(value || 0).toLocaleString("ko-KR")}원`;
   }
@@ -317,7 +308,7 @@
       return `
         <article class="coupon-card">
           <div class="coupon-benefit">
-            <strong>${escapeHtml(getDiscountText(coupon))}</strong>
+            <strong>${getDiscountText(coupon)}</strong>
             <span>
               ${coupon.discountType === "PERCENT"
                 ? "할인"
@@ -328,25 +319,25 @@
           <div class="coupon-content">
             <span class="coupon-label">${currentTab === "claimable" ? "받기 가능" : "사용 가능"}</span>
 
-            <h3 title="${escapeHtml(coupon.couponName)}">
-              ${escapeHtml(coupon.couponName)}
+            <h3 title="${coupon.couponName}">
+              ${coupon.couponName}
             </h3>
 
             <p class="coupon-condition">
-              ${escapeHtml(getConditionText(coupon))}
+              ${getConditionText(coupon)}
             </p>
 
             <p class="coupon-date">
               유효기간
               <strong>
-                ${escapeHtml(formatDate(coupon.validFrom))}
+                ${formatDate(coupon.validFrom)}
                 –
-                ${escapeHtml(formatDate(coupon.validUntil))}
+                ${formatDate(coupon.validUntil)}
               </strong>
               ${
                 remainingText
                   ? `<span class="${expiryClass}">
-                      · ${escapeHtml(remainingText)}
+                      · ${remainingText}
                     </span>`
                   : ""
               }
@@ -354,7 +345,7 @@
 
             ${
               currentTab === "claimable"
-                ? `<button type="button" class="coupon-claim-btn" data-coupon-id="${escapeHtml(coupon.couponId)}">쿠폰 받기</button>`
+                ? `<button type="button" class="coupon-claim-btn" data-coupon-id="${coupon.couponId}">쿠폰 받기</button>`
                 : ""
             }
           </div>

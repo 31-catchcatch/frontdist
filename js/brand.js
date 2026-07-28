@@ -23,20 +23,20 @@ document.addEventListener("DOMContentLoaded", () => {
       '<div class="brand-logo-fallback" aria-hidden="true" ' +
       'style="width:100%;aspect-ratio:1;display:flex;align-items:center;justify-content:center;' +
       'background:#f0f0f0;color:#999;font-weight:700;font-size:20px">' +
-      CatchApi.escape(text) +
+      text +
       "</div>"
     );
   }
 
   function cardHTML(b) {
     const logo = b.logoUrl
-      ? `<img src="${CatchApi.escape(b.logoUrl)}" alt="${CatchApi.escape(b.name)}" ` +
+      ? `<img src="${b.logoUrl}" alt="${b.name}" ` +
         `onerror="this.onerror=null;this.src=CatchApi.PLACEHOLDER">`
       : logoFallback(b.name);
     return `
       <div class="brand-card" data-id="${b.id}">
         <a href="product-list.html?brand=${b.id}" class="brand-logo">${logo}</a>
-        <a href="product-list.html?brand=${b.id}" class="brand-name">${CatchApi.escape(b.name)}</a>
+        <a href="product-list.html?brand=${b.id}" class="brand-name">${b.name}</a>
       </div>
     `;
   }

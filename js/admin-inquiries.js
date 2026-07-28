@@ -44,13 +44,13 @@
       return;
     }
     rowsEl.innerHTML = list.map((i) => `
-      <tr data-id="${AdminUI.escape(i.id)}">
-        <td class="num">${AdminUI.escape(i.id)}</td>
-        <td><span class="tag role">${AdminUI.escape(i.category)}</span></td>
-        <td class="strong">${AdminUI.escape(i.title)}</td>
-        <td>${AdminUI.escape(i.author)}</td>
+      <tr data-id="${i.id}">
+        <td class="num">${i.id}</td>
+        <td><span class="tag role">${i.category}</span></td>
+        <td class="strong">${i.title}</td>
+        <td>${i.author}</td>
         <td><span class="tag ${i.status}">${STATUS[i.status]}</span></td>
-        <td class="muted">${AdminUI.escape(i.created)}</td>
+        <td class="muted">${i.created}</td>
         <td>
           <div class="row-actions">
             <button class="btn sm" data-act="view">내용 보기</button>
@@ -126,7 +126,7 @@
       INQUIRIES = data.map(mapRow);
       applyFilter();
     } catch (err) {
-      rowsEl.innerHTML = `<tr class="empty-row"><td colspan="7">${AdminUI.escape(err.message || "목록을 불러오지 못했습니다.")}</td></tr>`;
+      rowsEl.innerHTML = `<tr class="empty-row"><td colspan="7">${err.message || "목록을 불러오지 못했습니다."}</td></tr>`;
       countEl.textContent = 0;
     }
   }

@@ -135,17 +135,6 @@
       };
     },
 
-    // HTML escape (admin-ui.js 와 동일 동작)
-    escape(value) {
-      if (value === null || value === undefined) return "";
-      return String(value)
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#39;");
-    },
-
     // 원화 표기 "12,000원"
     won(n) {
       const num = Number(n);
