@@ -340,3 +340,59 @@
     min-height: 115px;
   }
 }
+
+/* ===== 쿠폰 탭 (보유 / 받을 수 있는 쿠폰) ===== */
+.coupon-tabs {
+  display: flex;
+  gap: 8px;
+  /* 패널에 자체 padding이 없어 탭이 경계에 붙으므로, 아래 panel-head(좌우 24px)와
+     같은 여백을 줘서 제목·카드와 왼쪽을 정렬한다. (위 20 / 좌우 24 / 아래 0) */
+  padding: 20px 24px 0;
+}
+
+.coupon-tab {
+  padding: 10px 20px;
+  border: 1px solid rgba(0, 0, 0, .12);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--mid);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background .15s ease, color .15s ease, border-color .15s ease;
+}
+
+.coupon-tab:hover {
+  border-color: var(--ink);
+  color: var(--ink);
+}
+
+.coupon-tab.is-active {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: #fff;
+}
+
+/* ===== 쿠폰 받기 버튼 (받을 수 있는 쿠폰 카드) ===== */
+.coupon-claim-btn {
+  margin-top: 12px;
+  width: 100%;
+  padding: 11px 16px;
+  border: 0;
+  border-radius: 10px;
+  background: var(--ink);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: opacity .15s ease;
+}
+
+.coupon-claim-btn:hover {
+  opacity: .88;
+}
+
+.coupon-claim-btn:disabled {
+  opacity: .5;
+  cursor: default;
+}

@@ -9,6 +9,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>주문 관리 — 캐치캐치</title>
 <link rel="stylesheet" href="css/common.css">
+<link rel="stylesheet" href="css/seller-nav.css">
 <link rel="stylesheet" href="css/seller-orders.css">
 </head>
 <body>
@@ -45,7 +46,6 @@
 <nav class="cats">
   <div class="wrap">
     <a href="product-list.html">전체</a>
-    <a href="product-list.html?view=best">베스트</a>
     <a href="brand.html">브랜드</a>
     <a href="product-list.html?cat=outer">아우터</a>
     <a href="product-list.html?cat=top">상의</a>
@@ -56,21 +56,32 @@
     <a href="product-list.html?cat=shoes">신발</a>
     <a href="product-list.html?cat=bag">가방</a>
     <a href="product-list.html?cat=acc">액세서리</a>
-    <a href="product-list.html?cat=underwear">언더웨어</a>
+    <a href="seller-dashboard.html" class="cat-seller" data-seller-only hidden>판매 관리</a>
   </div>
 </nav>
 <!-- ================= 공통 헤더 끝 ================= -->
 
 <main class="wrap">
-  <section class="seller-orders-page">
-    <div class="page-head">
+  <section class="block seller-orders-page">
+
+    <div class="sec-head">
       <div>
-        <p class="page-kicker">Seller orders</p>
-        <h1>주문 관리</h1>
-        <p>주문 상품을 확인하고 배송 상태와 운송장 정보를 등록합니다.</p>
+        <p class="kicker">Seller orders</p>
+        <h3>주문 관리</h3>
       </div>
       <a class="product-link" href="seller-products.html">내 상품 목록</a>
     </div>
+
+    <!-- 판매자 공통 메뉴 : 다른 판매자 페이지와 동일하게 유지 (7곳) -->
+    <nav class="seller-page-links" aria-label="판매자 관리 메뉴">
+      <a href="seller-dashboard.html">대시보드</a>
+      <a href="seller-products.html">상품 관리</a>
+      <a class="active" aria-current="page" href="seller-orders.html">주문 관리</a>
+      <a href="seller-sales.html?tab=sales">매출·정산</a>
+      <a href="seller-qna.html?status=wait">Q&amp;A 관리</a>
+      <a href="seller-claims.html">교환·환불</a>
+      <a href="seller-notifications.html">쿠폰관리</a>
+    </nav>
 
     <section class="summary-grid" aria-label="주문 현황">
       <article>
@@ -106,11 +117,12 @@
         <div class="filter-group">
           <select id="statusFilter" aria-label="주문 상태 필터">
             <option value="">전체 상태</option>
-            <option value="PAID">결제 완료</option>
+            <option value="PAYMENT_COMPLETED">결제 완료</option>
             <option value="PREPARING">배송 준비</option>
             <option value="SHIPPING">배송 중</option>
             <option value="DELIVERED">배송 완료</option>
-            <option value="CANCELLED">취소</option>
+            <option value="CONFIRMED">구매 확정</option>
+            <option value="CANCELED">취소</option>
           </select>
 
           <select id="sortFilter" aria-label="정렬 기준">
@@ -188,14 +200,7 @@
         >
       </div>
 
-      <div class="modal-field">
-        <label for="deliveryStatus">변경 상태 <strong>*</strong></label>
-        <select id="deliveryStatus" required>
-          <option value="PREPARING">배송 준비</option>
-          <option value="SHIPPING" selected>배송 중</option>
-          <option value="DELIVERED">배송 완료</option>
-        </select>
-      </div>
+      <p class="modal-description">택배사와 운송장 번호를 저장하면 자동으로 &quot;배송 중&quot; 상태로 전환됩니다.</p>
 
       <div class="modal-message" id="modalMessage" role="alert"></div>
 
@@ -217,7 +222,7 @@
       </div>
       <div class="foot-col">
         <h5>Shop</h5>
-        <a href="product-list.html?view=best">베스트</a><a href="product-list.html?cat=outer">아우터</a>
+<a href="product-list.html?cat=outer">아우터</a>
       </div>
       <div class="foot-col">
         <h5>Customer</h5>

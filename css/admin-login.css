@@ -60,6 +60,7 @@ body { min-height: 100vh; }
   line-height: 1.55;
 }
 
+.admin-field { margin-bottom: 16px; }
 .admin-field label {
   display: block;
   margin-bottom: 8px;
@@ -67,11 +68,11 @@ body { min-height: 100vh; }
   font-size: 12px;
   font-weight: 700;
 }
-.password-control { position: relative; }
-.password-control input {
+/* 아이디/비밀번호 입력칸 공통 스타일 */
+.admin-field input {
   width: 100%;
   height: 49px;
-  padding: 0 59px 0 14px;
+  padding: 0 14px;
   border: 1px solid var(--hairline-strong);
   border-radius: 6px;
   background: var(--surface);
@@ -80,12 +81,15 @@ body { min-height: 100vh; }
   font-size: 14px;
   transition: border-color .15s, box-shadow .15s;
 }
-.password-control input::placeholder { color: var(--faint); }
-.password-control input:focus {
+.admin-field input::placeholder { color: var(--faint); }
+.admin-field input:focus {
   outline: 0;
   border-color: var(--ink);
   box-shadow: 0 0 0 3px rgba(21, 21, 21, .08);
 }
+/* 비밀번호칸은 '보기' 버튼 자리만큼 우측 패딩 확보 */
+.password-control { position: relative; }
+.password-control input { padding-right: 59px; }
 .password-control button {
   position: absolute;
   top: 50%;
@@ -126,28 +130,6 @@ body { min-height: 100vh; }
 }
 .admin-login-submit:hover:not(:disabled) { transform: translateY(-1px); }
 .admin-login-submit:disabled { cursor: wait; opacity: .62; }
-.admin-preview-access {
-  width: 100%;
-  min-height: 46px;
-  margin-top: 10px;
-  border: 1px solid var(--hairline-strong);
-  border-radius: 6px;
-  background: var(--surface);
-  color: var(--ink-soft);
-  cursor: pointer;
-  font: inherit;
-  font-size: 13px;
-  font-weight: 700;
-}
-.admin-preview-access:hover { border-color: var(--ink); color: var(--ink); }
-.admin-login-note {
-  margin: 25px 0 0;
-  padding-top: 18px;
-  border-top: 1px solid var(--hairline);
-  color: var(--mid);
-  font-size: 11.5px;
-  line-height: 1.5;
-}
 
 @media (max-width: 480px) {
   .admin-login-wrap { padding: 16px; }

@@ -39,7 +39,6 @@
     const submit = document.getElementById("loginSubmit");
     const message = document.getElementById("loginMessage");
     const toggle = document.getElementById("passwordToggle");
-    const previewAccess = document.getElementById("previewAccess");
 
     if (AdminAuth.isLoggedIn()) {
       location.replace(safeRedirect());
@@ -58,11 +57,6 @@
       toggle.setAttribute("aria-label", visible ? "비밀번호 보기" : "비밀번호 숨기기");
       toggle.setAttribute("aria-pressed", String(!visible));
       password.focus();
-    });
-
-    previewAccess.addEventListener("click", () => {
-      AdminAuth.setPreviewSession();
-      location.replace(safeRedirect());
     });
 
     form.addEventListener("submit", async (event) => {

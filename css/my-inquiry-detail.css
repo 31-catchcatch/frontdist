@@ -1,0 +1,114 @@
+/* my-inquiry-detail.css — 나의 문의 상세
+   목록(my-inquiries.css)의 배지·답변 블록 스타일을 그대로 재사용하고,
+   상세에만 필요한 것들만 여기서 정의한다. */
+
+.myinquiry-head .inq-back {
+  font-size: 13px;
+  color: #78716c;
+  text-decoration: none;
+}
+.myinquiry-head .inq-back::before {
+  content: "← ";
+}
+.myinquiry-head .inq-back:hover {
+  color: #1c1917;
+  text-decoration: underline;
+}
+
+.inquiry-detail {
+  border: 1px solid #e7e5e4;
+  border-radius: 10px;
+  padding: 28px;
+  background: #fff;
+}
+
+.detail-title {
+  font-size: 20px;
+  line-height: 1.4;
+  margin: 0 0 16px;
+  color: #1c1917;
+}
+
+.detail-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 28px;
+  margin: 0 0 24px;
+  padding: 14px 16px;
+  background: #fafaf9;
+  border-radius: 8px;
+}
+.detail-meta .meta-row {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+.detail-meta dt {
+  font-size: 12px;
+  color: #a8a29e;
+}
+.detail-meta dd {
+  margin: 0;
+  font-size: 13px;
+  color: #44403c;
+}
+
+.detail-section {
+  padding-top: 20px;
+  border-top: 1px solid #f5f5f4;
+}
+.detail-section h5 {
+  font-size: 13px;
+  color: #78716c;
+  margin: 0 0 10px;
+}
+
+/* 답변 대기 안내 — 답변 블록(.inq-answer)과 자리를 맞춘다 */
+.detail-waiting {
+  margin-top: 16px;
+  padding: 14px 16px;
+  background: #fafaf9;
+  border-left: 3px solid #d6d3d1;
+  border-radius: 0 8px 8px 0;
+}
+.detail-waiting p {
+  margin: 0;
+  font-size: 14px;
+  color: #78716c;
+}
+
+.detail-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  margin-top: 28px;
+  padding-top: 20px;
+  border-top: 1px solid #f5f5f4;
+}
+.detail-actions .btn-outline,
+.detail-actions .btn-primary {
+  display: inline-block;
+  padding: 11px 24px;
+  border-radius: 8px;
+  font-size: 14px;
+  text-decoration: none;
+}
+.detail-actions .btn-outline {
+  border: 1px solid #d6d3d1;
+  color: #44403c;
+}
+.detail-actions .btn-outline:hover {
+  border-color: #1c1917;
+  color: #1c1917;
+}
+.detail-actions .btn-primary {
+  background: #1c1917;
+  color: #fff;
+}
+
+@media (max-width: 640px) {
+  .inquiry-detail { padding: 20px; }
+  .detail-actions { flex-direction: column-reverse; }
+  .detail-actions .btn-outline,
+  .detail-actions .btn-primary { text-align: center; }
+}

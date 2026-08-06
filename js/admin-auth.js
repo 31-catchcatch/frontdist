@@ -4,12 +4,7 @@
 
   const KEY_TOKEN = "catchcatch.adminToken";
   const KEY_FLAG = "catchcatch.adminLoggedIn";
-  const KEY_PREVIEW = "catchcatch.adminPreview";
   const LOGIN_PAGE = "admin-login.html";
-
-  function isPreviewRequest() {
-    return new URLSearchParams(location.search).get("preview") === "1";
-  }
 
   function currentPage() {
     return location.pathname.split("/").pop() + location.search;
@@ -17,7 +12,7 @@
 
   const AdminAuth = {
     isLoggedIn() {
-      return Boolean(sessionStorage.getItem(KEY_TOKEN) || sessionStorage.getItem(KEY_PREVIEW));
+      return Boolean(sessionStorage.getItem(KEY_TOKEN));
     },
 
     getToken() {
@@ -30,24 +25,14 @@
       }
       sessionStorage.setItem(KEY_TOKEN, token);
       sessionStorage.setItem(KEY_FLAG, "true");
-      sessionStorage.removeItem(KEY_PREVIEW);
-    },
-
-    setPreviewSession() {
-      sessionStorage.setItem(KEY_PREVIEW, "true");
-      sessionStorage.setItem(KEY_FLAG, "preview");
     },
 
     clearSession() {
       sessionStorage.removeItem(KEY_TOKEN);
       sessionStorage.removeItem(KEY_FLAG);
-      sessionStorage.removeItem(KEY_PREVIEW);
     },
 
     requireLogin() {
-      if (isPreviewRequest()) {
-        this.setPreviewSession();
-      }
       if (!this.isLoggedIn()) {
         location.replace(LOGIN_PAGE + "?redirect=" + encodeURIComponent(currentPage()));
         return false;

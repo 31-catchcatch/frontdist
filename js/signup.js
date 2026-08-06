@@ -2,6 +2,10 @@
 
 document.addEventListener("DOMContentLoaded", () => {
 
+  // API base: auth.js 가 환경(file://·:5500 → localhost:8080, 그 외 → /api/v1)을 판별해
+  // 넣어둔 값을 쓴다. 상대경로를 하드코딩하면 file:// 로 열었을 때 백엔드에 못 닿는다.
+  const API_BASE = window.CATCHCATCH_API_BASE_URL || "/api/v1";
+
   // ===== 유형 선택 =====
   const typeSelect = document.getElementById("signupTypeSelect");
   const formBlock = document.getElementById("signupFormBlock");
@@ -35,8 +39,15 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
+    // 형식(이메일·비밀번호·전화번호) 검증은 백엔드가 최종 제출 시 처리한다.
+    // 프론트에서는 백엔드가 볼 수 없는 것만 확인한다: 비밀번호 일치 / 아이디 중복확인 / 약관.
     if (document.getElementById("pw").value !== document.getElementById("pwConfirm").value) {
       alert("비밀번호가 일치하지 않습니다.");
+      return;
+    }
+
+    if (checkedUsername !== document.getElementById("userId").value.trim()) {
+      alert("아이디 중복확인을 해주세요.");
       return;
     }
 
@@ -63,23 +74,61 @@ document.addEventListener("DOMContentLoaded", () => {
     })
   );
 
-  // ===== 아이디 중복확인 (mock) =====
-  form.querySelector('[data-action="check-username"]').addEventListener("click", () => {
-    const val = document.getElementById("userId").value.trim();
+  // ===== 아이디 중복확인 =====
+  const userIdInput = document.getElementById("userId");
+  const checkUsernameBtn = form.querySelector('[data-action="check-username"]');
+  let checkedUsername = null; // 중복확인을 통과한 아이디. 값이 바뀌면 초기화된다.
+
+  userIdInput.addEventListener("input", () => {
+    if (userIdInput.value.trim() !== checkedUsername) {
+      checkedUsername = null;
+      const msg = form.querySelector('[data-role="username-msg"]');
+      msg.textContent = "";
+      msg.className = "field-msg";
+    }
+  });
+
+  checkUsernameBtn.addEventListener("click", async () => {
+    const val = userIdInput.value.trim();
     const msg = form.querySelector('[data-role="username-msg"]');
+
     if (!val) {
       msg.textContent = "아이디를 입력해 주세요.";
       msg.className = "field-msg error";
       return;
     }
-    // TODO: POST /api/v1/auth/check-username
-    msg.textContent = `'${val}' 사용 가능한 아이디입니다.`;
-    msg.className = "field-msg ok";
-  });
 
-  // ===== 닉네임 중복확인 (mock) =====
-  form.querySelector('[data-action="check-nickname"]').addEventListener("click", () => {
-    alert("닉네임 중복확인 (구현 예정)");
+    checkUsernameBtn.disabled = true;
+    try {
+      // 백엔드가 @RequestParam 이라 body가 아니라 쿼리스트링으로 보내야 한다.
+      const res = await fetch(
+        `${API_BASE}/auth/check-username?username=${encodeURIComponent(val)}`,
+        { method: "POST" }
+      );
+      const data = await res.json().catch(() => null);
+
+      if (!res.ok || !data || data.success === false) {
+        msg.textContent = (data && data.message) || "중복확인에 실패했습니다.";
+        msg.className = "field-msg error";
+        return;
+      }
+
+      // data.data === true 가 "사용 가능"
+      if (data.data) {
+        checkedUsername = val;
+        msg.textContent = `'${val}' 사용 가능한 아이디입니다.`;
+        msg.className = "field-msg ok";
+      } else {
+        checkedUsername = null;
+        msg.textContent = `'${val}' 이미 사용 중인 아이디입니다.`;
+        msg.className = "field-msg error";
+      }
+    } catch (err) {
+      msg.textContent = "서버에 연결할 수 없습니다.";
+      msg.className = "field-msg error";
+    } finally {
+      checkUsernameBtn.disabled = false;
+    }
   });
 
   // ===== 인증코드 공통 로직 =====
@@ -94,13 +143,24 @@ document.addEventListener("DOMContentLoaded", () => {
     sendBtn.addEventListener("click", () => {
       // TODO: 인증코드 발송 API 호출
       group.hidden = false;
-      let sec = 180;
       clearInterval(interval);
-      interval = setInterval(() => {
-        sec -= 1;
+
+      let sec = 180;
+      const render = () => {
         const m = String(Math.floor(sec / 60)).padStart(2, "0");
         const s = String(sec % 60).padStart(2, "0");
         timerEl.textContent = `${m}:${s}`;
+      };
+
+      // 재발송 시 이전 만료 메시지를 지우고 즉시 03:00으로 리셋해 표시한다.
+      // (setInterval 첫 tick은 1초 뒤라, 즉시 render 하지 않으면 옛 값이 1초간 남는다)
+      msgEl.textContent = "";
+      msgEl.className = "field-msg";
+      render();
+
+      interval = setInterval(() => {
+        sec -= 1;
+        render();
         if (sec <= 0) {
           clearInterval(interval);
           msgEl.textContent = "인증 시간이 만료되었습니다. 다시 요청해 주세요.";
@@ -142,10 +202,34 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   // ===== 최종 제출 =====
-  form.addEventListener("submit", (e) => {
-    e.preventDefault();
-    // TODO: POST /api/v1/auth/user/signup
-    showStep(3);
+  form.addEventListener("submit", async (e) => {
+  e.preventDefault();
+
+  const payload = {
+    username: document.getElementById("userId").value.trim(),
+    password: document.getElementById("pw").value,
+    name: document.getElementById("name").value.trim(),
+    email: document.getElementById("email").value.trim(),
+    // 하이픈 등 제거해서 숫자만 (백엔드는 \d{9,11} 요구)
+    phoneNumber: document.getElementById("phone").value.replace(/[^0-9]/g, ""),
+  };
+
+  try {
+    const res = await fetch(`${API_BASE}/auth/user/signup`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+    const data = await res.json().catch(() => null);
+
+    if (!res.ok || !data || data.success === false) {
+      alert((data && data.message) || "회원가입에 실패했습니다.");
+      return;
+    }
+    showStep(3); // 성공 시에만 완료 화면
+  } catch (err) {
+    alert("서버에 연결할 수 없습니다. WEB/WAS 상태를 확인해 주세요.");
+  }
   });
 
 });

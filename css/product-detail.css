@@ -27,6 +27,17 @@
 .gallery-thumbs button.is-active { border-color: var(--ink, #222); }
 .gallery-thumbs img { width: 100%; height: 100%; object-fit: cover; display: block; }
 
+.gallery-download { margin-top: 12px; }
+.gallery-download button {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 8px 14px; font-size: 13px;
+  border: 1px solid var(--hairline-strong, #ddd); border-radius: 4px;
+  background: none; color: var(--ink, #222); cursor: pointer;
+}
+.gallery-download button:hover:not(:disabled) { border-color: var(--ink, #222); }
+.gallery-download button:disabled { opacity: .5; cursor: default; }
+.gallery-download .icn { width: 15px; height: 15px; }
+
 /* ===== 구매정보 ===== */
 .pd-brand { font-size: 14px; font-weight: 700; color: var(--mid, #888); margin: 0 0 6px; }
 .pd-name { font-size: 22px; line-height: 1.4; margin: 0 0 14px; }

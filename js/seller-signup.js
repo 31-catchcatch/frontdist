@@ -3,6 +3,10 @@
 
 document.addEventListener("DOMContentLoaded", () => {
 
+  // API base: auth.js 가 환경(file://·:5500 → localhost:8080, 그 외 → /api/v1)을 판별해
+  // 넣어둔 값을 쓴다. 상대경로를 하드코딩하면 file:// 로 열었을 때 백엔드에 못 닿는다.
+  const API_BASE = window.CATCHCATCH_API_BASE_URL || "/api/v1";
+
   const form = document.getElementById("signupForm");
 
   // ===== STEP 전환 =====
@@ -24,15 +28,10 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
+    // 형식(이메일·비밀번호·사업자번호·전화번호) 검증은 백엔드가 최종 제출 시 처리한다.
+    // 프론트에서는 백엔드가 볼 수 없는 비밀번호 일치 / 약관만 확인한다.
     if (document.getElementById("pw").value !== document.getElementById("pwConfirm").value) {
       alert("비밀번호가 일치하지 않습니다.");
-      return;
-    }
-
-    // 사업자등록번호 10자리 숫자 체크
-    const biz = document.getElementById("bizNumber").value.trim();
-    if (!/^\d{10}$/.test(biz)) {
-      alert("사업자등록번호는 숫자 10자리로 입력해 주세요.");
       return;
     }
 
@@ -42,10 +41,26 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
+    // 본인인증용 번호는 STEP1에서 입력한 대표자 전화번호를 그대로 쓴다 (중복 입력 방지).
+    const ceoPhoneEl = document.getElementById("ceoPhone");
+    const authPhoneEl = document.getElementById("authPhone");
+    if (ceoPhoneEl && authPhoneEl) authPhoneEl.value = ceoPhoneEl.value;
+
     showStep(2);
   });
 
   form.querySelector('[data-action="go-step1"]').addEventListener("click", () => showStep(1));
+  
+  // ===== 사업자등록증 파일명 표시 =====
+  const bizFileInput = document.getElementById("bizFile");
+  const bizFileName = document.querySelector('[data-role="biz-file-name"]');
+  if (bizFileInput && bizFileName) {
+    bizFileInput.addEventListener("change", () => {
+      const file = bizFileInput.files[0];
+      bizFileName.textContent = file ? file.name : "선택된 파일 없음";
+      bizFileName.classList.toggle("has-file", !!file);
+    });
+  }
 
   // ===== 전체 동의 =====
   const agreeAll = form.querySelector('[data-action="agree-all"]');
@@ -59,8 +74,9 @@ document.addEventListener("DOMContentLoaded", () => {
     })
   );
 
-  // ===== 아이디 중복확인 (mock) =====
-  form.querySelector('[data-action="check-username"]').addEventListener("click", () => {
+  // ===== 아이디 중복확인 (실제 API) =====
+  const checkUsernameBtn = form.querySelector('[data-action="check-username"]');
+  checkUsernameBtn.addEventListener("click", async () => {
     const val = document.getElementById("userId").value.trim();
     const msg = form.querySelector('[data-role="username-msg"]');
     if (!val) {
@@ -68,9 +84,36 @@ document.addEventListener("DOMContentLoaded", () => {
       msg.className = "field-msg error";
       return;
     }
-    // TODO: POST /api/v1/auth/check-username
-    msg.textContent = `'${val}' 사용 가능한 아이디입니다.`;
-    msg.className = "field-msg ok";
+
+    checkUsernameBtn.disabled = true;
+    try {
+      // 백엔드가 @RequestParam 이라 body가 아니라 쿼리스트링으로 보낸다.
+      const res = await fetch(
+        `${API_BASE}/auth/check-username?username=${encodeURIComponent(val)}`,
+        { method: "POST" }
+      );
+      const data = await res.json().catch(() => null);
+
+      if (!res.ok || !data || data.success === false) {
+        msg.textContent = (data && data.message) || "중복확인에 실패했습니다.";
+        msg.className = "field-msg error";
+        return;
+      }
+
+      // data.data === true 가 "사용 가능"
+      if (data.data) {
+        msg.textContent = `'${val}' 사용 가능한 아이디입니다.`;
+        msg.className = "field-msg ok";
+      } else {
+        msg.textContent = `'${val}' 이미 사용 중인 아이디입니다.`;
+        msg.className = "field-msg error";
+      }
+    } catch (err) {
+      msg.textContent = "서버에 연결할 수 없습니다.";
+      msg.className = "field-msg error";
+    } finally {
+      checkUsernameBtn.disabled = false;
+    }
   });
 
   // ===== 인증코드 공통 로직 =====
@@ -86,13 +129,24 @@ document.addEventListener("DOMContentLoaded", () => {
       // TODO: 이메일 → POST /api/v1/auth/email-verification
       //       휴대폰 → POST /api/v1/auth/seller/verify
       group.hidden = false;
-      let sec = 180;
       clearInterval(interval);
-      interval = setInterval(() => {
-        sec -= 1;
+
+      let sec = 180;
+      const render = () => {
         const m = String(Math.floor(sec / 60)).padStart(2, "0");
         const s = String(sec % 60).padStart(2, "0");
         timerEl.textContent = `${m}:${s}`;
+      };
+
+      // 재발송 시 이전 만료 메시지를 지우고 즉시 03:00으로 리셋해 표시한다.
+      // (setInterval 첫 tick은 1초 뒤라, 즉시 render 하지 않으면 옛 값이 1초간 남는다)
+      msgEl.textContent = "";
+      msgEl.className = "field-msg";
+      render();
+
+      interval = setInterval(() => {
+        sec -= 1;
+        render();
         if (sec <= 0) {
           clearInterval(interval);
           msgEl.textContent = "인증 시간이 만료되었습니다. 다시 요청해 주세요.";
@@ -133,13 +187,67 @@ document.addEventListener("DOMContentLoaded", () => {
     msg: '[data-role="auth-msg"]',
   });
 
-  // ===== 최종 제출 (S-AUTH-003) =====
-  form.addEventListener("submit", (e) => {
+  // ===== 대표자 전화번호 입력 중 하이픈 자동 포맷 (표시용 — 전송 시엔 숫자만 보냄) =====
+  const ceoPhoneInput = document.getElementById("ceoPhone");
+  if (ceoPhoneInput) {
+    ceoPhoneInput.addEventListener("input", () => {
+      const n = ceoPhoneInput.value.replace(/\D/g, "").slice(0, 11);
+      ceoPhoneInput.value =
+        n.length < 4 ? n :
+        n.length < 8 ? `${n.slice(0, 3)}-${n.slice(3)}` :
+        `${n.slice(0, 3)}-${n.slice(3, 7)}-${n.slice(7)}`;
+    });
+  }
+
+  // ===== 최종 제출 (S-AUTH-003) — 회원가입 + 입점신청 동시 =====
+  form.addEventListener("submit", async (e) => {
     e.preventDefault();
-    // TODO: POST /api/v1/auth/seller/signup
-    //   body: { userId, email, pw, companyName, brandName, bizNumber,
-    //           ceoName, managerName, managerPhone, agreements }
-    showStep(3);
+    const $ = (id) => document.getElementById(id);
+    const digits = (v) => (v || "").replace(/[^0-9]/g, "");
+
+    try {
+      // ① 사업자등록증 파일 업로드 → URL 확보
+      if (!$("bizFile") || !$("bizFile").files[0]) {
+        alert("사업자등록증 파일을 첨부해 주세요.");
+        return;
+      }
+      const fd = new FormData();
+      fd.append("file", $("bizFile").files[0]);
+      const upRes = await fetch(`${API_BASE}/files/upload`, { method: "POST", body: fd });
+      const upData = await upRes.json().catch(() => null);
+      const fileUrl = upData?.data?.fileUrl;
+      if (!upRes.ok || !fileUrl) { alert("파일 업로드에 실패했습니다."); return; }
+
+      // ② 판매자 회원가입 = 계정(role=SELLER) + 입점신청(PENDING) 동시 처리
+      // 사람 이름/전화는 모두 대표자 정보로 통합한다.
+      //  - 이름  : 대표자명(ceoName)      → name / representativeName
+      //  - 전화  : 대표자 전화번호(ceoPhone) → phoneNumber / contactNumber
+      const ceoPhone = digits($("ceoPhone").value);
+      const payload = {
+        username: $("userId").value.trim(),
+        password: $("pw").value,
+        name: $("ceoName").value.trim(),
+        email: $("email").value.trim(),
+        phoneNumber: ceoPhone,
+        businessName: $("companyName").value.trim(),
+        businessRegistrationNumber: digits($("bizNumber").value),
+        representativeName: $("ceoName").value.trim(),
+        contactNumber: ceoPhone,
+        businessAddress: $("businessAddress").value.trim(),
+        businessRegistrationFileUrl: fileUrl,
+      };
+      const res = await fetch(`${API_BASE}/auth/seller/signup`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const data = await res.json().catch(() => null);
+      if (!res.ok || !data?.success) { alert(data?.message || "가입/입점신청에 실패했습니다."); return; }
+
+      showStep(3); // 완료 (가입 + 입점신청 접수, 승인 대기중)
+    } catch (err) {
+      alert("서버에 연결할 수 없습니다.");
+    }
   });
 
 });

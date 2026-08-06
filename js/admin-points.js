@@ -20,9 +20,9 @@
       return;
     }
     rowsEl.innerHTML = list.map((p) => `
-      <tr data-id="${AdminUI.escape(p.id)}">
-        <td class="num">${AdminUI.escape(p.id)}</td>
-        <td class="strong">${AdminUI.escape(p.name)}</td>
+      <tr data-id="${p.id}">
+        <td class="num">${p.id}</td>
+        <td class="strong">${p.name}</td>
         <td class="num strong">${AdminUI.num(p.balance)} P</td>
         <td class="num muted">-</td>
         <td class="num muted">-</td>
@@ -80,7 +80,7 @@
       POINTS = data.map(mapRow);
       applyFilter();
     } catch (err) {
-      rowsEl.innerHTML = `<tr class="empty-row"><td colspan="7">${AdminUI.escape(err.message || "목록을 불러오지 못했습니다.")}</td></tr>`;
+      rowsEl.innerHTML = `<tr class="empty-row"><td colspan="7">${err.message || "목록을 불러오지 못했습니다."}</td></tr>`;
       countEl.textContent = 0;
     }
   }

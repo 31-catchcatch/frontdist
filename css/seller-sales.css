@@ -2,10 +2,17 @@
    매출 / 정산 페이지
 =========================== */
 
+/* gap 은 22px 고정 — 판매자 6개 페이지의 nav 세로 위치를 맞추기 위함 (css/seller-nav.css 참고).
+   flex 컨테이너라 자식의 margin 이 gap 에 "더해진다". 그래서 바로 아래에서
+   .sec-head 의 margin-bottom 을 0 으로 돌려 gap 22px 만 남긴다. */
 .sales-page{
     display:flex;
     flex-direction:column;
-    gap:28px;
+    gap:22px;
+}
+
+.sales-page > .sec-head{
+    margin-bottom:0;
 }
 
 /* ---------------------------
@@ -257,22 +264,10 @@
     font-size:13px;
 }
 
-.seller-dashboard-link{
-    display:inline-flex;
-    align-items:center;
-    min-height:38px;
-    padding:0 14px;
-    border:1px solid #ddd;
-    border-radius:8px;
-    color:#444;
-    font-size:14px;
-    font-weight:600;
-    text-decoration:none;
-}
-
-.seller-dashboard-link:hover{
-    border-color:#111;
-    color:#111;
+/* .sales-page 가 flex column + gap:28px 이라 nav 의 margin-bottom 이
+   gap 에 더해져 두 배로 벌어진다. 여기서만 되돌린다. */
+.sales-page > .seller-page-links{
+    margin-bottom:0;
 }
 
 .selected-period{

@@ -10,12 +10,8 @@
 
   const username = document.getElementById("username");
   const nameInput = document.getElementById("name");
-  const nickname = document.getElementById("nickname");
   const email = document.getElementById("email");
   const phone = document.getElementById("phone");
-  const postalCode = document.getElementById("postalCode");
-  const address = document.getElementById("address");
-  const addressDetail = document.getElementById("addressDetail");
 
   const currentPassword = document.getElementById("currentPassword");
   const newPassword = document.getElementById("newPassword");
@@ -23,18 +19,11 @@
   const passwordMatchMessage =
     document.getElementById("passwordMatchMessage");
 
-  const addressSearchButton =
-    document.getElementById("addressSearchButton");
-
   const previewProfile = {
     username: "catchuser01",
     name: "김캐치",
-    nickname: "캐치왕",
     email: "catch@example.com",
-    phone: "010-1234-5678",
-    postalCode: "04790",
-    address: "서울특별시 성동구 연무장길 00",
-    addressDetail: "101동 1001호"
+    phone: "010-1234-5678"
   };
 
   function isLoggedIn() {
@@ -90,10 +79,6 @@
 
   function normalizeProfile(raw) {
     const body = raw?.data ?? raw ?? {};
-    const addressObject =
-      body.addressInfo ??
-      body.address ??
-      {};
 
     return {
       username:
@@ -106,11 +91,6 @@
         body.userName ??
         body.memberName ??
         "",
-      nickname:
-        body.nickname ??
-        body.nickName ??
-        body.userNickname ??
-        "",
       email:
         body.email ??
         body.emailAddress ??
@@ -119,31 +99,6 @@
         body.phone ??
         body.phoneNumber ??
         body.mobile ??
-        "",
-      postalCode:
-        body.postalCode ??
-        body.zipCode ??
-        addressObject.postalCode ??
-        addressObject.zipCode ??
-        "",
-      address:
-        typeof body.address === "string"
-          ? body.address
-          : (
-              body.baseAddress ??
-              body.addressLine1 ??
-              addressObject.address ??
-              addressObject.baseAddress ??
-              addressObject.addressLine1 ??
-              ""
-            ),
-      addressDetail:
-        body.addressDetail ??
-        body.detailAddress ??
-        body.addressLine2 ??
-        addressObject.addressDetail ??
-        addressObject.detailAddress ??
-        addressObject.addressLine2 ??
         ""
     };
   }
@@ -151,12 +106,9 @@
   function fillProfile(profile) {
     username.value = profile.username;
     nameInput.value = profile.name;
-    nickname.value = profile.nickname;
     email.value = profile.email;
-    phone.value = profile.phone;
-    postalCode.value = profile.postalCode;
-    address.value = profile.address;
-    addressDetail.value = profile.addressDetail;
+    // 저장된 번호에 하이픈이 없을 수 있으므로 로드 시에도 전화번호 양식을 적용한다.
+    phone.value = formatPhoneNumber(profile.phone);
   }
 
   async function loadProfile() {
@@ -276,26 +228,11 @@
     input.addEventListener("input", validatePasswordFields);
   });
 
-  addressSearchButton.addEventListener("click", () => {
-    /*
-     * 주소 검색 서비스가 연결되면 이 위치에서 Daum 우편번호
-     * 또는 팀에서 사용하는 주소 검색 모듈을 호출하면 됩니다.
-     */
-    showMessage(
-      "주소 검색 서비스는 아직 연결되지 않았습니다. 우편번호와 주소를 직접 입력해 주세요."
-    );
-    postalCode.focus();
-  });
-
   function createPayload() {
     const payload = {
       name: nameInput.value.trim(),
-      nickname: nickname.value.trim(),
       email: email.value.trim(),
-      phone: phone.value.trim(),
-      postalCode: postalCode.value.trim(),
-      address: address.value.trim(),
-      addressDetail: addressDetail.value.trim()
+      phoneNumber: phone.value.trim()
     };
 
     if (newPassword.value) {

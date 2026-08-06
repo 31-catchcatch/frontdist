@@ -59,7 +59,6 @@
 <nav class="cats">
   <div class="wrap">
     <a href="product-list.html">전체</a>
-    <a href="product-list.html?view=best">베스트</a>
     <a href="brand.html">브랜드</a>
     <a href="product-list.html?cat=outer">아우터</a>
     <a href="product-list.html?cat=top">상의</a>
@@ -70,7 +69,7 @@
     <a href="product-list.html?cat=shoes">신발</a>
     <a href="product-list.html?cat=bag">가방</a>
     <a href="product-list.html?cat=acc">액세서리</a>
-    <a href="product-list.html?cat=underwear">언더웨어</a>
+    <a href="seller-dashboard.html" class="cat-seller" data-seller-only hidden>판매 관리</a>
   </div>
 </nav>
 <!-- ================= 공통 헤더 끝 ================= -->
@@ -99,10 +98,16 @@
     </section>
 
     <section class="coupon-panel">
+      <!-- 탭: 보유 쿠폰 / 받을 수 있는 쿠폰 -->
+      <div class="coupon-tabs" role="tablist">
+        <button type="button" class="coupon-tab is-active" data-tab="mine" role="tab" aria-selected="true">보유 쿠폰</button>
+        <button type="button" class="coupon-tab" data-tab="claimable" role="tab" aria-selected="false">받을 수 있는 쿠폰</button>
+      </div>
+
       <div class="panel-head">
         <div>
-          <h2>쿠폰 목록</h2>
-          <p>유효기간이 가까운 순서로 표시됩니다.</p>
+          <h2 id="couponPanelTitle">보유 쿠폰</h2>
+          <p id="couponPanelDesc">유효기간이 가까운 순서로 표시됩니다.</p>
         </div>
         <select id="couponSort" aria-label="쿠폰 정렬">
           <option value="expiry">유효기간 임박순</option>
@@ -112,7 +117,7 @@
       </div>
 
       <div class="coupon-list" id="couponList" aria-live="polite">
-        <p class="coupon-state">보유 쿠폰을 불러오는 중입니다.</p>
+        <p class="coupon-state">쿠폰을 불러오는 중입니다.</p>
       </div>
     </section>
 
@@ -140,7 +145,7 @@
       </div>
       <div class="foot-col">
         <h5>Shop</h5>
-        <a href="product-list.html?view=best">베스트</a><a href="product-list.html?cat=outer">아우터</a>
+<a href="product-list.html?cat=outer">아우터</a>
       </div>
       <div class="foot-col">
         <h5>Customer</h5>

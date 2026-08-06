@@ -15,6 +15,19 @@
 (function (global) {
   "use strict";
 
+  // === API BASE 단일 소스(SSOT) ===
+  // 개발/배포 환경 판별(file://·Live Server 5500 → localhost:8080, 그 외 → /api/v1 상대경로)은
+  // 프로젝트 전체에서 오직 여기서만 계산해 전역(CATCHCATCH_API_BASE_URL)에 넣는다.
+  // auth.js는 거의 모든 페이지에서 페이지별 스크립트보다 먼저 로드되므로,
+  // api.js·login.js·seller-*.js 등 다른 스크립트는 이 값을 "window.CATCHCATCH_API_BASE_URL || '/api/v1'"
+  // 로 읽기만 하면 되고, 같은 판별 로직을 각자 복제하지 않는다.
+  if (!global.CATCHCATCH_API_BASE_URL) {
+    global.CATCHCATCH_API_BASE_URL =
+      location.protocol === "file:" || location.port === "5500"
+        ? "http://localhost:8080/api/v1"
+        : "/api/v1";
+  }
+
   const KEY_FLAG = "catchcatch.loggedIn";
   const KEY_TOKEN = "catchcatch.accessToken";
   const KEY_REFRESH = "catchcatch.refreshToken";
@@ -120,6 +133,12 @@
     });
     document.querySelectorAll("[data-auth-member]").forEach((el) => {
       el.hidden = !loggedIn;
+    });
+
+    // 판매자로 로그인했을 때만 상단 카테고리에 '판매 관리' 노출
+    const isSeller = loggedIn && sessionStorage.getItem("catchcatch.loginType") === "seller";
+    document.querySelectorAll("[data-seller-only]").forEach((el) => {
+      el.hidden = !isSeller;
     });
 
     // 로그아웃 버튼(있으면) 연결

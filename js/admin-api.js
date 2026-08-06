@@ -24,7 +24,7 @@
     const response = await fetch(BASE + path, options);
 
     if (response.status === 401 || response.status === 403) {
-      // 토큰이 있었는데 거부 = 만료/무효 → 재로그인. (미리보기 등 토큰이 아예 없으면 조용히 에러만)
+      // 토큰이 있었는데 거부 = 만료/무효 → 재로그인.
       if (AdminAuth.getToken()) {
         AdminAuth.logout();
       }

@@ -46,10 +46,10 @@
     document.getElementById("businessNumber");
   const representativeName =
     document.getElementById("representativeName");
-  const managerName =
-    document.getElementById("managerName");
-  const managerPhone =
-    document.getElementById("managerPhone");
+  // 담당자 → 대표자로 통합: 연락처는 대표자 전화번호 입력칸에서 받는다.
+  // (백엔드 조회/수정 필드명은 managerPhone → contactNumber 그대로라 payload 키는 managerPhone 유지)
+  const representativePhone =
+    document.getElementById("representativePhone");
 
   let originalEmail = "";
   let emailVerified = true;
@@ -61,7 +61,6 @@
     brandName: "CATCH STANDARD",
     businessNumber: "123-45-67890",
     representativeName: "김대표",
-    managerName: "이담당",
     managerPhone: "010-1234-5678"
   };
 
@@ -128,10 +127,6 @@
       body.businessInfo ??
       body.business ??
       {};
-    const manager =
-      body.managerInfo ??
-      body.manager ??
-      {};
 
     return {
       username:
@@ -164,16 +159,11 @@
         business.representativeName ??
         business.ceoName ??
         "",
-      managerName:
-        body.managerName ??
-        manager.managerName ??
-        manager.name ??
-        "",
-      managerPhone:
+      // 대표자 연락처 (백엔드 응답 키는 managerPhone = contactNumber)
+      representativePhone:
         body.managerPhone ??
         body.managerContact ??
-        manager.managerPhone ??
-        manager.phone ??
+        body.contactNumber ??
         ""
     };
   }
@@ -185,13 +175,12 @@
     emailVerified = true;
 
     businessName.value = profile.businessName;
-    brandName.value = profile.brandName;
+    if (brandName) brandName.value = profile.brandName;
     businessNumber.value =
       formatBusinessNumber(profile.businessNumber);
     representativeName.value = profile.representativeName;
-    managerName.value = profile.managerName;
-    managerPhone.value =
-      formatPhoneNumber(profile.managerPhone);
+    if (representativePhone)
+      representativePhone.value = formatPhoneNumber(profile.representativePhone);
   }
 
   async function loadProfile() {
@@ -261,10 +250,12 @@
       formatBusinessNumber(businessNumber.value);
   });
 
-  managerPhone.addEventListener("input", () => {
-    managerPhone.value =
-      formatPhoneNumber(managerPhone.value);
-  });
+  if (representativePhone) {
+    representativePhone.addEventListener("input", () => {
+      representativePhone.value =
+        formatPhoneNumber(representativePhone.value);
+    });
+  }
 
   email.addEventListener("input", () => {
     emailVerified =
@@ -506,9 +497,9 @@
         businessNumber.value.replace(/\D/g, ""),
       representativeName:
         representativeName.value.trim(),
-      managerName: managerName.value.trim(),
+      // 백엔드 수정 요청 키는 managerPhone(→contactNumber). 값은 대표자 전화번호 입력칸에서.
       managerPhone:
-        managerPhone.value.replace(/\D/g, "")
+        representativePhone ? representativePhone.value.replace(/\D/g, "") : ""
     };
 
     if (newPassword.value) {
@@ -551,7 +542,7 @@
     if (FILE_PREVIEW_MODE) {
       Object.assign(previewProfile, payload, {
         businessNumber: businessNumber.value,
-        managerPhone: managerPhone.value
+        managerPhone: representativePhone ? representativePhone.value : ""
       });
 
       originalEmail = email.value.trim();

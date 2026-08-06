@@ -72,7 +72,6 @@
 <nav class="cats">
   <div class="wrap">
     <a href="product-list.html">전체</a>
-    <a href="product-list.html?view=best">베스트</a>
     <a href="brand.html">브랜드</a>
     <a href="product-list.html?cat=outer">아우터</a>
     <a href="product-list.html?cat=top">상의</a>
@@ -83,7 +82,7 @@
     <a href="product-list.html?cat=shoes">신발</a>
     <a href="product-list.html?cat=bag">가방</a>
     <a href="product-list.html?cat=acc">액세서리</a>
-    <a href="product-list.html?cat=underwear">언더웨어</a>
+    <a href="seller-dashboard.html" class="cat-seller" data-seller-only hidden>판매 관리</a>
   </div>
 </nav>
 <!-- ================= 공통 헤더 끝 ================= -->
@@ -94,7 +93,7 @@
       <div>
         <p class="page-kicker">Seller account settings</p>
         <h1>판매자 회원정보 수정</h1>
-        <p>계정 정보와 사업자 정보, 담당자 정보를 변경할 수 있습니다.</p>
+        <p>계정 정보와 사업자 정보를 변경할 수 있습니다.</p>
       </div>
 
       <a class="dashboard-link" href="seller-dashboard.html">
@@ -259,8 +258,8 @@
               name="brandName"
               type="text"
               maxlength="100"
-              placeholder="쇼핑몰에 노출될 브랜드명"
-              required
+              placeholder="준비중입니다"
+              disabled
             >
           </div>
 
@@ -291,37 +290,12 @@
               required
             >
           </div>
-        </div>
-      </section>
-
-      <!-- 담당자 정보 -->
-      <section class="form-card" aria-labelledby="managerTitle">
-        <div class="card-head">
-          <div>
-            <span class="section-number">03</span>
-            <h2 id="managerTitle">담당자 정보</h2>
-          </div>
-          <p>주문·정산 및 운영 안내를 받을 담당자 정보입니다.</p>
-        </div>
-
-        <div class="form-grid">
-          <div class="field">
-            <label for="managerName">담당자명 <strong>*</strong></label>
-            <input
-              id="managerName"
-              name="managerName"
-              type="text"
-              maxlength="50"
-              placeholder="담당자 실명"
-              required
-            >
-          </div>
 
           <div class="field">
-            <label for="managerPhone">담당자 연락처 <strong>*</strong></label>
+            <label for="representativePhone">대표자 전화번호 <strong>*</strong></label>
             <input
-              id="managerPhone"
-              name="managerPhone"
+              id="representativePhone"
+              name="representativePhone"
               type="tel"
               inputmode="tel"
               maxlength="13"
@@ -355,7 +329,7 @@
 
       <div class="foot-col">
         <h5>Shop</h5>
-        <a href="product-list.html?view=best">베스트</a>
+
         <a href="product-list.html?cat=outer">아우터</a>
       </div>
 

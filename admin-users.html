@@ -22,6 +22,7 @@
       <a href="admin-coupons.html">쿠폰</a>
       <a href="admin-points.html">포인트</a>
       <a href="admin-qna.html">Q&amp;A</a>
+      <a href="admin-inquiries.html">1:1 문의</a>
       <a href="admin-settlements.html">정산</a>
     </nav>
     <div class="admin-actions">
@@ -37,13 +38,13 @@
         <h1>사용자 관리</h1>
         <p class="desc">전체 사용자의 상태(정상/정지)와 인가 권한을 조회하고 관리합니다.</p>
       </div>
-      <span class="preview-badge">화면 미리보기 · GET /api/v1/admin/users</span>
+      <span class="preview-badge">실시간 데이터 · GET /api/v1/admin/users</span>
     </div>
 
     <div class="toolbar">
       <label class="search-box">
         <svg class="icn" viewBox="0 0 24 24" style="width:15px;height:15px"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg>
-        <input type="text" id="q" placeholder="이름·이메일·ID 검색">
+        <input type="text" id="q" placeholder="이름·이메일·아이디 검색">
       </label>
       <select id="roleFilter">
         <option value="">전체 권한</option>
@@ -63,7 +64,7 @@
         <thead>
           <tr>
             <th class="chk"><input type="checkbox" id="checkAll" aria-label="전체 선택"></th>
-            <th>ID</th>
+            <th>아이디</th>
             <th>이름</th>
             <th>이메일</th>
             <th>권한</th>
@@ -85,7 +86,7 @@
     </div>
   </main>
 
-  <script src="js/admin-ui.js?v=3"></script>
+  <script src="js/admin-ui.js"></script>
   <script src="js/admin-api.js"></script>
   <script src="js/admin-users.js"></script>
 </body>

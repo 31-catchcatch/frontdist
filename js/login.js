@@ -1,7 +1,11 @@
 (() => {
+  // BASE 는 auth.js 가 계산해 전역(CATCHCATCH_API_BASE_URL)에 넣어둔 단일 값을 사용.
+  // (login.html 이 login.js 보다 먼저 auth.js 를 로드한다. 미로드 대비 안전망으로 /api/v1)
+  const API_BASE = window.CATCHCATCH_API_BASE_URL || "/api/v1";
+
   const apiMap = {
-    user: "/api/v1/auth/user/login",
-    seller: "/api/v1/auth/seller/login"
+    user: `${API_BASE}/auth/user/login`,
+    seller: `${API_BASE}/auth/seller/login`
   };
 
   const tabs = document.querySelectorAll(".login-tab");

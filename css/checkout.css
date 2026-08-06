@@ -8,6 +8,11 @@
 
 .checkout-notice { margin: 22px 0 0; padding: 14px 16px; border: 1px solid #edc4c1; color: #a22e27; background: #fff7f6; font-size: 13px; line-height: 1.5; }
 .checkout-notice[data-type="info"] { border-color: #d8d8d8; color: var(--ink-soft); background: var(--surface); }
+/* hidden 속성이 클래스의 display(flex/grid)에 밀려 무시되는 문제 방지.
+   (JS가 elements.loading.hidden = true 로 감춰도 .checkout-loading의 display:flex 가 이겨서
+    "주문 정보를 불러오고 있습니다"가 계속 보이던 버그) */
+[hidden] { display: none !important; }
+
 .checkout-loading { display: flex; justify-content: center; align-items: center; gap: 10px; min-height: 380px; color: var(--mid); font-size: 14px; }
 .loading-dot { width: 18px; height: 18px; border: 2px solid var(--hairline-strong); border-top-color: var(--ink); border-radius: 50%; animation: spin .75s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
@@ -60,6 +65,7 @@
 .payment-type { position: relative; display: grid; place-items: center; min-height: 70px; border: 1px solid var(--hairline-strong); background: var(--surface); color: var(--ink-soft); cursor: pointer; text-align: center; }
 .payment-type:has(input:checked) { border-color: var(--ink); color: var(--ink); background: #fcfcfc; }
 .payment-type input { position: absolute; opacity: 0; pointer-events: none; }
+.payment-type:has(input:disabled) { background: #f7f7f7; color: var(--mid); cursor: not-allowed; }
 .payment-type strong { font-size: 12px; line-height: 1.35; }
 .payment-type span { margin-top: 4px; color: var(--mid); font-size: 10.5px; }
 .payment-method { position: relative; display: flex; align-items: center; gap: 12px; min-height: 58px; border: 1px solid var(--hairline-strong); padding: 12px 14px; cursor: pointer; }

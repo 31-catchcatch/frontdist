@@ -92,3 +92,25 @@
 }
 
 [hidden] { display: none !important; }
+
+/* ===== 파일 첨부 커스텀 (파일명 표시) ===== */
+.file-field { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+
+/* 네이티브 파일 input 숨기기 (접근성 유지) */
+.file-field input[type="file"] {
+  position: absolute; width: 1px; height: 1px;
+  padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); border: 0;
+}
+
+/* '파일 선택' 버튼 (label) */
+.file-field .file-btn {
+  display: inline-flex; align-items: center; height: 40px; padding: 0 16px;
+  border: 1px solid #ccc; border-radius: 8px; background: #fff;
+  font-size: 13px; font-weight: 600; color: #333; cursor: pointer;
+  transition: border-color .15s;
+}
+.file-field .file-btn:hover { border-color: var(--point, #222); }
+
+/* 선택한 파일명 */
+.file-field .file-name { font-size: 13px; color: #888; word-break: break-all; }
+.file-field .file-name.has-file { color: var(--ink, #222); font-weight: 600; }

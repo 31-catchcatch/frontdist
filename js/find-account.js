@@ -1,225 +1,282 @@
-// find-account.js — 아이디·비밀번호 찾기 mock 스크립트
-// ※ 기능정의서 미기재 — 보완 추가
-// 아이디 찾기: POST /api/v1/auth/find-username (제안)
-// 비밀번호 재설정: POST /api/v1/auth/reset-password (제안)
-// 비밀번호 찾기 본인인증: 이메일 또는 휴대폰(SMS) 선택
+// find-account.js — 아이디 찾기 및 임시 비밀번호 발급 API 연동
+//
+// 일반 회원:
+//   POST /api/v1/auth/user/find-account
+//
+// 판매자:
+//   POST /api/v1/auth/seller/find-account
+//
+// 아이디 찾기 요청:
+//   { type: "ID", name, username: null, email }
+//
+// 비밀번호 찾기 요청:
+//   { type: "PASSWORD", name: null, username, email }
 
 document.addEventListener("DOMContentLoaded", () => {
+  const $ = (selector) => document.querySelector(selector);
 
-  const $ = (sel) => document.querySelector(sel);
+  const API_BASE = (
+    window.CATCHCATCH_API_BASE_URL || "/api/v1"
+  ).replace(/\/$/, "");
 
-  // ===== 상단 탭 (아이디 찾기 / 비밀번호 찾기) =====
-  const tabBtns = document.querySelectorAll("[data-tab]");
-  const panels = document.querySelectorAll("[data-panel]");
+  const tabButtons = [...document.querySelectorAll("[data-tab]")];
+  const panels = [...document.querySelectorAll("[data-panel]")];
+
+  const findIdForm = $("#findIdForm");
+  const findPwForm = $("#findPwForm");
+
+  const idResult = $('[data-role="id-result"]');
+  const idValue = $('[data-role="id-value"]');
+  const idMessage = $('[data-role="id-message"]');
+  const idSubmit = $('[data-role="id-submit"]');
+
+  const pwResult = $('[data-role="pw-result"]');
+  const pwResultMessage = $('[data-role="pw-result-message"]');
+  const pwMessage = $('[data-role="pw-message"]');
+  const pwSubmit = $('[data-role="pw-submit"]');
+
+  let idAccountType = "user";
+  let pwAccountType = "user";
 
   function showTab(tab) {
-    tabBtns.forEach((b) => b.classList.toggle("is-active", b.dataset.tab === tab));
-    panels.forEach((p) => (p.hidden = p.dataset.panel !== tab));
+    tabButtons.forEach((button) => {
+      button.classList.toggle(
+        "is-active",
+        button.dataset.tab === tab
+      );
+    });
+
+    panels.forEach((panel) => {
+      panel.hidden = panel.dataset.panel !== tab;
+    });
   }
-  tabBtns.forEach((btn) => btn.addEventListener("click", () => showTab(btn.dataset.tab)));
 
-  $('[data-action="go-pw"]').addEventListener("click", () => showTab("pw"));
-
-  let idVerified = false;
-  let pwVerified = false;
-
-  // ================= 아이디 찾기 =================
-
-  // 아이디 찾기용 인증
-  const idGroup = $('[data-group="id-code"]');
-  const idTimer = $('[data-role="id-timer"]');
-  const idMsg = $('[data-role="id-msg"]');
-  let idInterval = null;
-
-  $('[data-action="send-id-code"]').addEventListener("click", () => {
-    const email = $("#idEmail").value.trim();
-    if (!email) {
-      idMsg.textContent = "이메일을 입력해 주세요.";
-      idMsg.className = "field-msg error";
-      return;
-    }
-    // TODO: 인증코드 발송 API
-    idGroup.hidden = false;
-    idMsg.textContent = "인증코드를 발송했습니다.";
-    idMsg.className = "field-msg ok";
-
-    let sec = 180;
-    clearInterval(idInterval);
-    idInterval = setInterval(() => {
-      sec--;
-      const m = String(Math.floor(sec / 60)).padStart(2, "0");
-      const s = String(sec % 60).padStart(2, "0");
-      idTimer.textContent = `${m}:${s}`;
-      if (sec <= 0) {
-        clearInterval(idInterval);
-        idMsg.textContent = "인증 시간이 만료되었습니다. 다시 요청해 주세요.";
-        idMsg.className = "field-msg error";
-      }
-    }, 1000);
-  });
-
-  $('[data-action="confirm-id-code"]').addEventListener("click", () => {
-    const code = $("#idCode").value.trim();
-    if (!code) {
-      idMsg.textContent = "인증코드를 입력해 주세요.";
-      idMsg.className = "field-msg error";
-      return;
-    }
-    // TODO: 인증코드 검증 API
-    clearInterval(idInterval);
-    idMsg.textContent = "인증이 완료되었습니다.";
-    idMsg.className = "field-msg ok";
-    idVerified = true;
-  });
-
-  $("#findIdForm").addEventListener("submit", (e) => {
-    e.preventDefault();
-    const name = $("#idName").value.trim();
-    const email = $("#idEmail").value.trim();
-
-    if (!name || !email) {
-      alert("이름과 이메일을 입력해 주세요.");
-      return;
-    }
-    if (!idVerified) {
-      alert("이메일 인증을 완료해 주세요.");
-      return;
-    }
-
-    // TODO: POST /api/v1/auth/find-username  body: { name, email }
-    $('[data-role="id-value"]').textContent = "catch****"; // mock
-    $("#findIdForm").hidden = true;
-    $('[data-role="id-result"]').hidden = false;
-  });
-
-  // ================= 비밀번호 찾기 =================
-
-  // 인증 방법 탭 (이메일 / 휴대폰)
-  const methodTabs = document.querySelectorAll("[data-method]");
-  const methodPanels = document.querySelectorAll("[data-method-panel]");
-  let currentMethod = "email";
-
-  methodTabs.forEach((btn) => {
-    btn.addEventListener("click", () => {
-      currentMethod = btn.dataset.method;
-      methodTabs.forEach((b) => b.classList.toggle("is-active", b === btn));
-      methodPanels.forEach((p) => (p.hidden = p.dataset.methodPanel !== currentMethod));
-      // 방법 바꾸면 인증코드 입력창 초기화
-      $('[data-group="pw-code"]').hidden = true;
-      pwVerified = false;
+  tabButtons.forEach((button) => {
+    button.addEventListener("click", () => {
+      showTab(button.dataset.tab);
     });
   });
 
-  // 인증코드 발송 (이메일/휴대폰 공통 타이머)
-  const pwGroup = $('[data-group="pw-code"]');
-  const pwTimer = $('[data-role="pw-timer"]');
-  const pwMsg = $('[data-role="pw-msg"]');
-  let pwInterval = null;
-
-  function startPwTimer() {
-    pwGroup.hidden = false;
-    pwMsg.textContent = "인증코드를 발송했습니다.";
-    pwMsg.className = "field-msg ok";
-
-    let sec = 180;
-    clearInterval(pwInterval);
-    pwInterval = setInterval(() => {
-      sec--;
-      const m = String(Math.floor(sec / 60)).padStart(2, "0");
-      const s = String(sec % 60).padStart(2, "0");
-      pwTimer.textContent = `${m}:${s}`;
-      if (sec <= 0) {
-        clearInterval(pwInterval);
-        pwMsg.textContent = "인증 시간이 만료되었습니다. 다시 요청해 주세요.";
-        pwMsg.className = "field-msg error";
-      }
-    }, 1000);
+  const goPwButton = $('[data-action="go-pw"]');
+  if (goPwButton) {
+    goPwButton.addEventListener("click", () => showTab("pw"));
   }
 
-  // 이메일로 발송
-  $('[data-action="send-email-code"]').addEventListener("click", () => {
-    const email = $("#pwEmail").value.trim();
+  function bindAccountTypeTabs(role, onChange) {
+    const container = document.querySelector(
+      `[data-role="${role}-account-type"]`
+    );
+
+    if (!container) return;
+
+    const buttons = [
+      ...container.querySelectorAll("[data-account-type]")
+    ];
+
+    buttons.forEach((button) => {
+      button.addEventListener("click", () => {
+        buttons.forEach((item) => {
+          item.classList.toggle("is-active", item === button);
+        });
+
+        onChange(button.dataset.accountType);
+      });
+    });
+  }
+
+  bindAccountTypeTabs("id", (type) => {
+    idAccountType = type;
+  });
+
+  bindAccountTypeTabs("pw", (type) => {
+    pwAccountType = type;
+  });
+
+  function getFindAccountUrl(accountType) {
+    const type = accountType === "seller" ? "seller" : "user";
+    return `${API_BASE}/auth/${type}/find-account`;
+  }
+
+  function setMessage(element, text = "", type = "") {
+    if (!element) return;
+
+    element.textContent = text;
+    element.className = "form-message";
+
+    if (type) {
+      element.classList.add(type);
+    }
+  }
+
+  function setLoading(button, loading, originalText) {
+    if (!button) return;
+
+    button.disabled = loading;
+    button.textContent = loading ? "처리 중..." : originalText;
+  }
+
+  function isValidEmail(email) {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  }
+
+  async function requestFindAccount(accountType, payload) {
+    const response = await fetch(getFindAccountUrl(accountType), {
+      method: "POST",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json"
+      },
+      body: JSON.stringify(payload)
+    });
+
+    let result = {};
+
+    try {
+      result = await response.json();
+    } catch (_) {
+      result = {};
+    }
+
+    if (!response.ok) {
+      const message =
+        result.message ||
+        result.error ||
+        result.data?.message ||
+        `요청 처리에 실패했습니다. (${response.status})`;
+
+      throw new Error(message);
+    }
+
+    return result.data ?? result;
+  }
+
+  findIdForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
+
+    const name = $("#idName").value.trim();
+    const email = $("#idEmail").value.trim();
+
+    setMessage(idMessage);
+
+    if (!name) {
+      setMessage(idMessage, "이름을 입력해 주세요.", "error");
+      $("#idName").focus();
+      return;
+    }
+
     if (!email) {
-      pwMsg.textContent = "이메일을 입력해 주세요.";
-      pwMsg.className = "field-msg error";
+      setMessage(idMessage, "이메일을 입력해 주세요.", "error");
+      $("#idEmail").focus();
       return;
     }
-    // TODO: POST /api/v1/auth/email-verification
-    startPwTimer();
+
+    if (!isValidEmail(email)) {
+      setMessage(
+        idMessage,
+        "이메일 형식을 확인해 주세요.",
+        "error"
+      );
+      $("#idEmail").focus();
+      return;
+    }
+
+    setLoading(idSubmit, true, "아이디 찾기");
+
+    try {
+      const data = await requestFindAccount(idAccountType, {
+        type: "ID",
+        name,
+        username: null,
+        email
+      });
+
+      const maskedUsername =
+        data.maskedUsername ??
+        data.username ??
+        data.maskedId;
+
+      if (!maskedUsername) {
+        throw new Error(
+          data.message ||
+          "아이디 조회 결과를 확인하지 못했습니다."
+        );
+      }
+
+      idValue.textContent = maskedUsername;
+      findIdForm.hidden = true;
+      idResult.hidden = false;
+    } catch (error) {
+      console.error("아이디 찾기 실패:", error);
+      setMessage(idMessage, error.message, "error");
+    } finally {
+      setLoading(idSubmit, false, "아이디 찾기");
+    }
   });
 
-  // 휴대폰으로 발송
-  $('[data-action="send-phone-code"]').addEventListener("click", () => {
-    const telecom = $("#pwTelecom").value;
-    const phone = $("#pwPhone").value.trim();
-    if (!telecom) {
-      pwMsg.textContent = "통신사를 선택해 주세요.";
-      pwMsg.className = "field-msg error";
+  findPwForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
+
+    const username = $("#pwUsername").value.trim();
+    const email = $("#pwEmail").value.trim();
+
+    setMessage(pwMessage);
+
+    if (!username) {
+      setMessage(pwMessage, "아이디를 입력해 주세요.", "error");
+      $("#pwUsername").focus();
       return;
     }
-    if (!phone) {
-      pwMsg.textContent = "휴대폰번호를 입력해 주세요.";
-      pwMsg.className = "field-msg error";
+
+    if (!email) {
+      setMessage(pwMessage, "이메일을 입력해 주세요.", "error");
+      $("#pwEmail").focus();
       return;
     }
-    // TODO: POST /api/v1/auth/sms-verification (제안)
-    startPwTimer();
+
+    if (!isValidEmail(email)) {
+      setMessage(
+        pwMessage,
+        "이메일 형식을 확인해 주세요.",
+        "error"
+      );
+      $("#pwEmail").focus();
+      return;
+    }
+
+    setLoading(pwSubmit, true, "임시 비밀번호 받기");
+
+    try {
+      const data = await requestFindAccount(pwAccountType, {
+        type: "PASSWORD",
+        name: null,
+        username,
+        email
+      });
+
+      pwResultMessage.textContent =
+        data.message ||
+        "가입 이메일로 임시 비밀번호를 발송했습니다.";
+
+      findPwForm.hidden = true;
+      pwResult.hidden = false;
+    } catch (error) {
+      console.error("비밀번호 찾기 실패:", error);
+      setMessage(pwMessage, error.message, "error");
+    } finally {
+      setLoading(
+        pwSubmit,
+        false,
+        "임시 비밀번호 받기"
+      );
+    }
   });
 
-  // 인증코드 확인
-  $('[data-action="confirm-pw-code"]').addEventListener("click", () => {
-    const code = $("#pwCode").value.trim();
-    if (!code) {
-      pwMsg.textContent = "인증코드를 입력해 주세요.";
-      pwMsg.className = "field-msg error";
-      return;
-    }
-    // TODO: 인증코드 검증 API
-    clearInterval(pwInterval);
-    pwMsg.textContent = "인증이 완료되었습니다.";
-    pwMsg.className = "field-msg ok";
-    pwVerified = true;
-  });
+  const requestedTab = new URLSearchParams(
+    location.search
+  ).get("tab");
 
-  // 비밀번호 찾기 제출
-  $("#findPwForm").addEventListener("submit", (e) => {
-    e.preventDefault();
-    const userId = $("#pwUserId").value.trim();
-
-    if (!userId) {
-      alert("아이디를 입력해 주세요.");
-      return;
-    }
-    if (!pwVerified) {
-      alert("본인인증을 완료해 주세요.");
-      return;
-    }
-
-    // TODO: 인증 확인 후 비밀번호 재설정 단계로
-    $("#findPwForm").hidden = true;
-    $('[data-role="pw-reset"]').hidden = false;
-  });
-
-  // 새 비밀번호 설정
-  $('[data-action="reset-pw"]').addEventListener("click", () => {
-    const pw = $("#newPw").value;
-    const pwConfirm = $("#newPwConfirm").value;
-    const msg = $('[data-role="new-pw-msg"]');
-
-    if (pw.length < 8) {
-      msg.textContent = "비밀번호는 8자 이상이어야 합니다.";
-      msg.className = "field-msg error";
-      return;
-    }
-    if (pw !== pwConfirm) {
-      msg.textContent = "비밀번호가 일치하지 않습니다.";
-      msg.className = "field-msg error";
-      return;
-    }
-
-    // TODO: POST /api/v1/auth/reset-password  body: { userId, newPassword }
-    alert("비밀번호가 변경되었습니다. 다시 로그인해 주세요.");
-    location.href = "login.html";
-  });
-
+  if (requestedTab === "pw") {
+    showTab("pw");
+  }
 });

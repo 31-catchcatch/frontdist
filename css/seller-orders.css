@@ -298,6 +298,41 @@
   text-align: center !important;
 }
 
+/* 구매자 로그인 아이디 (구매자명 아래 표기) */
+.buyer-name {
+  display: block;
+  font-weight: 700;
+}
+
+.buyer-id {
+  display: block;
+  margin-top: 2px;
+  font-size: 11.5px;
+  color: var(--mid);
+}
+
+.buyer-id-inline {
+  color: var(--mid);
+  font-weight: 600;
+}
+
+/* 배송 완료 버튼 (배송중 → 배송완료) */
+.delivery-button.complete {
+  border-color: #30713c;
+  color: #30713c;
+}
+
+.delivery-button.complete:hover {
+  background: #30713c;
+  border-color: #30713c;
+  color: #fff;
+}
+
+/* 배송 액션이 없는 상태(완료/취소/반품 등) */
+.no-action {
+  color: var(--faint);
+}
+
 .mobile-order-list {
   display: none;
 }

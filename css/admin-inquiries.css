@@ -1,0 +1,17 @@
+/* admin-inquiries.css — 1:1 문의 관리 전용
+   관리 컬럼의 삭제 버튼을 셀 오른쪽 끝에 고정한다.
+   (내용 보기 / 답변은 왼쪽에 묶고, 삭제는 space-between 으로 오른쪽 끝으로 밀어낸다) */
+
+/* 이 페이지의 관리 열은 셀 폭을 꽉 채워 삭제 버튼을 오른쪽 끝으로 보낸다.
+   .row-actions 의 기본 min-width:max-content 를 덮어써야 폭이 늘어난다. */
+.data .inq-row-actions {
+  width: 100%;
+  min-width: 0;
+  justify-content: space-between;
+  gap: 12px;
+}
+.data .inq-row-actions .ra-left {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}

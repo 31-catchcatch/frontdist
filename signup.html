@@ -41,7 +41,6 @@
 <nav class="cats">
   <div class="wrap">
     <a href="product-list.html">전체</a>
-    <a href="product-list.html?view=best">베스트</a>
     <a href="brand.html">브랜드</a>
     <a href="product-list.html?cat=outer">아우터</a>
     <a href="product-list.html?cat=top">상의</a>
@@ -52,7 +51,7 @@
     <a href="product-list.html?cat=shoes">신발</a>
     <a href="product-list.html?cat=bag">가방</a>
     <a href="product-list.html?cat=acc">액세서리</a>
-    <a href="product-list.html?cat=underwear">언더웨어</a>
+    <a href="seller-dashboard.html" class="cat-seller" data-seller-only hidden>판매 관리</a>
   </div>
 </nav>
 <!-- ================= 공통 헤더 끝 ================= -->
@@ -127,7 +126,7 @@
 
         <div class="field">
           <label for="pw">비밀번호 <span class="req">*</span></label>
-          <input type="password" id="pw" name="pw" placeholder="영문, 숫자, 특수문자 포함 8~20자" required>
+          <input type="password" id="pw" name="pw" placeholder="8자 이상" required>
         </div>
 
         <div class="field">
@@ -139,19 +138,6 @@
         <div class="field">
           <label for="name">이름 <span class="req">*</span></label>
           <input type="text" id="name" name="name" placeholder="실명 입력" required>
-        </div>
-
-        <div class="field">
-          <label for="nickname">닉네임 <span class="req">*</span></label>
-          <div class="field-row">
-            <input type="text" id="nickname" name="nickname" placeholder="2~10자" required>
-            <button type="button" class="btn-outline" data-action="check-nickname">중복확인</button>
-          </div>
-        </div>
-
-        <div class="field">
-          <label for="birth">생년월일</label>
-          <input type="date" id="birth" name="birth">
         </div>
 
         <div class="field">
@@ -256,7 +242,7 @@
       </div>
       <div class="foot-col">
         <h5>Shop</h5>
-        <a href="product-list.html">베스트</a><a href="product-list.html?cat=outer">아우터</a>
+<a href="product-list.html?cat=outer">아우터</a>
         <a href="brand.html">브랜드</a>
       </div>
       <div class="foot-col">

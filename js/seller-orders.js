@@ -25,7 +25,6 @@
   const modalOrderDetailId = document.getElementById("modalOrderDetailId");
   const courierCompany = document.getElementById("courierCompany");
   const trackingNumber = document.getElementById("trackingNumber");
-  const deliveryStatus = document.getElementById("deliveryStatus");
   const modalMessage = document.getElementById("modalMessage");
   const modalCancelButton = document.getElementById("modalCancelButton");
   const modalSubmitButton = document.getElementById("modalSubmitButton");
@@ -43,9 +42,10 @@
       optionText: "화이트 / L",
       imageUrl: "",
       buyerName: "김민수",
+      buyerUsername: "minsu01",
       quantity: 2,
       paymentAmount: 39800,
-      status: "PAID"
+      status: "PAYMENT_COMPLETED"
     },
     {
       orderDetailId: 1202,
@@ -55,6 +55,7 @@
       optionText: "블랙 / M",
       imageUrl: "",
       buyerName: "이서연",
+      buyerUsername: "seoyeon",
       quantity: 1,
       paymentAmount: 39900,
       status: "PREPARING"
@@ -67,6 +68,7 @@
       optionText: "블랙",
       imageUrl: "",
       buyerName: "박지훈",
+      buyerUsername: "jihoon22",
       quantity: 1,
       paymentAmount: 32900,
       status: "SHIPPING",
@@ -136,15 +138,6 @@
     modalMessage.classList.remove("show");
   }
 
-  function escapeHtml(value) {
-    return String(value ?? "")
-      .replaceAll("&", "&amp;")
-      .replaceAll("<", "&lt;")
-      .replaceAll(">", "&gt;")
-      .replaceAll('"', "&quot;")
-      .replaceAll("'", "&#039;");
-  }
-
   function formatPrice(value) {
     const number = Number(value);
     return Number.isFinite(number)
@@ -168,10 +161,10 @@
   }
 
   function normalizeStatus(rawStatus) {
-    const code = String(rawStatus || "PAID").toUpperCase();
+    const code = String(rawStatus || "PAYMENT_COMPLETED").toUpperCase();
 
     const map = {
-      PAID: {
+      PAYMENT_COMPLETED: {
         label: "결제 완료",
         className: "status-paid"
       },
@@ -187,15 +180,31 @@
         label: "배송 완료",
         className: "status-delivered"
       },
-      CANCELLED: {
+      CONFIRMED: {
+        label: "구매 확정",
+        className: "status-delivered"
+      },
+      CANCELED: {
         label: "취소",
+        className: "status-cancelled"
+      },
+      RETURN_REQUESTED: {
+        label: "반품신청중",
+        className: "status-cancelled"
+      },
+      EXCHANGE_REQUESTED: {
+        label: "교환신청중",
+        className: "status-cancelled"
+      },
+      REFUNDED: {
+        label: "반품완료",
         className: "status-cancelled"
       }
     };
 
     return {
       code,
-      ...(map[code] || map.PAID)
+      ...(map[code] || map.PAYMENT_COMPLETED)
     };
   }
 
@@ -234,6 +243,11 @@
         raw.customerName ??
         raw.userName ??
         "-",
+      buyerUsername:
+        raw.buyerUsername ??
+        raw.buyerLoginId ??
+        raw.username ??
+        "",
       quantity:
         raw.quantity ??
         raw.orderQuantity ??
@@ -288,13 +302,35 @@
   function renderStatus(status) {
     return `
       <span class="status-badge ${status.className}">
-        ${escapeHtml(status.label)}
+        ${status.label}
       </span>
     `;
   }
 
   function canUpdateDelivery(status) {
-    return !["DELIVERED", "CANCELLED"].includes(status.code);
+    // 백엔드는 결제완료/배송준비 상태에서만 택배사·운송장 등록을 허용한다.
+    return ["PAYMENT_COMPLETED", "PREPARING"].includes(status.code);
+  }
+
+  // 배송완료 처리는 배송중(SHIPPING) 상태에서만 가능하다. (백엔드 completeDelivery)
+  // 이 처리가 끝나야 구매자의 구매확정·정산이 진행된다.
+  function canCompleteDelivery(status) {
+    return status.code === "SHIPPING";
+  }
+
+  // 현재 배송 상태에 맞는 액션 버튼 하나를 그린다.
+  //   결제완료/배송준비 → 배송(운송장) 등록
+  //   배송중            → 배송 완료
+  //   그 외(완료/취소/반품 등) → 처리할 배송 액션 없음
+  function renderActionButton(order, mobile) {
+    const id = order.orderDetailId;
+    if (canUpdateDelivery(order.status)) {
+      return `<button class="delivery-button" type="button" data-action="register" data-order-detail-id="${id}">${mobile ? "배송 정보 등록" : "배송 등록"}</button>`;
+    }
+    if (canCompleteDelivery(order.status)) {
+      return `<button class="delivery-button complete" type="button" data-action="complete" data-order-detail-id="${id}">배송 완료</button>`;
+    }
+    return `<span class="no-action">-</span>`;
   }
 
   function renderDesktop(orders) {
@@ -310,36 +346,30 @@
     tableBody.innerHTML = orders.map((order) => `
       <tr>
         <td>
-          <strong class="order-number">${escapeHtml(order.orderNumber)}</strong>
-          <span class="order-date">${escapeHtml(formatDate(order.orderedAt))}</span>
+          <strong class="order-number">${order.orderNumber}</strong>
+          <span class="order-date">${formatDate(order.orderedAt)}</span>
         </td>
         <td>
           <div class="product-info">
             ${
               order.imageUrl
-                ? `<img class="product-thumb" src="${escapeHtml(order.imageUrl)}" alt="">`
+                ? `<img class="product-thumb" src="${order.imageUrl}" alt="">`
                 : `<div class="product-thumb" aria-hidden="true"></div>`
             }
             <div class="product-copy">
-              <strong>${escapeHtml(order.productName)}</strong>
-              <span>${escapeHtml(order.optionText || "옵션 없음")}</span>
+              <strong>${order.productName}</strong>
+              <span>${order.optionText || "옵션 없음"}</span>
             </div>
           </div>
         </td>
-        <td>${escapeHtml(order.buyerName)}</td>
+        <td>
+          <strong class="buyer-name">${order.buyerName}</strong>
+          ${order.buyerUsername ? `<span class="buyer-id">@${order.buyerUsername}</span>` : ""}
+        </td>
         <td>${Number(order.quantity).toLocaleString("ko-KR")}개</td>
         <td>${formatPrice(order.paymentAmount)}</td>
         <td>${renderStatus(order.status)}</td>
-        <td>
-          <button
-            class="delivery-button"
-            type="button"
-            data-order-detail-id="${escapeHtml(order.orderDetailId)}"
-            ${canUpdateDelivery(order.status) ? "" : "disabled"}
-          >
-            배송 등록
-          </button>
-        </td>
+        <td>${renderActionButton(order, false)}</td>
       </tr>
     `).join("");
   }
@@ -355,8 +385,8 @@
       <article class="mobile-order-card">
         <div class="mobile-order-head">
           <div>
-            <strong class="order-number">${escapeHtml(order.orderNumber)}</strong>
-            <span class="order-date">${escapeHtml(formatDate(order.orderedAt))}</span>
+            <strong class="order-number">${order.orderNumber}</strong>
+            <span class="order-date">${formatDate(order.orderedAt)}</span>
           </div>
           ${renderStatus(order.status)}
         </div>
@@ -364,29 +394,22 @@
         <div class="mobile-product-row">
           ${
             order.imageUrl
-              ? `<img class="product-thumb" src="${escapeHtml(order.imageUrl)}" alt="">`
+              ? `<img class="product-thumb" src="${order.imageUrl}" alt="">`
               : `<div class="product-thumb" aria-hidden="true"></div>`
           }
           <div class="product-copy">
-            <strong>${escapeHtml(order.productName)}</strong>
-            <span>${escapeHtml(order.optionText || "옵션 없음")}</span>
+            <strong>${order.productName}</strong>
+            <span>${order.optionText || "옵션 없음"}</span>
           </div>
         </div>
 
         <div class="mobile-order-meta">
-          <span>구매자</span><b>${escapeHtml(order.buyerName)}</b>
+          <span>구매자</span><b>${order.buyerName}${order.buyerUsername ? ` <span class="buyer-id-inline">@${order.buyerUsername}</span>` : ""}</b>
           <span>수량</span><b>${Number(order.quantity).toLocaleString("ko-KR")}개</b>
           <span>결제 금액</span><b>${formatPrice(order.paymentAmount)}</b>
         </div>
 
-        <button
-          class="delivery-button"
-          type="button"
-          data-order-detail-id="${escapeHtml(order.orderDetailId)}"
-          ${canUpdateDelivery(order.status) ? "" : "disabled"}
-        >
-          배송 정보 등록
-        </button>
+        ${renderActionButton(order, true)}
       </article>
     `).join("");
   }
@@ -490,17 +513,15 @@
       return;
     }
 
+    // 백엔드(SellerOrderSearchRequest)는 page/size/deliveryStatus만 지원한다.
+    // keyword/sort는 서버에 없는 파라미터라 보내지 않고, keyword는 받아온 페이지 안에서만 클라이언트 필터링한다.
     const params = new URLSearchParams({
       page: String(page),
-      size: String(PAGE_SIZE),
-      sort: sortFilter.value
+      size: String(PAGE_SIZE)
     });
 
-    const keyword = keywordInput.value.trim();
     const status = statusFilter.value;
-
-    if (keyword) params.set("keyword", keyword);
-    if (status) params.set("status", status);
+    if (status) params.set("deliveryStatus", status);
 
     try {
       const response = await fetch(
@@ -525,8 +546,14 @@
       }
 
       const pageData = extractPageData(data);
+      const keyword = keywordInput.value.trim().toLowerCase();
 
-      currentOrders = pageData.orders;
+      currentOrders = keyword
+        ? pageData.orders.filter((order) =>
+            order.orderNumber.toLowerCase().includes(keyword) ||
+            order.buyerName.toLowerCase().includes(keyword) ||
+            order.productName.toLowerCase().includes(keyword))
+        : pageData.orders;
       currentPage = pageData.page;
       totalPages = Math.max(1, pageData.totalPages);
 
@@ -562,10 +589,6 @@
     modalOrderNumber.textContent = order.orderNumber;
     courierCompany.value = order.courierCompany || "";
     trackingNumber.value = order.trackingNumber || "";
-    deliveryStatus.value =
-      order.status.code === "PAID"
-        ? "PREPARING"
-        : order.status.code;
 
     clearModalMessage();
     deliveryModal.hidden = false;
@@ -591,8 +614,7 @@
     const orderDetailId = modalOrderDetailId.value;
     const payload = {
       courierCompany: courierCompany.value,
-      trackingNumber: trackingNumber.value.trim(),
-      deliveryStatus: deliveryStatus.value
+      trackingNumber: trackingNumber.value.trim()
     };
 
     modalSubmitButton.disabled = true;
@@ -607,7 +629,7 @@
         if (previewOrder) {
           previewOrder.courierCompany = payload.courierCompany;
           previewOrder.trackingNumber = payload.trackingNumber;
-          previewOrder.status = payload.deliveryStatus;
+          previewOrder.status = "SHIPPING";
         }
 
         closeDeliveryModal();
@@ -656,11 +678,69 @@
     }
   }
 
+  // 배송중 → 배송완료 처리. PATCH /seller/orders/{id}/deliver-complete
+  // 이 처리가 끝나야 구매자가 구매확정을 할 수 있고 정산도 생성된다(= 결제 활동 종료).
+  async function completeDelivery(orderDetailId) {
+    const order = currentOrders.find(
+      (item) => String(item.orderDetailId) === String(orderDetailId)
+    );
+    if (!order) return;
+
+    if (!window.confirm(
+      `${order.orderNumber} 주문을 배송 완료로 변경할까요?\n` +
+      `배송 완료 후에는 구매자의 구매확정과 정산이 진행됩니다.`
+    )) return;
+
+    if (FILE_PREVIEW_MODE) {
+      const previewOrder = previewOrders.find(
+        (item) => String(item.orderDetailId) === String(orderDetailId)
+      );
+      if (previewOrder) previewOrder.status = "DELIVERED";
+      showMessage("미리보기 모드에서 배송 완료로 반영되었습니다.", "success");
+      loadOrders(currentPage);
+      return;
+    }
+
+    try {
+      const response = await fetch(
+        `${ORDERS_API}/${encodeURIComponent(orderDetailId)}/deliver-complete`,
+        {
+          method: "PATCH",
+          credentials: "include"
+        }
+      );
+
+      if (handleUnauthorized(response)) return;
+
+      let data = {};
+      try {
+        data = await response.json();
+      } catch (_) {}
+
+      if (!response.ok) {
+        throw new Error(data.message || "배송 완료 처리에 실패했습니다.");
+      }
+
+      showMessage("배송 완료로 변경했습니다.", "success");
+      loadOrders(currentPage);
+    } catch (error) {
+      showMessage(
+        error instanceof TypeError
+          ? "서버에 연결할 수 없습니다. WEB/WAS 서버 상태를 확인해 주세요."
+          : error.message
+      );
+    }
+  }
+
   document.addEventListener("click", (event) => {
     const button = event.target.closest("[data-order-detail-id]");
     if (!button || button.disabled) return;
 
-    openDeliveryModal(button.dataset.orderDetailId);
+    if (button.dataset.action === "complete") {
+      completeDelivery(button.dataset.orderDetailId);
+    } else {
+      openDeliveryModal(button.dataset.orderDetailId);
+    }
   });
 
   searchForm.addEventListener("submit", (event) => {

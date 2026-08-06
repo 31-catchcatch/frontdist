@@ -8,10 +8,17 @@
    전체 영역
 =========================== */
 
+/* gap 은 22px 고정 — 판매자 6개 페이지의 nav 세로 위치를 맞추기 위함 (css/seller-nav.css 참고).
+   flex 컨테이너라 자식의 margin 이 gap 에 "더해진다". 그래서 바로 아래에서
+   .sec-head 의 margin-bottom 을 0 으로 돌려 gap 22px 만 남긴다. */
 .claim-dashboard{
     display:flex;
     flex-direction:column;
-    gap:25px;
+    gap:22px;
+}
+
+.claim-dashboard > .sec-head{
+    margin-bottom:0;
 }
 
 
@@ -136,15 +143,91 @@
 =========================== */
 
 
+/* 목록과 상세는 한 번에 하나만 보인다(JS가 hidden 토글). 두 칸으로 두면
+   상세가 숨었을 때 목록이 첫 칸 폭에 갇히므로 한 칸으로 둔다. */
 .claim-dashboard-layout{
 
     display:grid;
 
-    grid-template-columns:420px 1fr;
+    grid-template-columns:1fr;
 
     gap:24px;
 
     align-items:start;
+
+}
+
+
+.claim-detail-head{
+
+    display:flex;
+
+    align-items:center;
+
+    gap:12px;
+
+    margin:0 0 20px;
+
+}
+
+
+.claim-detail-head h4{
+
+    margin:0;
+
+}
+
+
+.btn-back{
+
+    flex:0 0 auto;
+
+    padding:8px 14px;
+
+    border:1px solid #ddd;
+
+    border-radius:8px;
+
+    background:#fff;
+
+    color:#333;
+
+    font:inherit;
+
+    font-size:13px;
+
+    font-weight:700;
+
+    cursor:pointer;
+
+}
+
+
+.btn-back:hover{
+
+    border-color:#333;
+
+}
+
+
+/* 상태 변경도 환불도 불가능한 클레임에서 이유를 알려주는 줄 */
+.claim-no-action{
+
+    margin:0;
+
+    padding:16px;
+
+    border:1px dashed #ddd;
+
+    border-radius:10px;
+
+    background:#fafafa;
+
+    color:#777;
+
+    font-size:13px;
+
+    line-height:1.6;
 
 }
 
@@ -488,6 +571,34 @@
 }
 
 
+/* "주문 전체 환불 시" 같은 조건 꼬리표 */
+.refund-note{
+
+    color:#8a8a8a;
+
+    font-size:12.5px;
+
+}
+
+
+/* PG 취소가 실제로는 일어나지 않는다는 경고 */
+.refund-warn{
+
+    margin:14px 0 0;
+
+    padding-top:12px;
+
+    border-top:1px solid #e7e7e7;
+
+    color:#b06000;
+
+    font-size:12.5px;
+
+    line-height:1.5;
+
+}
+
+
 
 .btn-danger{
 
@@ -587,20 +698,154 @@
     font-size:13px;
 }
 
-.seller-dashboard-link{
-    display:inline-flex;
+/* =================================================
+   개편: 유형/상태 배지 · 상세 정보 카드 · 처리 액션
+================================================= */
+
+/* ----- 유형 · 상태 배지 (목록/상세 공용) ----- */
+.claim-type-badge{
+    display:inline-block;
+    padding:4px 10px;
+    border-radius:6px;
+    font-size:12.5px;
+    font-weight:700;
+    background:#eef1f6;
+    color:#41506b;
+}
+.claim-type-badge.type-return{ background:#fdecec; color:#c0392b; }
+.claim-type-badge.type-exchange{ background:#eaf3ff; color:#1f6fd6; }
+
+.claim-status-badge{
+    display:inline-block;
+    min-width:56px;
+    text-align:center;
+    padding:5px 12px;
+    border-radius:20px;
+    font-size:12.5px;
+    font-weight:700;
+    background:#eee;
+    color:#555;
+}
+.claim-status-badge.badge-requested{ background:#eef1f6; color:#41506b; }
+.claim-status-badge.badge-accepted{ background:#eaf3ff; color:#1f6fd6; }
+.claim-status-badge.badge-processing{ background:#fff4d6; color:#b77900; }
+.claim-status-badge.badge-rejected{ background:#fdecec; color:#c0392b; }
+.claim-status-badge.badge-completed{ background:#e7f7eb; color:#1c7c3a; }
+
+.data-table .col-product{ text-align:left; }
+
+/* ----- 상세 요약 줄 ----- */
+.claim-summary{
+    display:flex;
     align-items:center;
-    min-height:38px;
-    padding:0 14px;
-    border:1px solid #ddd;
-    border-radius:8px;
-    color:#444;
-    font-size:14px;
-    font-weight:600;
-    text-decoration:none;
+    justify-content:space-between;
+    gap:12px;
+    padding:16px 18px;
+    margin-bottom:16px;
+    background:#f8f9fb;
+    border:1px solid #e5e7eb;
+    border-radius:12px;
+}
+.claim-summary-left{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    min-width:0;
+}
+.claim-summary-product{
+    font-size:16px;
+    font-weight:700;
+    color:#111;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
 }
 
-.seller-dashboard-link:hover{
-    border-color:#111;
-    color:#111;
+/* ----- 정보 카드 (고객·주문 / 요청 내용) ----- */
+.info-card{
+    border:1px solid #eee;
+    border-radius:12px;
+    padding:16px 18px;
+    margin-bottom:14px;
+}
+.info-card-title{
+    margin:0 0 12px;
+    font-size:13.5px;
+    font-weight:700;
+    color:#333;
+}
+.info-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:12px 20px;
+}
+.info-cell{
+    display:flex;
+    flex-direction:column;
+    gap:4px;
+    min-width:0;
+}
+.info-cell-wide{ grid-column:1 / -1; }
+.info-label{
+    font-size:12px;
+    color:#8a8a8a;
+    font-weight:600;
+}
+.info-value{
+    font-size:14px;
+    color:#222;
+    font-weight:600;
+    word-break:break-word;
+}
+.info-amount{ color:#c0392b; }
+
+/* ----- 처리하기 패널 ----- */
+.action-panel{
+    margin-top:22px;
+    padding:20px;
+    border:1px solid #e5e7eb;
+    border-radius:12px;
+    background:#fcfcfd;
+}
+.action-panel-title{
+    margin:0 0 6px;
+    font-size:15px;
+    font-weight:700;
+}
+.action-hint{
+    margin:0 0 14px;
+    font-size:13px;
+    color:#666;
+    line-height:1.5;
+}
+.action-buttons{
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px;
+}
+.action-btn{
+    height:44px;
+    padding:0 20px;
+    border:none;
+    border-radius:9px;
+    font-size:14px;
+    font-weight:700;
+    cursor:pointer;
+    transition:.15s;
+}
+.action-btn:hover{ opacity:.9; transform:translateY(-1px); }
+.act-primary{ background:#111; color:#fff; }
+.act-success{ background:#1c7c3a; color:#fff; }
+.act-reject{ background:#fff; color:#c0392b; border:1px solid #e3b4ae; }
+.act-refund{ background:#d64545; color:#fff; flex:1 1 100%; }
+
+@media(max-width:700px){
+    .info-grid{ grid-template-columns:1fr; }
+    .action-btn{ flex:1 1 100%; }
+}
+
+/* .claim-dashboard 가 flex column + gap:25px 이라 nav 의 margin-bottom 이
+   gap 에 더해져 두 배로 벌어진다. 여기서만 되돌린다. */
+.claim-dashboard > .seller-page-links{
+    margin-bottom:0;
 }

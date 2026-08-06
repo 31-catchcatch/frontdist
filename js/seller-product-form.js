@@ -3,12 +3,27 @@
 
   const FILE_UPLOAD_API = "/api/v1/files/upload";
   const SELLER_PRODUCT_API = "/api/v1/seller/products";
-  const PUBLIC_PRODUCT_API = "/api/v1/products";
   const CATEGORY_API = "/api/v1/categories";
+  const BRAND_API = "/api/v1/brands";
 
   const params = new URLSearchParams(location.search);
   const productId = params.get("id");
   const isEditMode = Boolean(productId);
+  // 목록 페이지의 "수정" 링크가 현재 판매 상태를 넘겨준다.
+  // (상세 조회 API 응답에는 status 가 없어 이 값으로 초기 선택을 맞춘다.)
+  const initialStatus = params.get("status");
+
+  // 어떤 형태의 상태 문자열이 와도 셀렉트 값(ON_SALE / SUSPENDED / SOLD_OUT)으로 정규화한다.
+  function toStatusValue(raw) {
+    const token = String(raw ?? "").trim().toUpperCase().replace(/[\s-]+/g, "_");
+    if (["SUSPENDED", "STOPPED", "STOP", "PAUSED", "SALES_STOPPED", "판매중지", "판매정지"].includes(token)) {
+      return "SUSPENDED";
+    }
+    if (["SOLD_OUT", "SOLDOUT", "OUT_OF_STOCK", "품절"].includes(token)) {
+      return "SOLD_OUT";
+    }
+    return "ON_SALE";
+  }
 
   const form = document.getElementById("productForm");
   const pageTitle = document.getElementById("pageTitle");
@@ -18,14 +33,13 @@
 
   const productName = document.getElementById("productName");
   const categoryId = document.getElementById("categoryId");
-  const brandName = document.getElementById("brandName");
+  const brandId = document.getElementById("brandId");
   const price = document.getElementById("price");
   const discountRate = document.getElementById("discountRate");
-  const stock = document.getElementById("stock");
   const salesStatus = document.getElementById("salesStatus");
   const description = document.getElementById("description");
-  const sizes = document.getElementById("sizes");
-  const colors = document.getElementById("colors");
+  const optionRows = document.getElementById("optionRows");
+  const addOptionButton = document.getElementById("addOptionButton");
 
   const descriptionCount = document.getElementById("descriptionCount");
   const productImages = document.getElementById("productImages");
@@ -131,11 +145,6 @@
   });
 
   function validateFile(file) {
-    if (!ALLOWED_TYPES.includes(file.type)) {
-      throw new Error(
-        `${file.name}: JPG, PNG, WEBP 파일만 등록할 수 있습니다.`
-      );
-    }
 
     if (file.size > MAX_FILE_SIZE) {
       throw new Error(
@@ -210,6 +219,40 @@
 
     renderImagePreviews();
   });
+
+  // ----- 상품 옵션 (사이즈 등) -----
+  function addOptionRow(data) {
+    const row = document.createElement("div");
+    row.className = "option-row";
+    row.innerHTML = `
+      <input type="text" class="option-name" placeholder="사이즈 등 옵션명 (예: M / 블랙)" maxlength="100" required value="${data?.optionName ?? ""}">
+      <input type="number" class="option-price" placeholder="추가 금액" min="0" step="100" value="${data?.additionalPrice ?? 0}">
+      <input type="number" class="option-stock" placeholder="재고 수량" min="0" step="1" value="${data?.stockQuantity ?? ""}">
+      <button type="button" class="option-remove" aria-label="옵션 삭제">×</button>
+    `;
+    optionRows.appendChild(row);
+  }
+
+  optionRows.addEventListener("click", (event) => {
+    const removeButton = event.target.closest(".option-remove");
+    if (!removeButton) return;
+
+    if (optionRows.children.length <= 1) {
+      showMessage("최소 1개 이상의 옵션이 필요합니다.");
+      return;
+    }
+    removeButton.closest(".option-row").remove();
+  });
+
+  addOptionButton.addEventListener("click", () => addOptionRow());
+
+  function collectOptions() {
+    return [...optionRows.querySelectorAll(".option-row")].map((row) => ({
+      optionName: row.querySelector(".option-name").value.trim(),
+      additionalPrice: Number(row.querySelector(".option-price").value || 0),
+      stockQuantity: Number(row.querySelector(".option-stock").value || 0)
+    }));
+  }
 
   function flattenCategories(categories, depth = 0, output = []) {
     categories.forEach((category) => {
@@ -286,6 +329,32 @@
     }
   }
 
+  async function loadBrands() {
+    try {
+      const response = await fetch(BRAND_API, {
+        method: "GET",
+        credentials: "include"
+      });
+
+      let data = {};
+      try {
+        data = await response.json();
+      } catch (_) {}
+
+      if (!response.ok) {
+        throw new Error(data.message || "브랜드 목록을 불러오지 못했습니다.");
+      }
+
+      const brands = Array.isArray(data.data) ? data.data : [];
+
+      brandId.innerHTML =
+        '<option value="">브랜드 선택</option>' +
+        brands.map((brand) => `<option value="${brand.id}">${brand.name}</option>`).join("");
+    } catch (error) {
+      showMessage(error.message || "브랜드 목록을 불러오지 못했습니다.");
+    }
+  }
+
   function normalizeProduct(raw) {
     const body = raw?.data ?? raw ?? {};
 
@@ -299,9 +368,10 @@
         body.category?.categoryId ??
         body.category?.id ??
         "",
-      brandName:
-        body.brandName ??
-        body.brand?.name ??
+      brandId:
+        body.brandId ??
+        body.brand?.brandId ??
+        body.brand?.id ??
         "",
       price:
         body.price ??
@@ -311,27 +381,16 @@
         body.discountRate ??
         body.discount ??
         0,
-      stock:
-        body.stock ??
-        body.stockQuantity ??
-        body.quantity ??
-        0,
-      salesStatus:
+      salesStatus: toStatusValue(
+        initialStatus ??
         body.salesStatus ??
-        body.status ??
-        "SELLING",
+        body.status
+      ),
       description:
         body.description ??
         body.detailDescription ??
         "",
-      sizes:
-        body.sizes ??
-        body.options?.sizes ??
-        [],
-      colors:
-        body.colors ??
-        body.options?.colors ??
-        [],
+      options: Array.isArray(body.options) ? body.options : [],
       imageUrls:
         body.imageUrls ??
         body.images?.map((image) => image.url ?? image.imageUrl) ??
@@ -339,23 +398,21 @@
     };
   }
 
-  function toCommaText(value) {
-    return Array.isArray(value)
-      ? value.join(", ")
-      : String(value || "");
-  }
-
   function fillProductForm(product) {
     productName.value = product.productName;
     categoryId.value = String(product.categoryId || "");
-    brandName.value = product.brandName;
+    brandId.value = String(product.brandId || "");
     price.value = product.price;
     discountRate.value = product.discountRate;
-    stock.value = product.stock;
     salesStatus.value = product.salesStatus;
     description.value = product.description;
-    sizes.value = toCommaText(product.sizes);
-    colors.value = toCommaText(product.colors);
+
+    optionRows.innerHTML = "";
+    if (product.options.length) {
+      product.options.forEach((option) => addOptionRow(option));
+    } else {
+      addOptionRow();
+    }
 
     savedImageUrls = Array.isArray(product.imageUrls)
       ? product.imageUrls.filter(Boolean)
@@ -377,12 +434,8 @@
     submitButton.textContent = "상품 수정";
 
     try {
-      /*
-       * 현재 정의된 공개 상품 상세 API를 수정 화면 초기값 조회에 사용합니다.
-       * 판매자 전용 상세 조회 API가 추가되면 아래 URI를 교체하세요.
-       */
       const response = await fetch(
-        `${PUBLIC_PRODUCT_API}/${encodeURIComponent(productId)}`,
+        `${SELLER_PRODUCT_API}/${encodeURIComponent(productId)}`,
         {
           method: "GET",
           credentials: "include"
@@ -451,13 +504,6 @@
     return imageUrl;
   }
 
-  function splitOptionText(value) {
-    return value
-      .split(",")
-      .map((item) => item.trim())
-      .filter(Boolean);
-  }
-
   form.addEventListener("submit", async (event) => {
     event.preventDefault();
     clearMessage();
@@ -477,6 +523,12 @@
       return;
     }
 
+    const options = collectOptions();
+    if (!options.length || options.some((option) => !option.optionName)) {
+      showMessage("사이즈 등 옵션명을 반드시 입력해 최소 1개 이상의 옵션을 등록해 주세요.");
+      return;
+    }
+
     try {
       submitButton.disabled = true;
       submitButton.textContent = "이미지 업로드 중...";
@@ -493,16 +545,14 @@
       const payload = {
         productName: productName.value.trim(),
         categoryId: categoryId.value,
-        brandName: brandName.value.trim(),
+        brandId: brandId.value,
         price: Number(price.value),
         discountRate: Number(discountRate.value || 0),
-        stock: Number(stock.value),
         salesStatus: salesStatus.value,
         description: description.value.trim(),
-        sizes: splitOptionText(sizes.value),
-        colors: splitOptionText(colors.value),
+        options,
         imageUrls,
-        mainImageUrl: imageUrls[0]
+        thumbnailUrl: imageUrls[0]
       };
 
       submitButton.textContent =
@@ -537,6 +587,33 @@
         );
       }
 
+      // 판매 상태 반영: PUT 수정 API 는 status 를 다루지 않으므로 전용 PATCH 로 따로 보낸다.
+      // 품절(SOLD_OUT)은 재고에서 자동 산출되는 값이라 수동 설정 대상이 아니다.
+      if (
+        isEditMode &&
+        (salesStatus.value === "ON_SALE" || salesStatus.value === "SUSPENDED")
+      ) {
+        const statusResponse = await fetch(
+          `${SELLER_PRODUCT_API}/${encodeURIComponent(productId)}/status`,
+          {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            credentials: "include",
+            body: JSON.stringify({ status: salesStatus.value })
+          }
+        );
+
+        if (handleUnauthorized(statusResponse)) return;
+
+        if (!statusResponse.ok) {
+          let statusData = {};
+          try {
+            statusData = await statusResponse.json();
+          } catch (_) {}
+          throw new Error(statusData.message || "판매 상태 변경에 실패했습니다.");
+        }
+      }
+
       showMessage(
         isEditMode
           ? "상품 정보가 수정되었습니다."
@@ -560,10 +637,16 @@
     }
   });
 
+  if (!isEditMode) {
+    addOptionRow();
+  }
+
+  // 카테고리/브랜드 select 옵션이 채워진 뒤에 상품 값을 채워야
+  // 수정 모드에서 select.value 지정이 실제로 선택되어 반영된다.
   Promise.all([
     loadCategories(),
-    loadProductForEdit()
-  ]).then(() => {
+    loadBrands()
+  ]).then(loadProductForEdit).then(() => {
     updatePricePreview();
     renderImagePreviews();
   });

@@ -1,0 +1,41 @@
+/* seller-nav.css — 판매자 페이지 공통 네비게이션 (.seller-page-links)
+   ------------------------------------------------------------------
+   ★ 이 파일을 쓰는 페이지 (6개) ★
+     seller-dashboard.html / seller-products.html / seller-sales.html
+     seller-qna.html / seller-claims.html / seller-notifications.html
+
+   ★ nav 마크업은 위 6개 파일에 각각 복사돼 있습니다 ★
+     (이 프로젝트는 헤더/푸터처럼 복사-붙여넣기가 관례입니다. _template.html 참고)
+     메뉴를 추가·수정하려면 6개 HTML을 모두 고쳐야 합니다.
+     각 페이지는 자기 자신 링크에만 class="active" aria-current="page" 를 답니다.
+
+   ★ <link> 순서는 common.css → seller-nav.css → 페이지별.css ★
+     페이지별 CSS가 이 규칙을 덮어쓸 수 있어야 합니다.
+     (예: .sales-page / .claim-dashboard 는 부모가 flex gap 을 갖고 있어
+      아래 margin-bottom 을 각자 0으로 되돌립니다.)
+
+   값은 원래 seller-dashboard.css 에 있던 것을 그대로 옮겼습니다. */
+
+.seller-page-links{
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px;
+    margin:0 0 20px;
+}
+
+.seller-page-links a{
+    padding:10px 16px;
+    border:1px solid #ddd;
+    border-radius:999px;
+    color:#555;
+    font-size:14px;
+    font-weight:600;
+    text-decoration:none;
+}
+
+.seller-page-links a:hover,
+.seller-page-links a.active{
+    border-color:#111;
+    background:#111;
+    color:#fff;
+}

@@ -18,9 +18,14 @@
   function mapRow(s) {
     return {
       id: s.sellerId,
+      userId: s.userId,
       company: s.businessName,
       ceo: s.representativeName,
+      biz: s.businessRegistrationNumber,
+      contact: s.contactNumber,
+      address: s.businessAddress,
       joined: (s.createdAt || "").slice(0, 10),
+      createdAt: s.createdAt,
       status: FROM_ENUM[s.status] || "ok",
     };
   }
@@ -32,14 +37,19 @@
       return;
     }
     rowsEl.innerHTML = list.map((s) => `
-      <tr data-id="${AdminUI.escape(s.id)}">
-        <td class="num">${AdminUI.escape(s.id)}</td>
-        <td class="strong">${AdminUI.escape(s.company)}</td>
-        <td>${AdminUI.escape(s.ceo)}</td>
+      <tr data-id="${s.id}">
+        <td class="num">${s.id}</td>
+        <td class="strong">${s.company}</td>
+        <td>${s.ceo}</td>
         <td class="num muted">-</td>
-        <td class="muted">${AdminUI.escape(s.joined)}</td>
+        <td class="muted">${s.joined}</td>
         <td><span class="tag ${s.status}">${STATUS[s.status]}</span></td>
-        <td><button class="btn sm" data-act="change">상태 변경</button></td>
+        <td>
+          <div class="row-actions">
+            <button class="btn sm" data-act="detail">상세</button>
+            <button class="btn sm" data-act="change">상태 변경</button>
+          </div>
+        </td>
       </tr>`).join("");
     countEl.textContent = total;
   }
@@ -58,11 +68,26 @@
   if (statusEl) statusEl.addEventListener("change", applyFilter);
 
   rowsEl.addEventListener("click", async (e) => {
-    const btn = e.target.closest('button[data-act="change"]');
+    const btn = e.target.closest("button[data-act]");
     if (!btn) return;
     const id = btn.closest("tr").dataset.id;
     const s = SELLERS.find((x) => String(x.id) === String(id));
     if (!s) return;
+
+    if (btn.dataset.act === "detail") {
+      AdminUI.detail("입점 업체 상세", [
+        ["판매자 ID", s.id],
+        ["연결 사용자 ID", s.userId],
+        ["상호명", s.company],
+        ["대표자", s.ceo],
+        ["사업자등록번호", s.biz],
+        ["연락처", s.contact],
+        ["사업장 주소", s.address],
+        ["운영 상태", STATUS[s.status]],
+        ["등록일시", (s.createdAt || "-").replace("T", " ").slice(0, 19)],
+      ]);
+      return;
+    }
 
     const res = await AdminUI.form({
       title: `${s.company} 상태 변경`,
@@ -95,7 +120,7 @@
       SELLERS = data.map(mapRow);
       applyFilter();
     } catch (err) {
-      rowsEl.innerHTML = `<tr class="empty-row"><td colspan="7">${AdminUI.escape(err.message || "목록을 불러오지 못했습니다.")}</td></tr>`;
+      rowsEl.innerHTML = `<tr class="empty-row"><td colspan="7">${err.message || "목록을 불러오지 못했습니다."}</td></tr>`;
       countEl.textContent = 0;
     }
   }

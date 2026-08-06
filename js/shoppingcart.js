@@ -2,7 +2,17 @@
   "use strict";
 
   const CART_API = "/api/v1/carts";
+  const CHECKOUT_API = "/api/v1/orders/checkout";
   const FILE_PREVIEW_MODE = location.protocol === "file:";
+
+  // 배송비 정책의 SSOT는 백엔드(OrderService)다. 아래 값은 서버에서 정책을 받지 못했을 때만 쓰는 폴백이다.
+  const FALLBACK_SHIPPING_FEE = 3000;
+  const FALLBACK_FREE_SHIPPING_THRESHOLD = 50000;
+
+  let shippingPolicy = {
+    fee: FALLBACK_SHIPPING_FEE,
+    threshold: FALLBACK_FREE_SHIPPING_THRESHOLD
+  };
 
   const cartList = document.getElementById("cartList");
   const selectAll = document.getElementById("selectAll");
@@ -86,15 +96,6 @@
     pageMessage.classList.remove("show");
   }
 
-  function escapeHtml(value) {
-    return String(value ?? "")
-      .replaceAll("&", "&amp;")
-      .replaceAll("<", "&lt;")
-      .replaceAll(">", "&gt;")
-      .replaceAll('"', "&quot;")
-      .replaceAll("'", "&#039;");
-  }
-
   function formatPrice(value) {
     return `${Number(value || 0).toLocaleString("ko-KR")}원`;
   }
@@ -148,30 +149,30 @@
         <input
           class="cart-select"
           type="checkbox"
-          data-select-id="${escapeHtml(item.cartItemId)}"
+          data-select-id="${item.cartItemId}"
           ${item.selected ? "checked" : ""}
-          aria-label="${escapeHtml(item.productName)} 선택"
+          aria-label="${item.productName} 선택"
         >
 
         ${
           item.imageUrl
-            ? `<img class="cart-thumb" src="${escapeHtml(item.imageUrl)}" alt="">`
+            ? `<img class="cart-thumb" src="${item.imageUrl}" alt="">`
             : '<div class="cart-thumb" aria-hidden="true"></div>'
         }
 
         <div class="cart-info">
-          <span class="cart-brand">${escapeHtml(item.brandName)}</span>
-          <strong class="cart-name">${escapeHtml(item.productName)}</strong>
-          <span class="cart-option">${escapeHtml(item.optionText || "옵션 없음")}</span>
+          <span class="cart-brand">${item.brandName}</span>
+          <strong class="cart-name">${item.productName}</strong>
+          <span class="cart-option">${item.optionText || "옵션 없음"}</span>
 
           <div class="cart-controls">
             <div class="quantity-control">
-              <button type="button" data-qty-action="minus" data-cart-id="${escapeHtml(item.cartItemId)}" aria-label="수량 감소">−</button>
+              <button type="button" data-qty-action="minus" data-cart-id="${item.cartItemId}" aria-label="수량 감소">−</button>
               <input type="text" value="${item.quantity}" readonly aria-label="수량">
-              <button type="button" data-qty-action="plus" data-cart-id="${escapeHtml(item.cartItemId)}" aria-label="수량 증가">＋</button>
+              <button type="button" data-qty-action="plus" data-cart-id="${item.cartItemId}" aria-label="수량 증가">＋</button>
             </div>
 
-            <button class="item-delete" type="button" data-delete-id="${escapeHtml(item.cartItemId)}">
+            <button class="item-delete" type="button" data-delete-id="${item.cartItemId}">
               삭제
             </button>
           </div>
@@ -210,7 +211,10 @@
     );
 
     const discount = Math.max(0, normalTotal - saleTotal);
-    const delivery = saleTotal === 0 || saleTotal >= 50000 ? 0 : 3000;
+    const delivery =
+      saleTotal === 0 || saleTotal >= shippingPolicy.threshold
+        ? 0
+        : shippingPolicy.fee;
     const total = saleTotal + delivery;
 
     productAmount.textContent = formatPrice(normalTotal);
@@ -221,6 +225,31 @@
     checkoutButton.disabled = selectedItems.length === 0;
   }
 
+  /**
+   * 배송비 정책을 서버에서 받아온다. 체크아웃 페이지와 같은 값을 쓰기 위한 것이므로
+   * 실패해도 장바구니 자체는 폴백 값으로 계속 동작시킨다(로그인 처리는 loadCart가 담당).
+   */
+  async function loadShippingPolicy() {
+    try {
+      const response = await fetch(CHECKOUT_API, {
+        method: "GET",
+        credentials: "include"
+      });
+
+      if (!response.ok) return;
+
+      const payload = await response.json();
+      const body = payload?.data ?? payload ?? {}; // extractItems와 같은 봉투 처리
+      const fee = Number(body.shippingFee);
+      const threshold = Number(body.freeShippingThreshold);
+
+      if (Number.isFinite(fee)) shippingPolicy.fee = fee;
+      if (Number.isFinite(threshold)) shippingPolicy.threshold = threshold;
+    } catch (_) {
+      // 폴백 값 유지
+    }
+  }
+
   async function loadCart() {
     clearMessage();
 
@@ -229,6 +258,8 @@
       renderCart();
       return;
     }
+
+    await loadShippingPolicy();
 
     try {
       const response = await fetch(CART_API, {
@@ -420,6 +451,7 @@
       "catchcatch.checkoutCartItemIds",
       JSON.stringify(selectedIds)
     );
+    sessionStorage.removeItem("catchcatch.directCheckoutItem");
 
     location.href = "checkout.html";
   });

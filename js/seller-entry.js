@@ -188,22 +188,27 @@
       submitButton.textContent = "신청서 제출 중...";
 
       /*
-       * 백엔드 DTO 필드명이 다르면 아래 payload의 키 이름만
-       * 백엔드 명세에 맞게 수정하면 됩니다.
+       * 키 이름은 백엔드 SellerApplicationCreateRequest 에 맞춘다.
+       *  businessNumber      → businessRegistrationNumber
+       *  managerPhone        → contactNumber
+       *  businessRegistrationUrl   → businessRegistrationFileUrl
+       *  mailOrderRegistrationUrl  → mailOrderReportFileUrl
+       * businessType·businessCategory·managerName·managerEmail 은 백엔드에
+       * 저장 필드가 없어 무시되지만, 폼에서 수집한 값이라 그대로 함께 보낸다.
        */
       const payload = {
         businessName: document.getElementById("businessName").value.trim(),
         brandName: document.getElementById("brandName").value.trim(),
-        businessNumber: document.getElementById("businessNumber").value.trim(),
+        businessRegistrationNumber: document.getElementById("businessNumber").value.trim(),
         representativeName: document.getElementById("representativeName").value.trim(),
         businessType: document.getElementById("businessType").value.trim(),
         businessCategory: document.getElementById("businessCategory").value.trim(),
         businessAddress: document.getElementById("businessAddress").value.trim(),
         managerName: document.getElementById("managerName").value.trim(),
-        managerPhone: document.getElementById("managerPhone").value.trim(),
+        contactNumber: document.getElementById("managerPhone").value.trim(),
         managerEmail: document.getElementById("managerEmail").value.trim(),
-        businessRegistrationUrl,
-        mailOrderRegistrationUrl
+        businessRegistrationFileUrl: businessRegistrationUrl,
+        mailOrderReportFileUrl: mailOrderRegistrationUrl
       };
 
       const response = await fetch("/api/v1/seller/applications", {

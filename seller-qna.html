@@ -17,8 +17,9 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>페이지제목 — 캐치캐치</title>
+<title>판매자 Q&A 관리 — 캐치캐치</title>
 <link rel="stylesheet" href="css/common.css">
+<link rel="stylesheet" href="css/seller-nav.css">
 <link rel="stylesheet" href="css/seller-qna.css">
 </head>
 <body>
@@ -58,7 +59,6 @@
 <nav class="cats">
   <div class="wrap">
     <a href="product-list.html">전체</a>
-    <a href="product-list.html?view=best">베스트</a>
     <a href="brand.html">브랜드</a>
     <a href="product-list.html?cat=outer">아우터</a>
     <a href="product-list.html?cat=top">상의</a>
@@ -69,7 +69,7 @@
     <a href="product-list.html?cat=shoes">신발</a>
     <a href="product-list.html?cat=bag">가방</a>
     <a href="product-list.html?cat=acc">액세서리</a>
-    <a href="product-list.html?cat=underwear">언더웨어</a>
+    <a href="seller-dashboard.html" class="cat-seller" data-seller-only hidden>판매 관리</a>
   </div>
 </nav>
 <!-- ================= 공통 헤더 끝 ================= -->
@@ -83,40 +83,40 @@
 
 <div class="sec-head">
 
-
 <div>
 <p class="kicker">Seller Center</p>
 <h3>Q&A 관리</h3>
 </div>
 
-<a class="seller-dashboard-link" href="seller-dashboard.html">← 대시보드</a>
-
-
-
 <div class="qna-summary">
-
 
 <button type="button" class="summary-btn active" data-filter="all">
 전체 문의 <b aria-live="polite"></b>
 </button>
 
-
-
 <button type="button" class="summary-btn" data-filter="wait">
 답변 대기 <b aria-live="polite"></b>
 </button>
-
-
 
 <button type="button" class="summary-btn" data-filter="complete">
 답변 완료 <b aria-live="polite"></b>
 </button>
 
+</div>
 
 </div>
 
-
-</div>
+<!-- 판매자 공통 메뉴 : 6개 판매자 페이지에 동일하게 복사되어 있습니다.
+     고치려면 6곳 모두 (css/seller-nav.css 주석 참고) -->
+<nav class="seller-page-links" aria-label="판매자 관리 메뉴">
+<a href="seller-dashboard.html">대시보드</a>
+<a href="seller-products.html">상품 관리</a>
+  <a href="seller-orders.html">주문 관리</a>
+<a href="seller-sales.html?tab=sales">매출·정산</a>
+<a class="active" aria-current="page" href="seller-qna.html?status=wait">Q&amp;A 관리</a>
+<a href="seller-claims.html">교환·환불</a>
+<a href="seller-notifications.html">쿠폰관리</a>
+</nav>
 
 
 
@@ -443,6 +443,12 @@ placeholder="고객 문의에 대한 답변을 입력하세요"></textarea>
 
 </button>
 
+<button type="button" class="save-btn" id="deleteQnaBtn" style="background:#c0392b; margin-left:8px;">
+
+문의 삭제
+
+</button>
+
 
 
 </div>
@@ -467,7 +473,7 @@ placeholder="고객 문의에 대한 답변을 입력하세요"></textarea>
       </div>
       <div class="foot-col">
         <h5>Shop</h5>
-        <a href="product-list.html?view=best">베스트</a><a href="product-list.html?cat=outer">아우터</a>
+<a href="product-list.html?cat=outer">아우터</a>
       </div>
       <div class="foot-col">
         <h5>Customer</h5>

@@ -1,30 +1,13 @@
 <!doctype html>
 <html lang="ko">
-<!-- ============================================================
-     캐치캐치 페이지 템플릿 (_template.html)
-     ------------------------------------------------------------
-     ★ 새 페이지 만드는 법 ★
-     1. 이 파일을 복사해서 담당 파일명으로 저장하세요.
-        (파일명 규칙표는 README.md 참고: login.html, cart.html, ...)
-     2. <title>과 <main> 안의 내용만 작성하면 됩니다.
-     3. 헤더/푸터는 절대 수정하지 마세요! (전 페이지 공통)
-        수정 필요하면 리더에게 요청.
-     4. 페이지 전용 CSS가 필요하면 css/페이지명.css 를 만들어
-        아래 <link> 자리처럼 추가하세요. css/common.css 는 수정 금지!
-     ※ 메인 페이지는 index.html 입니다.
-     ※ 관리자 페이지는 _admin-template.html 을 쓰세요.
-     ============================================================ -->
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>페이지제목 — 캐치캐치</title>
+<title>포인트 — 캐치캐치</title>
 <link rel="stylesheet" href="css/common.css">
 <link rel="stylesheet" href="css/points.css">
 </head>
 <body>
-
-<!-- 상품 카드를 쓰는 페이지라면 index.html 상단의
-     SVG 실루엣 <defs> 블록을 여기에 복사하세요. -->
 
 <!-- ================= 공통 헤더 시작 (수정 금지) ================= -->
 <div class="utility">
@@ -56,7 +39,6 @@
 <nav class="cats">
   <div class="wrap">
     <a href="product-list.html">전체</a>
-    <a href="product-list.html?view=best">베스트</a>
     <a href="brand.html">브랜드</a>
     <a href="product-list.html?cat=outer">아우터</a>
     <a href="product-list.html?cat=top">상의</a>
@@ -67,14 +49,14 @@
     <a href="product-list.html?cat=shoes">신발</a>
     <a href="product-list.html?cat=bag">가방</a>
     <a href="product-list.html?cat=acc">액세서리</a>
-    <a href="product-list.html?cat=underwear">언더웨어</a>
+    <a href="seller-dashboard.html" class="cat-seller" data-seller-only hidden>판매 관리</a>
   </div>
 </nav>
 <!-- ================= 공통 헤더 끝 ================= -->
 
 <main class="wrap">
 
-  <!-- ▼▼▼ 여기부터 페이지 내용을 작성하세요 ▼▼▼ -->
+  <!-- ▼▼▼ 여기부터 페이지 내용 ▼▼▼ -->
 
   <!-- 현재 포인트 -->
   <section class="block">
@@ -91,21 +73,13 @@
           <th>보유 포인트</th>
           <th>이번 달 적립</th>
           <th>이번 달 사용</th>
-          <th>소멸 예정</th>
         </tr>
       </thead>
-
-      <tbody>
-        <tr>
-          <td><strong>12,350 P</strong></td>
-          <td class="plus">+2,500 P</td>
-          <td class="minus">-1,200 P</td>
-          <td>500 P<br><small>(2026-12-31)</small></td>
-        </tr>
+      <tbody data-role="point-summary">
+        <!-- JS가 채웁니다 -->
       </tbody>
     </table>
   </section>
-
 
   <!-- 이용 내역 -->
   <section class="block">
@@ -126,52 +100,10 @@
           <th>잔액</th>
         </tr>
       </thead>
-
-      <tbody>
-
-        <tr>
-          <td>2026-07-14</td>
-          <td>상품 구매 적립</td>
-          <td>적립</td>
-          <td class="plus">+1,200 P</td>
-          <td>12,350 P</td>
-        </tr>
-
-        <tr>
-          <td>2026-07-10</td>
-          <td>상품 결제 사용</td>
-          <td>사용</td>
-          <td class="minus">-800 P</td>
-          <td>11,150 P</td>
-        </tr>
-
-        <tr>
-          <td>2026-07-05</td>
-          <td>회원가입 축하 포인트</td>
-          <td>적립</td>
-          <td class="plus">+5,000 P</td>
-          <td>11,950 P</td>
-        </tr>
-
-        <tr>
-          <td>2026-06-28</td>
-          <td>리뷰 작성 적립</td>
-          <td>적립</td>
-          <td class="plus">+500 P</td>
-          <td>6,950 P</td>
-        </tr>
-
-        <tr>
-          <td>2026-06-25</td>
-          <td>상품 결제 사용</td>
-          <td>사용</td>
-          <td class="minus">-2,000 P</td>
-          <td>6,450 P</td>
-        </tr>
-
+      <tbody data-role="point-history">
+        <!-- JS가 채웁니다 -->
       </tbody>
     </table>
-
   </section>
 
   <!-- ▲▲▲ 여기까지 ▲▲▲ -->
@@ -188,7 +120,7 @@
       </div>
       <div class="foot-col">
         <h5>Shop</h5>
-        <a href="product-list.html?view=best">베스트</a><a href="product-list.html?cat=outer">아우터</a>
+<a href="product-list.html?cat=outer">아우터</a>
       </div>
       <div class="foot-col">
         <h5>Customer</h5>
@@ -211,9 +143,7 @@
 </footer>
 <!-- ================= 공통 푸터 끝 ================= -->
 
-<!-- 페이지 전용 스크립트가 있으면 여기에 추가 -->
-
 <script src="js/auth.js"></script>
-<script src="js/navigation.js"></script>
+<script src="js/points.js"></script>
 </body>
 </html>

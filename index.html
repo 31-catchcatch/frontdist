@@ -6,7 +6,7 @@
 <meta name="description" content="캐치캐치 — 예쁜 옷을 한눈에 캐치하는 패션 스토어">
 <title>캐치캐치 — 의류 쇼핑몰</title>
 <link rel="stylesheet" href="css/common.css">
-<link rel="stylesheet" href="css/main.css">
+<link rel="stylesheet" href="css/html.css">
 </head>
 <body>
 
@@ -69,7 +69,6 @@
 <nav class="cats">
   <div class="wrap">
     <a href="product-list.html">전체</a>
-    <a href="product-list.html?view=best">베스트</a>
     <a href="brand.html">브랜드</a>
     <a href="product-list.html?cat=outer">아우터</a>
     <a href="product-list.html?cat=top">상의</a>
@@ -80,67 +79,28 @@
     <a href="product-list.html?cat=shoes">신발</a>
     <a href="product-list.html?cat=bag">가방</a>
     <a href="product-list.html?cat=acc">액세서리</a>
-    <a href="product-list.html?cat=underwear">언더웨어</a>
+    <a href="seller-dashboard.html" class="cat-seller" data-seller-only hidden>판매 관리</a>
   </div>
 </nav>
 
 <main class="wrap">
-  <!-- HERO: 세 개의 광고/이벤트가 4초마다 가로로 자동 전환됩니다. -->
+  <!-- 활성 배너는 GET /api/v1/banners 응답으로 구성됩니다. -->
   <section class="hero" aria-label="프로모션 배너">
-    <div class="ad-slider" id="adSlider">
-      <div class="ad-track" id="adTrack">
-        <a class="ad-slide s1" href="product-list.html?cat=outer">
-          <svg class="ad-silo" viewBox="0 0 130 110" aria-hidden="true"><use href="#g-jacket"/></svg>
-          <div class="ad-copy">
-            <p class="eyebrow">CATCHCATCH SUMMER</p>
-            <h2>예쁜 옷을<br>한눈에 캐치</h2>
-            <p>캐치캐치가 제안하는 이번 시즌 데일리 스타일을 만나보세요.</p>
-          </div>
-        </a>
-        <a class="ad-slide s2" href="product-list.html?view=best">
-          <svg class="ad-silo" viewBox="0 0 130 110" aria-hidden="true"><use href="#g-tee"/></svg>
-          <div class="ad-copy">
-            <p class="eyebrow">WEEKLY EVENT</p>
-            <h2>이번 주 베스트<br>스타일 모음</h2>
-            <p>지금 가장 많이 선택받는 아이템을 한곳에서 확인해보세요.</p>
-          </div>
-        </a>
-        <a class="ad-slide s3" href="product-list.html">
-          <svg class="ad-silo" viewBox="0 0 130 110" aria-hidden="true"><use href="#g-pants"/></svg>
-          <div class="ad-copy">
-            <p class="eyebrow">SPECIAL PROMOTION</p>
-            <h2>캐치하면 끝<br>한정 이벤트</h2>
-            <p>기간 한정 혜택과 특별 프로모션을 놓치지 마세요.</p>
-          </div>
-        </a>
-      </div>
-      <div class="slider-dots" aria-label="배너 선택">
-        <button class="slider-dot on" type="button" aria-label="첫 번째 배너"></button>
-        <button class="slider-dot" type="button" aria-label="두 번째 배너"></button>
-        <button class="slider-dot" type="button" aria-label="세 번째 배너"></button>
-      </div>
+    <div class="ad-slider" id="adSlider" role="region" aria-roledescription="캐러셀" aria-busy="true">
+      <div class="banner-state" id="bannerState" role="status">배너를 불러오는 중입니다.</div>
+      <div class="ad-track" id="adTrack"></div>
+      <button class="slider-arrow slider-prev" id="sliderPrev" type="button" aria-label="이전 배너" hidden>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5 8 12l7 7"/></svg>
+      </button>
+      <button class="slider-arrow slider-next" id="sliderNext" type="button" aria-label="다음 배너" hidden>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 5 7 7-7 7"/></svg>
+      </button>
+      <div class="slider-dots" id="sliderDots" aria-label="배너 선택" hidden></div>
     </div>
   </section>
 
-  <!-- BEST -->
-  <section class="block">
-    <div class="sec-head">
-      <div>
-        <p class="kicker">Ranking</p>
-        <h3>베스트</h3>
-      </div>
-      <a class="more" href="product-list.html?view=best">전체보기 →</a>
-    </div>
-    <div class="chips">
-      <span class="chip on">전체</span>
-      <span class="chip">아우터</span>
-      <span class="chip">상의</span>
-      <span class="chip">팬츠</span>
-      <span class="chip">신발</span>
-      <span class="chip">가방</span>
-      <span class="chip">액세서리</span>
-    </div>
-    <div class="grid" id="grid"></div>
+  <section class="block product-showcase" aria-label="현재 판매 중인 상품">
+    <div class="grid" id="grid" aria-live="polite" aria-busy="true"></div>
   </section>
 </main>
 
@@ -153,7 +113,7 @@
       </div>
       <div class="foot-col">
         <h5>Shop</h5>
-        <a href="product-list.html?view=best">베스트</a><a href="product-list.html?cat=outer">아우터</a>
+<a href="product-list.html?cat=outer">아우터</a>
       </div>
       <div class="foot-col">
         <h5>Customer</h5>
@@ -175,89 +135,10 @@
   </div>
 </footer>
 
-<script>
-  // product data
-  const tiles = ['var(--tile-1)','var(--tile-2)','var(--tile-3)','var(--tile-4)'];
-  const garments = ['g-tee','g-hoodie','g-pants','g-jacket','g-cap','g-bag'];
-  const best = [
-    ['STANDARD','릴렉스 핏 쿨 코튼 반팔 티셔츠','29,000','g-tee','4.8','2.1k'],
-    ['STANDARD','와이드 원턱 코튼 팬츠','49,000','g-pants','4.7','1.4k'],
-    ['STANDARD','오버핏 후드 스웨트셔츠','44,900','g-hoodie','4.9','980'],
-    ['STANDARD','베이식 볼캡','19,000','g-cap','4.6','760'],
-    ['STANDARD','미니멀 데일리 크로스백','32,900','g-bag','4.8','1.1k'],
-    ['STANDARD','린넨 블렌드 셔츠 자켓','89,000','g-jacket','4.7','540'],
-    ['STANDARD','에센셜 5팩 크루넥 티셔츠','39,000','g-tee','4.9','3.3k'],
-    ['STANDARD','테이퍼드 히든밴딩 슬랙스','36,900','g-pants','4.6','870'],
-  ];
-  function card([brand,name,price,g,rate,cnt], i, isNew){
-    const badge = isNew
-      ? '<span class="badge">NEW</span>'
-      : (i===0?'<span class="badge">BEST</span>':'');
-    const priceRow = '<span class="price tnum">'+price+'원</span>';
-    return `<article class="card" tabindex="0">
-      <div class="thumb">
-        <div class="art" style="background:${tiles[i % tiles.length]}"></div>
-        <svg class="garment" viewBox="0 0 130 110"><use href="#${g}"/></svg>
-        ${badge}
-        <button class="like" aria-label="찜하기"><svg viewBox="0 0 24 24"><path d="M12 20s-7-4.6-7-9.3A3.7 3.7 0 0 1 12 8a3.7 3.7 0 0 1 7 2.7C19 15.4 12 20 12 20Z"/></svg></button>
-      </div>
-      <div class="meta">
-        <span class="brand-nm">${brand}</span>
-        <span class="prod-nm">${name}</span>
-        <div class="price-row">${priceRow}</div>
-        <div class="rate"><svg class="star" viewBox="0 0 24 24"><path d="M12 2l2.9 6.3 6.9.7-5.1 4.6 1.4 6.8L12 17.8 5.9 20.4l1.4-6.8L2.2 9l6.9-.7z"/></svg><b>${rate}</b> · 리뷰 ${cnt}</div>
-      </div>
-    </article>`;
-  }
-  document.getElementById('grid').innerHTML = best.map((d,i)=>card(d,i,false)).join('');
-
-  // 광고/이벤트 배너 자동 가로 슬라이드
-  (() => {
-    const slider = document.getElementById('adSlider');
-    const track = document.getElementById('adTrack');
-    const dots = Array.from(document.querySelectorAll('.slider-dot'));
-    const slideCount = dots.length;
-    let index = 0;
-    let timer = null;
-
-    function moveTo(nextIndex) {
-      index = (nextIndex + slideCount) % slideCount;
-      track.style.transform = `translateX(-${index * 100}%)`;
-      dots.forEach((dot, i) => dot.classList.toggle('on', i === index));
-    }
-
-    function startAutoSlide() {
-      stopAutoSlide();
-      timer = window.setInterval(() => moveTo(index + 1), 4000);
-    }
-
-    function stopAutoSlide() {
-      if (timer !== null) {
-        window.clearInterval(timer);
-        timer = null;
-      }
-    }
-
-    dots.forEach((dot, i) => {
-      dot.addEventListener('click', () => {
-        moveTo(i);
-        startAutoSlide();
-      });
-    });
-
-    slider.addEventListener('mouseenter', stopAutoSlide);
-    slider.addEventListener('mouseleave', startAutoSlide);
-    slider.addEventListener('focusin', stopAutoSlide);
-    slider.addEventListener('focusout', startAutoSlide);
-
-    moveTo(0);
-    startAutoSlide();
-  })();
-
-</script>
-
 <script src="js/auth.js"></script>
-
+<script src="js/api.js"></script>
+<script src="js/product.js"></script>
+<script src="js/home.js"></script>
 <script src="js/navigation.js"></script>
 </body>
 </html>

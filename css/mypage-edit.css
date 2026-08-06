@@ -166,31 +166,6 @@
   color: var(--point);
 }
 
-.postcode-field {
-  grid-column: 1 / -1;
-  max-width: 420px;
-}
-
-.postcode-row {
-  display: grid;
-  grid-template-columns: 1fr 108px;
-  gap: 8px;
-}
-
-.postcode-row button {
-  border: 1px solid var(--ink);
-  background: var(--ink);
-  color: #fff;
-  font: inherit;
-  font-size: 12.5px;
-  font-weight: 800;
-  cursor: pointer;
-}
-
-.postcode-row button:hover {
-  opacity: .88;
-}
-
 .password-guide {
   margin-bottom: 20px;
   padding: 13px 15px;
@@ -319,13 +294,8 @@
     grid-template-columns: 1fr;
   }
 
-  .field-full,
-  .postcode-field {
+  .field-full {
     grid-column: auto;
-  }
-
-  .postcode-field {
-    max-width: none;
   }
 
   .form-actions {
