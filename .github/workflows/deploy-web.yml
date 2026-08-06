@@ -75,9 +75,9 @@ jobs:
 
       - name: 정적 파일을 web-01로 전송 (임시 위치)
         run: |
-          # 저장소 내용 전체를 압축해서 한 번에 전송 (개별 파일 전송보다 빠름)
-          tar -czf frontdist.tar.gz --exclude='.git' --exclude='.github' .
-          scp -F ~/.ssh/config frontdist.tar.gz web01:C:/Users/Administrator/deploy_temp/frontdist.tar.gz
+          # 압축 파일은 상위 디렉토리에 생성 (현재 폴더 안에 만들면 자기 자신을 포함하려다 에러 발생)
+          tar -czf ../frontdist.tar.gz --exclude='.git' --exclude='.github' .
+          scp -F ~/.ssh/config ../frontdist.tar.gz web01:C:/Users/Administrator/deploy_temp/frontdist.tar.gz
 
       - name: web-01 배포 적용 (백업 → 교체 → reload → 헬스체크 → 실패시 롤백)
         run: |
