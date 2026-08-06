@@ -1,0 +1,125 @@
+name: Deploy to web-01
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:  # 수동 실행 버튼 활성화
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 코드 체크아웃
+        uses: actions/checkout@v4
+
+      - name: 배포 대상 파일 목록 확인
+        run: |
+          echo "저장소 루트 파일 목록:"
+          ls -la
+
+      - name: AWS 자격증명 설정
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: SSH 배포 키 등록
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.DEPLOY_SSH_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+
+      - name: EIC Endpoint 터널 오픈
+        run: |
+          nohup aws ec2-instance-connect open-tunnel \
+            --instance-connect-endpoint-id ${{ secrets.EIC_ENDPOINT_ID }} \
+            --private-ip-address ${{ secrets.WEB_PRIVATE_IP }} \
+            --remote-port 22 \
+            --local-port 22222 > tunnel.log 2>&1 &
+          echo "터널 프로세스 PID: $!"
+
+          echo "포트 22222 오픈 대기 중 (최대 20초)..."
+          READY=false
+          for i in $(seq 1 20); do
+            if (echo > /dev/tcp/localhost/22222) 2>/dev/null; then
+              echo "터널 준비 완료 (${i}초)"
+              READY=true
+              break
+            fi
+            sleep 1
+          done
+
+          echo "=== tunnel.log 내용 ==="
+          cat tunnel.log || true
+
+          if [ "$READY" = false ]; then
+            echo "터널이 20초 내에 준비되지 않았습니다."
+            exit 1
+          fi
+
+      - name: SSH 설정 (호스트키 검증 우회, 터널 경유)
+        run: |
+          mkdir -p ~/.ssh
+          cat >> ~/.ssh/config << 'EOF'
+          Host web01
+            HostName localhost
+            Port 22222
+            User Administrator
+            IdentityFile ~/.ssh/deploy_key
+            StrictHostKeyChecking no
+            UserKnownHostsFile /dev/null
+          EOF
+
+      - name: 정적 파일을 web-01로 전송 (임시 위치)
+        run: |
+          # 저장소 내용 전체를 압축해서 한 번에 전송 (개별 파일 전송보다 빠름)
+          tar -czf frontdist.tar.gz --exclude='.git' --exclude='.github' .
+          scp -F ~/.ssh/config frontdist.tar.gz web01:C:/Users/Administrator/deploy_temp/frontdist.tar.gz
+
+      - name: web-01 배포 적용 (백업 → 교체 → reload → 헬스체크 → 실패시 롤백)
+        run: |
+          ssh -F ~/.ssh/config web01 '
+            $ErrorActionPreference = "Stop"
+            $htmlDir = "C:\Users\Administrator\Downloads\nginx-1.31.2\nginx-1.31.2\html"
+            $backupDir = "C:\Users\Administrator\deploy_temp\html_backup_$(Get-Date -Format yyyyMMdd_HHmmss)"
+            $tempDir = "C:\Users\Administrator\deploy_temp"
+
+            Write-Output "=== 기존 파일 백업 ==="
+            Copy-Item -Path $htmlDir -Destination $backupDir -Recurse -Force
+
+            Write-Output "=== 새 파일 압축 해제 ==="
+            Expand-Archive -Path "$tempDir\frontdist.tar.gz" -DestinationPath "$tempDir\extracted" -Force
+
+            Write-Output "=== 기존 html 폴더 내용 교체 (nginx.conf 등 설정은 유지) ==="
+            Get-ChildItem -Path $htmlDir -Exclude "*.conf" | Remove-Item -Recurse -Force
+            Copy-Item -Path "$tempDir\extracted\*" -Destination $htmlDir -Recurse -Force
+
+            Write-Output "=== Nginx 설정 리로드 (무중단) ==="
+            cd C:\Users\Administrator\Downloads\nginx-1.31.2\nginx-1.31.2
+            .\nginx.exe -s reload
+
+            Start-Sleep -Seconds 3
+
+            Write-Output "=== 헬스체크 ==="
+            try {
+              $response = Invoke-WebRequest -Uri "http://localhost" -UseBasicParsing -TimeoutSec 10
+              if ($response.StatusCode -eq 200) {
+                Write-Output "배포 성공: 200 OK"
+              } else {
+                throw "예상치 못한 상태 코드: $($response.StatusCode)"
+              }
+            } catch {
+              Write-Output "헬스체크 실패, 이전 버전으로 롤백합니다: $_"
+              Get-ChildItem -Path $htmlDir -Exclude "*.conf" | Remove-Item -Recurse -Force
+              Copy-Item -Path "$backupDir\*" -Destination $htmlDir -Recurse -Force
+              .\nginx.exe -s reload
+              exit 1
+            }
+
+            Write-Output "=== 임시 파일 정리 ==="
+            Remove-Item -Path "$tempDir\frontdist.tar.gz" -Force
+            Remove-Item -Path "$tempDir\extracted" -Recurse -Force
+          '
