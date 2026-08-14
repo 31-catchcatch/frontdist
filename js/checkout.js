@@ -3,20 +3,13 @@
 
   const API_BASE = (window.CATCHCATCH_API_BASE_URL || "/api/v1").replace(/\/$/, "");
   const money = new Intl.NumberFormat("ko-KR");
-  // 배송비 정책의 SSOT는 백엔드(OrderService)다. GET /orders/checkout 응답의
-  // shippingFee / freeShippingThreshold 를 쓰고, 아래 값은 그 응답을 못 받았을 때만 쓰는 폴백이다.
   const FALLBACK_FREE_SHIPPING_THRESHOLD = 50000;
   const FALLBACK_SHIPPING_FEE = 3000;
   const DIRECT_CHECKOUT_KEY = "catchcatch.directCheckoutItem";
   const CART_CHECKOUT_IDS_KEY = "catchcatch.checkoutCartItemIds";
-  // 결제창으로 넘어가기 직전 주문의 { orderId(DB PK), orderNumber }.
-  // 결제 실패 랜딩(payment-fail.js)이 어떤 주문을 되돌려야 하는지 알아내는 데 쓴다.
-  // 토스는 failUrl 로 주문번호만 돌려주는데 취소 API 는 DB PK 를 받기 때문이다.
   const PENDING_ORDER_KEY = "catchcatch.pendingOrder";
   const DIRECT_CHECKOUT_MODE = new URLSearchParams(location.search).get("mode") === "direct";
 
-  // 현재 연동 범위는 카드 결제뿐이다. 나머지는 백엔드 연동(가상계좌 입금통보 웹훅 등)이
-  // 없어 선택할 수 없게 두되, 배열에서 빼지는 않는다 — 나중에 되살릴 자리를 남겨둔다.
   const PAYMENT_TYPES = [
     { id: "CARD", label: "카드", detail: "국내외 신용카드와 체크카드로 결제합니다.", enabled: true },
     { id: "VIRTUAL_ACCOUNT", label: "무통장입금", detail: "주문 완료 후 발급되는 전용 계좌로 입금해 주세요.", enabled: false },
@@ -116,7 +109,6 @@
     return unwrapData(payload);
   }
 
-  // 장바구니 페이지(shoppingcart.js)가 "선택 상품 주문하기" 클릭 시 저장해 둔 cartItemId 목록
   function getSelectedCartItemIds() {
     try {
       const raw = sessionStorage.getItem(CART_CHECKOUT_IDS_KEY);
@@ -127,7 +119,6 @@
     }
   }
 
-  // 상품 상세의 바로구매가 저장한 최소 식별값. 이름·가격·재고는 API에서 다시 확인한다.
   function getDirectCheckoutItem() {
     if (!DIRECT_CHECKOUT_MODE) return null;
     try {
@@ -169,7 +160,6 @@
     return Math.min(discount, itemTotal);
   }
 
-  /** 서버가 내려준 배송비 정책. 없으면 폴백 상수. */
   function shippingPolicy() {
     const fee = Number(state.defaults?.shippingFee);
     const threshold = Number(state.defaults?.freeShippingThreshold);
@@ -198,13 +188,13 @@
       const name = item.productName || "상품명 없음";
       // 썸네일이 없는 상품은 기존처럼 상품명 첫 글자를 그린다.
       const thumb = item.thumbnailUrl
-        ? `<img src="${item.thumbnailUrl}" alt="">`
+        ? `<img src="${esc(item.thumbnailUrl)}" alt="">`
         : `<span aria-hidden="true">${name.charAt(0) || "C"}</span>`;
       return `<article class="order-item">
         <div class="item-thumb">${thumb}</div>
         <div>
-          <strong class="item-name">${name}</strong>
-          <p class="item-option">${item.optionName || "옵션 없음"} · ${Number(item.quantity) || 1}개</p>
+          <strong class="item-name">${esc(name)}</strong>
+          <p class="item-option">${esc(item.optionName || "옵션 없음")} · ${Number(item.quantity) || 1}개</p>
         </div>
         <strong class="item-price">${formatMoney(item.totalPrice)}</strong>
       </article>`;
@@ -212,7 +202,7 @@
   }
 
   function formatAddressDetail(address) {
-    return [address.zipCode && `(${address.zipCode})`, address.baseAddress, address.detailAddress].filter(Boolean).join(" ");
+    return [address.zipCode && `(${esc(address.zipCode)})`, esc(address.baseAddress), esc(address.detailAddress)].filter(Boolean).join(" ");
   }
 
   function renderAddress() {
@@ -222,7 +212,7 @@
       elements.selectedAddress.innerHTML = '<p class="address-empty">선택할 배송지가 없습니다. 배송지 관리에서 배송지를 등록해 주세요.</p>';
       return;
     }
-    elements.selectedAddress.innerHTML = `<strong class="address-name">${address.recipientName}</strong><span class="address-phone">${address.recipientPhone}</span><p class="address-detail">${formatAddressDetail(address)}</p>`;
+    elements.selectedAddress.innerHTML = `<strong class="address-name">${esc(address.recipientName)}</strong><span class="address-phone">${esc(address.recipientPhone)}</span><p class="address-detail">${formatAddressDetail(address)}</p>`;
   }
 
   function renderAddressOptions() {
@@ -230,7 +220,7 @@
       const checked = String(address.id) === String(state.selectedAddressId) ? " checked" : "";
       return `<label class="address-option">
         <input type="radio" name="address" value="${address.id}"${checked}>
-        <span><strong>${address.recipientName}</strong><span>${address.recipientPhone}</span><p>${formatAddressDetail(address)}</p></span>
+        <span><strong>${esc(address.recipientName)}</strong><span>${esc(address.recipientPhone)}</span><p>${formatAddressDetail(address)}</p></span>
       </label>`;
     }).join("") || '<p class="section-empty">등록된 배송지가 없습니다.</p>';
   }
@@ -239,7 +229,7 @@
     const discountLabel = coupon.discountType === "FIXED_AMOUNT"
       ? `${money.format(Number(coupon.discountValue) || 0)}원 할인`
       : `${Number(coupon.discountValue) || 0}% 할인`;
-    return `${coupon.couponName || "쿠폰"} · ${discountLabel}`;
+    return `${esc(coupon.couponName || "쿠폰")} · ${discountLabel}`;
   }
 
   function renderBenefits() {
@@ -351,7 +341,6 @@
       throw new Error("선택한 상품의 재고가 부족합니다. 수량을 다시 선택해 주세요.");
     }
 
-    // 주문 API가 계산하는 금액(product.price + option.additionalPrice)과 동일하게 표시한다.
     const unitPrice = Number(product.price || 0) + Number(option?.additionalPrice || 0);
     state.cartItems = [{
       cartItemId: null,
@@ -362,12 +351,10 @@
       price: unitPrice,
       quantity: requestedItem.quantity,
       totalPrice: unitPrice * requestedItem.quantity,
-      // 장바구니 경유(GET /carts)와 필드명을 맞춘다. renderItems()가 이 값 하나만 본다.
       thumbnailUrl: product.thumbnailUrl || null,
     }];
   }
 
-  // 토스 결제창에 그대로 노출되는 주문명. 토스 제한은 100자다.
   function buildOrderName() {
     const first = state.cartItems[0];
     const name = String(first?.productName || "주문 상품");
@@ -376,12 +363,6 @@
     return label.length > 100 ? `${label.slice(0, 99)}…` : label;
   }
 
-  /*
-   * 결제가 성사되지 않은 주문을 되돌린다.
-   *
-   * 주문을 만드는 시점에 재고·쿠폰·포인트가 이미 빠져나가기 때문에, 결제창을 닫으면
-   * 그냥 두는 것만으로 그 자원이 잠긴다. 되돌리기에 실패해도 결제 흐름을 막지는 않는다.
-   */
   async function cancelPendingOrder(orderId, reason) {
     try {
       await apiFetch(`/orders/${encodeURIComponent(orderId)}/cancel`, {
@@ -423,8 +404,6 @@
 
     let createdOrder = null;
     try {
-      // 결제 설정을 주문 생성보다 먼저 받는다. 여기서 실패했는데 주문을 이미 만들었다면
-      // 결제창도 못 띄운 채 재고만 잠긴 주문이 남는다.
       const config = await apiFetch("/payments/config");
       if (!config?.clientKey || !config?.successUrl || !config?.failUrl) {
         throw new Error("결제 설정이 준비되지 않았습니다. 잠시 후 다시 시도해 주세요.");
@@ -459,28 +438,10 @@
         }));
       } catch (_) { /* 스토리지가 막혀 있어도 결제 자체는 진행한다 */ }
 
-      /*
-       * 토스 결제창 호출. 여기서 페이지를 떠나고, 결제 승인은 successUrl 로 돌아온
-       * payment-success.js 가 POST /payments/confirm 으로 마무리한다.
-       *
-       * 그래서 여기서는 sessionStorage 를 지우지 않는다 — 결제에 실패해 주문서로
-       * 돌아왔을 때 장바구니 선택이 남아 있어야 한다. 정리는 승인이 확정된 뒤
-       * payment-success.js 가 한다.
-       *
-       * amount 와 orderId 는 반드시 서버가 준 값을 쓴다.
-       *  - amount  : POST /orders 응답의 finalPaymentAmount. 프론트 계산값을 쓰면
-       *              승인 단계에서 금액 불일치로 전부 거절된다.
-       *  - orderId : order.orderNumber. DB PK(order.orderId)는 1~2자라 토스의
-       *              6~64자 제약에 걸린다.
-       */
       const toss = window.TossPayments(config.clientKey);
-      // 카드 단건 결제라 회원 식별이 필요 없다(백엔드도 customerKey 를 쓰지 않는다).
-      // 간편결제·빌링키를 붙일 때 회원 키로 교체해야 한다.
       const payment = toss.payment({ customerKey: window.TossPayments.ANONYMOUS });
 
       await payment.requestPayment({
-        // 결제수단 라디오는 CARD 외 전부 disabled 다. DOM 을 고쳐 다른 값을 넣어도
-        // 연동돼 있지 않으므로 여기서 CARD 로 고정한다.
         method: "CARD",
         amount: { currency: "KRW", value: Number(order.finalPaymentAmount) },
         orderId: order.orderNumber,
@@ -490,8 +451,6 @@
         card: { useEscrow: false, flowMode: "DEFAULT", useCardPoint: false, useAppCardOnly: false },
       });
     } catch (error) {
-      // 주문만 만들어지고 결제가 시작되지 못했으면(결제창을 닫은 경우 포함) 주문을 되돌린다.
-      // 주문 생성 전에 실패했다면 되돌릴 것이 없다.
       const canceled = createdOrder
         ? await cancelPendingOrder(
             createdOrder.orderId,

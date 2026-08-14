@@ -1,17 +1,3 @@
-// find-account.js — 아이디 찾기 및 임시 비밀번호 발급 API 연동
-//
-// 일반 회원:
-//   POST /api/v1/auth/user/find-account
-//
-// 판매자:
-//   POST /api/v1/auth/seller/find-account
-//
-// 아이디 찾기 요청:
-//   { type: "ID", name, username: null, email }
-//
-// 비밀번호 찾기 요청:
-//   { type: "PASSWORD", name: null, username, email }
-
 document.addEventListener("DOMContentLoaded", () => {
   const $ = (selector) => document.querySelector(selector);
 
@@ -59,10 +45,6 @@ document.addEventListener("DOMContentLoaded", () => {
     goPwButton.addEventListener("click", () => showTab("pw"));
   }
 
-  // 회원 유형(일반/판매자) 구분은 두지 않는다.
-  // 백엔드의 /auth/user/find-account 와 /auth/seller/find-account 는 구현이 완전히 동일하고
-  // (둘 다 AccountRecoveryService 의 같은 메서드를 호출), 조회 쿼리에도 role 조건이 없다.
-  // 판매자·일반 회원이 같은 users 테이블에 있으므로 어느 쪽으로 보내든 결과가 같다.
   function getFindAccountUrl() {
     return `${API_BASE}/auth/user/find-account`;
   }
@@ -184,10 +166,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // ===== 비밀번호 재설정 (화면 2개) =====
-  //   1단계 findPwForm  → POST /auth/verify-account  (아이디+이메일 존재 확인, 값 변경 없음)
-  //   2단계 resetPwForm → POST /auth/reset-password  (resetPasswordDirect, 새 비밀번호로 변경)
-  // 두 폼은 동시에 보이지 않는다. 1단계가 통과하면 폼을 통째로 교체한다.
   const resetPwForm = $("#resetPwForm");
   const pwAccountSummary = $('[data-role="pw-account-summary"]');
   const pw2Message = $('[data-role="pw2-message"]');
@@ -204,11 +182,6 @@ document.addEventListener("DOMContentLoaded", () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
-  /**
-   * 1단계 계정 확인 — POST /auth/verify-account
-   * 아이디+이메일이 실제로 존재하는지만 확인한다(비밀번호는 바뀌지 않는다).
-   * 일치하지 않으면 서버가 404(USER_NOT_FOUND)를 준다.
-   */
   async function verifyAccount(username, email) {
     const response = await fetch(`${API_BASE}/auth/verify-account`, {
       method: "POST",

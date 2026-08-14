@@ -1,0 +1,85 @@
+/* admin-banners.css — 배너 관리 전용
+
+   이 화면은 두 모드로 동작한다.
+     - 읽기전용: 공개 API(GET /api/v1/banners)만 사용. 관리자 배너 API가 아직 없을 때.
+     - 관리자  : GET /api/v1/admin/banners 가 응답하면 자동 전환. <table> 에 .mode-admin 이 붙는다.
+   상태·노출기간 열은 공개 API 가 내려주지 않으므로 읽기전용에서는 감춘다. */
+
+/* ---------- 모드별 열 노출 ---------- */
+
+/* 공개 API 는 활성·기간 내 배너만 주므로 상태는 전부 "노출중", 노출기간은 전부 "-" 가 된다.
+   정보량이 0인 열이라 읽기전용에서는 아예 감춘다. render() 는 두 모드 모두 셀을 그린다. */
+.data:not(.mode-admin) .col-admin-only { display: none; }
+
+/* ---------- 썸네일 ---------- */
+
+.data td.bn-thumb-cell { width: 96px; padding-top: 8px; padding-bottom: 8px; }   /* 행 높이가 부풀지 않게 */
+.bn-thumb {
+  display: block; width: 96px; height: 40px; object-fit: cover;
+  /* common.css 의 `img { max-width: 100% }` 를 풀어야 한다.
+     table.data 는 width:max-content 라 셀 폭이 이미지 폭을 따라가는데,
+     max-width:100% 가 걸려 있으면 서로를 조여 썸네일이 39px 로 찌그러진다. */
+  max-width: none;
+  border: 1px solid var(--hairline); border-radius: 6px; background: var(--tile-1);
+}
+a.bn-thumb-link { display: inline-block; line-height: 0; }
+a.bn-thumb-link:hover .bn-thumb { border-color: var(--ink); }
+
+/* 연결 링크는 전체 URL 이 들어와 열이 무한정 늘어날 수 있다.
+   관리 버튼이 가로 스크롤 뒤로 밀리지 않게 잘라서 보여준다(전체 값은 [상세]에서 확인). */
+.data td.bn-link-cell { max-width: 200px; }
+.data td.bn-link-cell > * { display: block; overflow: hidden; text-overflow: ellipsis; }
+
+/* ---------- 미구현 안내 ---------- */
+
+.api-notice {
+  margin: 0 0 16px;
+  padding: 14px 18px;
+  border: 1px solid var(--hairline);
+  border-left: 3px solid var(--point);
+  border-radius: 12px;
+  background: rgba(214, 58, 47, .04);
+  font-size: 12.5px; line-height: 1.65; color: var(--ink-soft);
+}
+.api-notice[hidden] { display: none; }
+.api-notice strong { display: block; margin-bottom: 6px; font-size: 13px; color: var(--ink); }
+.api-notice p { margin: 0 0 4px; }
+.api-notice p:last-child { margin-bottom: 0; }
+.api-notice code {
+  padding: 1px 5px; border: 1px solid var(--hairline-strong); border-radius: 5px;
+  background: var(--surface); font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 11.5px;
+}
+
+/* admin.css 에 .btn 의 disabled 규칙이 없어 비활성 버튼에도 hover 가 그대로 먹는다 */
+.btn:disabled,
+.btn[disabled] { opacity: .5; cursor: not-allowed; }
+.btn:disabled:hover,
+.btn[disabled]:hover { transform: none; box-shadow: none; border-color: var(--hairline-strong); }
+
+/* ---------- 등록/수정 모달 ---------- */
+
+/* AdminUI.form 은 File 을 다루지 못해(FormData → 평범한 객체) 전용 모달을 쓴다.
+   .modal-backdrop / .modal / .field / .modal-actions 는 admin.css 것을 그대로 재사용한다. */
+.banner-modal { max-width: 560px; }
+.banner-modal .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 0 12px; }
+
+.banner-modal .bn-file-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.banner-modal .bn-file-row input[type="file"] { flex: 1; min-width: 0; font-size: 12px; }
+
+.banner-modal .bn-preview {
+  margin-top: 8px; border: 1px solid var(--hairline); border-radius: 9px;
+  background: var(--tile-1); overflow: hidden; line-height: 0;
+}
+.banner-modal .bn-preview img { width: 100%; aspect-ratio: 1200 / 400; object-fit: cover; }
+
+.banner-modal .check-field { display: flex; align-items: center; gap: 8px; margin-top: 26px; }
+.banner-modal .check-field input { width: 15px; height: 15px; cursor: pointer; }
+.banner-modal .check-field label { margin: 0; cursor: pointer; }
+
+.field-error { margin: 5px 0 0; font-size: 11.5px; color: var(--point); }
+.field-error[hidden] { display: none; }
+
+@media (max-width: 560px) {
+  .banner-modal .field-row { grid-template-columns: 1fr; }
+  .banner-modal .check-field { margin-top: 4px; }
+}

@@ -78,6 +78,7 @@
     moveToLogin();
     return;
   }
+  if (!FILE_PREVIEW_MODE && window.CatchAuth) { CatchAuth.requireRole(); }
 
   function handleUnauthorized(response) {
     if (response.status !== 401 && response.status !== 403) {
@@ -216,7 +217,7 @@
     }
 
     if (coupon.applicableTarget) {
-      conditions.push(coupon.applicableTarget);
+      conditions.push(esc(coupon.applicableTarget));
     }
 
     return conditions.join(" · ") || "사용 조건 없음";
@@ -319,8 +320,8 @@
           <div class="coupon-content">
             <span class="coupon-label">${currentTab === "claimable" ? "받기 가능" : "사용 가능"}</span>
 
-            <h3 title="${coupon.couponName}">
-              ${coupon.couponName}
+            <h3 title="${esc(coupon.couponName)}">
+              ${esc(coupon.couponName)}
             </h3>
 
             <p class="coupon-condition">

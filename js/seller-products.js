@@ -1,11 +1,11 @@
-(() => {
+(async () => {
   "use strict";
+  if (!(await CatchAuth.requireRole("SELLER"))) return;
 
-  // BASE 는 auth.js(이 페이지에서 먼저 로드됨)가 전역에 넣어둔 단일 값을 사용. 안전망으로 /api/v1.
   const API_BASE = (window.CATCHCATCH_API_BASE_URL || "/api/v1").replace(/\/$/, "");
   const API_URL = `${API_BASE}/seller/products`;
   const PAGE_SIZE = 10;   // 화면에 한 번에 보여줄 개수 (페이징은 클라이언트에서)
-  const API_PAGE_SIZE = 100; // 새 백엔드 SellerProductService의 최대 허용 크기
+  const API_PAGE_SIZE = 100;
   const MAX_API_PAGES = 50; // 한 번의 화면 로드에서 최대 5,000개까지 조회
   const FILE_PREVIEW_MODE = location.protocol === "file:";
 
@@ -17,8 +17,6 @@
     unknown: { label: "상태 미확인", badgeClass: "status-unknown" }
   });
 
-  // 정규화된 상태 토큰 → 백엔드 ProductStatus 토큰 (수정 폼에 현재 상태를 전달하기 위함).
-  // 상세 조회 API가 status 를 돌려주지 않으므로 목록에서 알고 있는 상태를 URL 로 넘긴다.
   const STATUS_TO_BACKEND = Object.freeze({
     selling: "ON_SALE",
     stopped: "SUSPENDED",
@@ -63,14 +61,12 @@
     ? requestedStatus
     : "all";
 
-  // 🔧 토큰 꺼내기
   function getToken() {
     return window.CatchAuth?.getToken?.() ||
       sessionStorage.getItem("catchcatch.accessToken") ||
       localStorage.getItem("catchcatch.accessToken");
   }
 
-  // 🔧 로그인 체크: 토큰만 있으면 통과 (loginType 요구 안 함)
   function isLoggedIn() {
     return Boolean(getToken());
   }
@@ -139,7 +135,6 @@
       raw.salesStatus ?? raw.saleStatus ?? raw.productStatus ?? raw.status
     );
 
-    // 백엔드 SOLD_OUT 필터는 ON_SALE 상품에만 적용되므로 판매정지가 우선한다.
     if (["STOPPED", "STOP", "SUSPENDED", "PAUSED", "INACTIVE", "SALE_STOPPED", "SALES_STOPPED", "판매정지", "판매_정지", "판매중지"].includes(token)) {
       return "stopped";
     }
@@ -151,7 +146,6 @@
       return "selling";
     }
 
-    // soldOut 필드가 없는 구형 응답에만 재고 기반 추론을 적용한다.
     const stock = raw.totalStock ?? raw.availableStock ?? raw.stockQuantity ?? raw.stock;
     if (raw.soldOut === undefined && stock !== null && stock !== undefined && stock !== "" && Number(stock) === 0) {
       return "soldout";
@@ -209,14 +203,14 @@
           <div class="product-info">
             <a class="product-thumb-link" href="product-detail.html?id=${encodeURIComponent(product.productId)}">
               ${product.imageUrl
-                ? `<img class="product-thumb" src="${product.imageUrl}" alt="">`
+                ? `<img class="product-thumb" src="${esc(product.imageUrl)}" alt="">`
                 : `<div class="product-thumb" aria-hidden="true"></div>`}
             </a>
             <div class="product-copy">
               <a class="product-name-link" href="product-detail.html?id=${encodeURIComponent(product.productId)}">
-                <strong title="${product.productName}">${product.productName}</strong>
+                <strong title="${esc(product.productName)}">${esc(product.productName)}</strong>
               </a>
-              <span>${product.brandName || "정보 없음"}</span>
+              <span>${esc(product.brandName || "정보 없음")}</span>
             </div>
           </div>
         </td>
@@ -229,7 +223,7 @@
             <a href="${editHref(product)}">수정</a>
             <button class="delete-button" type="button"
               data-delete-id="${product.productId}"
-              data-delete-name="${product.productName}">삭제</button>
+              data-delete-name="${esc(product.productName)}">삭제</button>
           </div>
         </td>
       </tr>
@@ -246,13 +240,13 @@
       <article class="mobile-product-card">
         <a class="product-thumb-link" href="product-detail.html?id=${encodeURIComponent(product.productId)}">
           ${product.imageUrl
-            ? `<img class="product-thumb" src="${product.imageUrl}" alt="">`
+            ? `<img class="product-thumb" src="${esc(product.imageUrl)}" alt="">`
             : `<div class="product-thumb" aria-hidden="true"></div>`}
         </a>
         <div class="mobile-card-body">
           <div class="mobile-card-head">
             <a class="product-name-link" href="product-detail.html?id=${encodeURIComponent(product.productId)}">
-              <strong>${product.productName}</strong>
+              <strong>${esc(product.productName)}</strong>
             </a>
             ${statusBadge(product)}
           </div>
@@ -265,7 +259,7 @@
             <a href="${editHref(product)}">수정</a>
             <button class="delete-button" type="button"
               data-delete-id="${product.productId}"
-              data-delete-name="${product.productName}">삭제</button>
+              data-delete-name="${esc(product.productName)}">삭제</button>
           </div>
         </div>
       </article>
@@ -345,7 +339,6 @@
     return extractPageData(data);
   }
 
-  // 서버 상태 필터를 사용하되 검색은 전체 결과에 적용할 수 있도록 API 페이지를 합친다.
   async function fetchAllProducts(status) {
     const firstPage = await fetchProductPage(status, 0);
     if (!firstPage) return null;
@@ -377,7 +370,6 @@
     });
   }
 
-  // API가 이미 상태별 결과를 주므로 여기서는 검색어와 화면 페이지네이션만 처리한다.
   function applyFilter(page = 0) {
     const keyword = keywordInput.value.trim().toLowerCase();
     filteredProducts = keyword
@@ -455,7 +447,6 @@
     deleteConfirmButton.textContent = "삭제 중...";
 
     try {
-      // 🔧 토큰 방식으로 삭제
       const response = await fetch(
         `${API_URL}/${encodeURIComponent(selectedProduct.productId)}`,
         {
@@ -521,7 +512,6 @@
     });
   });
 
-  // 검색은 서버를 다시 부르지 않는다. 받아둔 전체에서 거른다.
   searchForm.addEventListener("submit", (event) => {
     event.preventDefault();
     applyFilter(0);

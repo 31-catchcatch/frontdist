@@ -1,0 +1,20 @@
+/* admin-points.css — 포인트 관리 전용
+
+   열을 4개로 줄이면서 표가 페이지 폭(1240px)을 다 차지해 빈 공간이 크게 남았다.
+   열 폭을 재분배해도 어느 한 열이 부풀 뿐이라, 표 자체를 내용에 맞는 폭으로 세운다.
+   툴바·페이저도 같이 줄여야 표와 세로선이 맞는다. */
+
+/* 좌우 auto 마진으로 가운데 정렬한다. margin 축약형을 쓰면 .toolbar 의 margin-bottom
+   과 .pager 의 margin-top 이 함께 지워지므로 좌우만 건드린다. */
+.admin-page .toolbar,
+.admin-page .table-wrap,
+.admin-page .pager {
+  max-width: 560px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* 이 표에는 grow(여백 흡수) 열을 두지 않는다.
+   560px 에서는 남는 폭이 네 열에 고르게 퍼지는 편이 낫다 —
+   한 열에 몰아주면 이름 뒤에만 빈 칸이 크게 생긴다.
+   실측(560px): 사용자ID 133 / 이름 109 / 보유 포인트 159 / 강제 조정 157 */

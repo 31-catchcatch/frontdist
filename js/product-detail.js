@@ -1,6 +1,4 @@
 // product-detail.js — 상품상세 (U-PROD-001~007)  URL: ?id=상품번호 [&brand=브랜드명]
-//
-// ⚠️ auth.js → api.js → product.js 다음에 로드된다.
 
 document.addEventListener("DOMContentLoaded", () => {
   const DIRECT_CHECKOUT_KEY = "catchcatch.directCheckoutItem";
@@ -13,14 +11,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const $ = (sel) => document.querySelector(sel);
   const won = (n) => CatchApi.won(n);
 
-  // 판매자 계정은 구매 기능(장바구니/바로구매)을 쓸 수 없다.
-  // 백엔드 SecurityConfig는 /carts, /orders 를 authenticated 로만 막고 역할은 보지 않으므로
-  // 서버는 판매자 요청도 그대로 처리한다. 즉 이 차단은 프론트 전용이다.
-  // 역할 판별은 login.js가 심어두는 loginType 을 읽는 기존 관례를 따른다.
-  //
-  // isLoggedIn() 을 먼저 보는 이유: CatchAuth.logout() 이 loginType 을 지우지 않아
-  // 판매자가 로그아웃해도 값이 "seller" 로 남는다. 이때 비로그인 방문자가 이 버튼을 누르면
-  // 로그인 유도 대신 판매자 안내가 떠버리므로, 로그인 상태일 때만 역할을 따진다.
   function blockIfSeller() {
     if (!CatchAuth.isLoggedIn()) return false;
     if (sessionStorage.getItem("catchcatch.loginType") !== "seller") return false;
@@ -63,7 +53,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // ===== 렌더 =====
   function renderProduct() {
-    // finalPrice 정규화 (상세 응답엔 finalPrice 있음)
     const price = product.price;
     const discountRate = product.discountRate || 0;
     const finalPrice = product.finalPrice != null ? product.finalPrice : price;
@@ -71,7 +60,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // 브랜드 라벨: 목록에서 넘어온 brand 우선, 없으면 판매자명
     $('[data-role="brand"]').textContent = brandFromQuery || product.sellerName || "";
-    // 판매자(상호명): 상세 응답의 sellerName. 브랜드 라벨과 별개로 항상 표시한다.
     $('[data-role="seller"]').textContent = product.sellerName || "정보 없음";
     $('[data-role="name"]').textContent = product.name;
     $('[data-role="description"]').textContent = product.description || "";
@@ -93,7 +81,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // 이미지 갤러리
-    //  1순위: 상세 이미지(product_images) → 2순위: 목록에서 넘어온 썸네일 → 3순위: 플레이스홀더
     //  (판매자 등록 상품처럼 상세 이미지가 없어도 목록 썸네일로 대표 이미지를 채운다)
     let images;
     if (Array.isArray(product.imageUrls) && product.imageUrls.length) {
@@ -113,8 +100,8 @@ document.addEventListener("DOMContentLoaded", () => {
     thumbs.innerHTML = images
       .map(
         (src, i) =>
-          `<button type="button" class="${i === 0 ? "is-active" : ""}" data-img="${src}" data-index="${i}">` +
-          `<img src="${src}" alt="상품 이미지 ${i + 1}" onerror="this.onerror=null;this.src=CatchApi.PLACEHOLDER"></button>`
+          `<button type="button" class="${i === 0 ? "is-active" : ""}" data-img="${SafeUrl(src)}" data-index="${i}">` +
+          `<img src="${SafeUrl(src)}" alt="상품 이미지 ${i + 1}" onerror="this.onerror=null;this.src=CatchApi.PLACEHOLDER"></button>`
       )
       .join("");
     galleryImages = images;
@@ -133,7 +120,7 @@ document.addEventListener("DOMContentLoaded", () => {
           const addTxt = o.additionalPrice ? ` (+${o.additionalPrice.toLocaleString("ko-KR")})` : "";
           return (
             `<button type="button" data-option-id="${o.optionId}" data-add="${o.additionalPrice || 0}" ${soldOut ? "disabled" : ""}>` +
-            `${o.optionName}${addTxt}${soldOut ? " (품절)" : ""}</button>`
+            `${esc(o.optionName)}${addTxt}${soldOut ? " (품절)" : ""}</button>`
           );
         })
         .join("");
@@ -187,9 +174,9 @@ document.addEventListener("DOMContentLoaded", () => {
         (r) =>
           "<li><div class=\"review-head\">" +
           `<span class="stars">${stars(r.rating)}</span>` +
-          `<span>${r.reviewerName}</span>` +
+          `<span>${esc(r.reviewerName)}</span>` +
           `<span>${fmtDate(r.createdAt)}</span></div>` +
-          `<p class="review-body">${r.content}</p></li>`
+          `<p class="review-body">${esc(r.content)}</p></li>`
       )
       .join("");
   }
@@ -214,12 +201,12 @@ document.addEventListener("DOMContentLoaded", () => {
         const answered = q.answered;
         const answer =
           answered && (q.answerContent || q.answer)
-            ? `<div class="qna-a"><b>판매자 답변</b><br>${q.answerContent || q.answer}</div>`
+            ? `<div class="qna-a"><b>판매자 답변</b><br>${esc(q.answerContent || q.answer)}</div>`
             : "";
         return (
           "<li><div class=\"qna-q\">" +
           `<span class="badge${answered ? " is-answered" : ""}">${answered ? "답변완료" : "답변대기"}</span>` +
-          `<div class="qna-q-body"><p class="qna-title">${q.title}</p>` +
+          `<div class="qna-q-body"><p class="qna-title">${esc(q.title)}</p>` +
           `<span class="qna-date">${fmtDate(q.createdAt)}</span></div></div>${answer}</li>`
         );
       })
@@ -266,9 +253,6 @@ document.addEventListener("DOMContentLoaded", () => {
     setTimeout(() => URL.revokeObjectURL(url), 1000);
   }
 
-  // 이미지가 API 서버(다른 오리진)에 있으면 <a download> 속성은 무시되고 그냥 이동해버린다.
-  // 그래서 blob 으로 받아 같은 오리진의 blob: URL 로 저장하고,
-  // CORS 등으로 못 받으면 새 탭으로 열어 사용자가 직접 저장하도록 안내한다.
   async function downloadCurrentImage(btn) {
     const index = currentImageIndex;
     const src = galleryImages[index];

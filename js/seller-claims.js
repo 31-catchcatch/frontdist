@@ -1,17 +1,5 @@
-// seller-claims.js — 판매자 교환/환불 관리
-// GET  /api/v1/seller/claims              (목록 조회, status 필터)
-// PUT  /api/v1/seller/claims/{id}/status  (상태 변경: 승인/반려/처리중, 교환 완료)
-// POST /api/v1/seller/refunds             (환불(RETURN) 승인·완료 — S-CLAIM-003)
-// 판매자 로그인 필요
-//
-// [개편 내역]
-// - 클레임 상세에 "고객 아이디(buyerUsername)"와 "구매일시(orderedAt)"를 표시
-//   (백엔드 SellerClaimResponse 에 두 필드가 추가됨)
-// - 상태 변경 드롭다운을 없애고, 현재 상태에서 가능한 처리만 버튼으로 노출
-//   (승인/반려/처리시작/교환완료 + 환불 승인이 "처리하기" 한곳에 모임)
-// - 상태/유형을 색상 배지로 표시해 한눈에 구분
-
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
+  if (!(await CatchAuth.requireRole("SELLER"))) return;
 
   const API = (
     window.CATCHCATCH_API_BASE_URL || "/api/v1"
@@ -25,12 +13,10 @@ document.addEventListener("DOMContentLoaded", () => {
     PROCESSING: "처리중",
     COMPLETED: "완료",
   };
-  // 백엔드 ClaimType enum: RETURN(환불/반품), EXCHANGE(교환)
   const TYPE_KO = {
     EXCHANGE: "교환",
     RETURN: "환불",
   };
-  // 화면 → 백엔드 (조회 필터 보낼 때)
   const STATUS_EN = {
     "신청": "REQUESTED",
     "접수": "ACCEPTED",
@@ -53,14 +39,6 @@ document.addEventListener("DOMContentLoaded", () => {
     COMPLETED: "act-success",
   };
 
-  // 백엔드가 PUT /seller/claims/{id}/status 로 허용하는 전이가 이게 전부다.
-  // (SellerClaimService.validateStatusChange 기준 — 상태뿐 아니라 "유형"까지 본다)
-  //   신청  → 접수 / 반려      (교환·환불 공통)
-  //   접수  → 처리중           (교환·환불 공통)
-  //   처리중 → 완료            (교환 전용!)
-  //
-  // 환불(RETURN)의 완료는 이 API로 못 간다. 결제 취소·포인트 복원이 얽혀 있어
-  // POST /seller/refunds 로만 처리된다.
   function nextStatuses(claim) {
     switch (claim.status) {
       case "REQUESTED":
@@ -68,14 +46,12 @@ document.addEventListener("DOMContentLoaded", () => {
       case "ACCEPTED":
         return ["PROCESSING"];
       case "PROCESSING":
-        // 교환만 여기서 완료된다. 환불은 아래 canRefund 경로로.
         return claim.claimType === "EXCHANGE" ? ["COMPLETED"] : [];
       default:
         return []; // 반려·완료는 종료 상태
     }
   }
 
-  // 환불 승인(최종 완료) 가능 조건 (SellerRefundService.validateRefundableClaim 기준)
   const canRefund = (claim) =>
     claim.claimType === "RETURN" &&
     ["ACCEPTED", "PROCESSING"].includes(claim.status);
@@ -151,7 +127,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (!res.ok) throw new Error("클레임 조회 실패: " + res.status);
 
       const json = await res.json();
-      claims = json.data.content;   // 페이지 응답의 content
+      claims = json.data.content;
 
       renderList();
       showList();
@@ -180,7 +156,7 @@ document.addEventListener("DOMContentLoaded", () => {
       return `
         <tr class="claim-item" data-id="${c.claimId}">
           <td>${c.claimId}</td>
-          <td class="col-product">${c.productName}</td>
+          <td class="col-product">${esc(c.productName)}</td>
           <td><span class="claim-type-badge ${typeClass}">${typeKo}</span></td>
           <td><span class="claim-status-badge ${statusBadgeClass(c.status)}">${statusKo}</span></td>
         </tr>
@@ -322,8 +298,6 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // ===== 환불(RETURN) 승인·완료 처리 =====
-  // POST /api/v1/seller/refunds  { claimId, memo }
-  // 백엔드가 클레임 완료, 배송상태 REFUNDED 전환, 포인트·쿠폰 복원(주문 전체 환불 시)을 수행한다.
   async function doRefund() {
     if (!selected) return;
 
@@ -331,7 +305,6 @@ document.addEventListener("DOMContentLoaded", () => {
       alert("환불(반품) 요청 건에서만 환불 승인이 가능합니다.\n교환 건은 ‘교환 완료’로 처리해 주세요.");
       return;
     }
-    // 백엔드는 ACCEPTED 또는 PROCESSING 상태에서만 환불을 허용한다.
     if (!["ACCEPTED", "PROCESSING"].includes(selected.status)) {
       alert("접수 또는 처리중 상태의 환불 건만 승인할 수 있습니다.");
       return;

@@ -1,9 +1,3 @@
-/*
- * 서버 계약: POST /api/v1/admin/users
- * 요청 본문: { username: string, password: string }  (백엔드 LoginRequest, 둘 다 필수)
- * 성공 응답: { data: { accessToken: string, ... } }
- * 서버가 DB의 관리자 계정(role=ADMIN)과 비밀번호를 검증한 뒤에만 토큰을 발급한다.
- */
 (function () {
   "use strict";
 

@@ -1,5 +1,4 @@
 // my-reviews.js — 내 리뷰 목록
-// GET /api/v1/users/me/reviews (백엔드 작성완료)
 // 로그인 필요 페이지
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -24,7 +23,7 @@ document.addEventListener("DOMContentLoaded", () => {
   function itemHTML(r) {
     // 리뷰에 첨부한 사진 (있을 때만)
     const photoHTML = r.imageUrl
-      ? `<div class="ri-photos"><img src="${r.imageUrl}" alt="리뷰 사진"></div>`
+      ? `<div class="ri-photos"><img src="${esc(r.imageUrl)}" alt="리뷰 사진"></div>`
       : "";
 
     // 상품 썸네일 (없으면 회색 박스)
@@ -36,11 +35,11 @@ document.addEventListener("DOMContentLoaded", () => {
     return `
       <li class="review-item" data-id="${r.reviewId}">
         <a href="product-detail.html?id=${encodeURIComponent(r.productId)}" class="ri-thumb">
-          <img src="${thumb}" alt="${r.productName}">
+          <img src="${SafeUrl(thumb)}" alt="${esc(r.productName)}">
         </a>
         <div class="ri-body">
           <div class="ri-product">
-            <a href="product-detail.html?id=${encodeURIComponent(r.productId)}" class="ri-name">${r.productName}</a>
+            <a href="product-detail.html?id=${encodeURIComponent(r.productId)}" class="ri-name">${esc(r.productName)}</a>
           </div>
 
           <div class="ri-meta">
@@ -48,7 +47,7 @@ document.addEventListener("DOMContentLoaded", () => {
             <span class="ri-date">${date}</span>
           </div>
 
-          <p class="ri-text">${r.content}</p>
+          <p class="ri-text">${esc(r.content)}</p>
           ${photoHTML}
 
           <div class="ri-actions">
@@ -94,8 +93,6 @@ document.addEventListener("DOMContentLoaded", () => {
   // ===== API에서 진짜 데이터 받아오기 =====
   async function loadMyReviews() {
     try {
-      // CatchApi.page 가 BASE(/api/v1)·인증(Bearer)·봉투해제·페이지정규화를 전담한다.
-      // GET /api/v1/users/me/reviews?page=&size= → { content, page, totalElements, totalPages, ... }
       const result = await CatchApi.page("/users/me/reviews", { page: state.page, size: PER_PAGE });
 
       myReviews = result.content;
@@ -127,8 +124,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // 수정 → 리뷰 작성 페이지(작성/수정 겸용)로
     if (action === "edit") {
-      // 백엔드에 리뷰 단건 GET 이 없으므로, 프리필용으로 현재 리뷰 객체를
-      // sessionStorage 에 실어 넘긴다. (review-write.js 가 읽어 폼을 채움)
       const review = myReviews.find((r) => Number(r.reviewId) === id);
       if (review) {
         try {
@@ -139,8 +134,6 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    // 삭제 → DELETE /api/v1/reviews/{reviewId}
-    //   백엔드: 본인 작성 리뷰만 논리 삭제(soft delete). 성공 시 ApiResponse(data 없음).
     if (action === "delete") {
       if (!confirm("이 리뷰를 삭제할까요?")) return;
 
@@ -148,7 +141,7 @@ document.addEventListener("DOMContentLoaded", () => {
       btn.disabled = true; // 중복 클릭 방지
 
       try {
-        await CatchApi.del(`/reviews/${id}`); // BASE(/api/v1) 자동, 봉투 해제·에러 throw
+        await CatchApi.del(`/reviews/${id}`);
 
         // 삭제 후엔 총 건수·페이지 수·항목 위치가 바뀌므로 현재 페이지를 서버에서 다시 로드한다.
         // (현재 페이지가 비면 loadMyReviews 가 한 페이지 앞으로 보정)

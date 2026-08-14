@@ -1,23 +1,9 @@
-/* =========================================================
-   캐치캐치 상품 공통 모듈 (js/product.js)
-   ---------------------------------------------------------
-   ⚠️ auth.js → api.js 다음에 로드할 것.
-
-   데이터와 동작만 제공한다. 카드 마크업은 페이지별로 유지한다
-   (index/product-list/wishlist 의 카드 CSS 가 서로 다르므로).
-
-   백엔드 제약 캡슐화:
-   - 목록/상세에 liked 없음 → loadLikedIds() 로 위시리스트를 한 번 받아 Set 구성
-   - 목록 카드에 평점/리뷰수 없음 → fetchReviewMeta() 로 상품별 1회 조회
-   - 최근 본 상품은 백엔드 범위 밖 → localStorage
-   ========================================================= */
 (function (global) {
   "use strict";
 
   const RECENT_KEY = "catchcatch.recentViews";
   const RECENT_MAX = 20;
 
-  // 백엔드 응답(ProductListResponse / WishlistItemResponse)을 하나로 정규화
   function normalize(raw) {
     if (!raw) return null;
     const productId = raw.productId != null ? raw.productId : raw.id;
@@ -28,13 +14,11 @@
     return {
       productId,
       name: raw.name || "",
-      brandName: raw.brandName || "", // wishlist 응답엔 brandName 이 없음 → ""
+      brandName: raw.brandName || "",
       price,
       discountRate,
       finalPrice,
       thumbnailUrl: raw.thumbnailUrl || "",
-      // 상세 응답엔 brandName·thumbnailUrl 이 없으므로, 목록에서 알고 있을 때 쿼리로 넘겨 폴백에 쓴다.
-      // (상세 이미지 product_images 가 비어 있어도 목록 썸네일로 대표 이미지를 채우기 위함)
       detailUrl:
         "product-detail.html?id=" +
         productId +
@@ -109,7 +93,6 @@
         return null;
       }
       const data = await CatchApi.post("/products/" + productId + "/like");
-      // 응답 { liked: boolean }
       return data && typeof data.liked === "boolean" ? data.liked : null;
     },
 

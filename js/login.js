@@ -1,6 +1,4 @@
 (() => {
-  // BASE 는 auth.js 가 계산해 전역(CATCHCATCH_API_BASE_URL)에 넣어둔 단일 값을 사용.
-  // (login.html 이 login.js 보다 먼저 auth.js 를 로드한다. 미로드 대비 안전망으로 /api/v1)
   const API_BASE = window.CATCHCATCH_API_BASE_URL || "/api/v1";
 
   const apiMap = {
@@ -64,9 +62,6 @@
     if (!username.value.trim() || !password.value) return;
 
     try {
-      // 백엔드 요청 필드가 다르다:
-      //  - 일반 사용자 로그인: { username, password }
-      //  - 판매자 로그인(/auth/seller/login): { loginId, password }
       const idValue = username.value.trim();
       const payload = loginType.value === "seller"
         ? { loginId: idValue, password: password.value }
@@ -86,9 +81,6 @@
         throw new Error(message);
       }
 
-      // 로그인 성공: 발급된 JWT 토큰을 저장한다.
-      // 이후 모든 보호 API 요청은 이 토큰을 Authorization: Bearer 헤더로 실어 보낸다
-      // (js/auth.js의 전역 fetch 인터셉터가 자동으로 처리).
       const tokenData = (result && result.data) || {};
       if (tokenData.accessToken) {
         localStorage.setItem("catchcatch.accessToken", tokenData.accessToken);
@@ -100,13 +92,10 @@
       // 로그인 성공 상태 저장
       sessionStorage.setItem("catchcatch.loggedIn", "true");
       sessionStorage.setItem("catchcatch.loginType", loginType.value);
-
-      const requestedRedirect =
-        new URLSearchParams(location.search).get("redirect");
-
+      const requestedRedirect = new URLSearchParams(location.search).get("redirect");
       location.href = loginType.value === "seller"
         ? "seller-dashboard.html"
-        : (requestedRedirect || "index.html");
+        : CatchAuth.safeRedirect("index.html");
     } catch (error) {
       loginMessage.textContent =
         error instanceof TypeError

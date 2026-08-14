@@ -1,14 +1,6 @@
 (() => {
   "use strict";
 
-  /*
-   * 입점 신청 페이지는 로그인한 사용자만 접근할 수 있습니다.
-   * 로그인 성공 시 login.html에서 아래 값을 저장해야 합니다.
-   *
-   * sessionStorage.setItem("catchcatch.loggedIn", "true");
-   * sessionStorage.setItem("catchcatch.loginType", "seller");
-   */
-
   function isLoggedIn() {
     return (
       sessionStorage.getItem("catchcatch.loggedIn") === "true" ||
@@ -47,11 +39,6 @@
     "image/png"
   ];
 
-  /*
-   * 현재 API 정의서에는 일반/판매자 공통 로그아웃 URI가
-   * /api/v1/auth/user/logout 으로 작성되어 있습니다.
-   * 판매자 전용 로그아웃 URI가 생기면 아래 주소만 변경하면 됩니다.
-   */
   async function logout() {
     try {
       await fetch("/api/v1/auth/user/logout", {
@@ -187,15 +174,6 @@
 
       submitButton.textContent = "신청서 제출 중...";
 
-      /*
-       * 키 이름은 백엔드 SellerApplicationCreateRequest 에 맞춘다.
-       *  businessNumber      → businessRegistrationNumber
-       *  managerPhone        → contactNumber
-       *  businessRegistrationUrl   → businessRegistrationFileUrl
-       *  mailOrderRegistrationUrl  → mailOrderReportFileUrl
-       * businessType·businessCategory·managerName·managerEmail 은 백엔드에
-       * 저장 필드가 없어 무시되지만, 폼에서 수집한 값이라 그대로 함께 보낸다.
-       */
       const payload = {
         businessName: document.getElementById("businessName").value.trim(),
         brandName: document.getElementById("brandName").value.trim(),

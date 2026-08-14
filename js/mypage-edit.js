@@ -51,6 +51,7 @@
     moveToLogin();
     return;
   }
+  if (!FILE_PREVIEW_MODE && window.CatchAuth) { CatchAuth.requireRole(); }
 
   function handleUnauthorized(response) {
     if (response.status !== 401 && response.status !== 403) {
@@ -284,10 +285,6 @@
     submitButton.textContent = "저장 중...";
 
     try {
-      /*
-       * 백엔드 Update DTO의 필드명이 다르면 createPayload()의
-       * 키 이름만 실제 명세에 맞게 변경하면 됩니다.
-       */
       const response = await fetch(PROFILE_API, {
         method: "PUT",
         headers: {

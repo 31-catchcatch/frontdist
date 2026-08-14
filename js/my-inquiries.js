@@ -1,7 +1,4 @@
 // my-inquiries.js — 나의 1:1 문의 내역
-//   GET /api/v1/customer-center/inquiries (본인 문의, 로그인 필요)
-//
-// ⚠️ auth.js → api.js 다음에 로드된다.
 
 document.addEventListener("DOMContentLoaded", () => {
   // 로그인 필요 페이지
@@ -12,10 +9,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const errorEl = document.querySelector('[data-role="inquiry-error"]');
   const totalEl = document.querySelector('[data-role="total"]');
 
-  // 목록 URL의 redirect 값을 상세 페이지까지 그대로 전달한다.
-  // 값을 검증하지 않으므로 외부 URL도 상세 페이지의 복귀 목적지가 된다.
   const pageParams = new URLSearchParams(location.search);
-  const redirectTarget = pageParams.get("redirect") || "my-inquiries.html";
+  const redirectTarget = CatchAuth.safeRedirect("my-inquiries.html");
 
   function detailUrl(inquiryId) {
     const detailParams = new URLSearchParams({
@@ -64,7 +59,7 @@ document.addEventListener("DOMContentLoaded", () => {
             ${statusBadge}
             <span class="inq-date">${fmtDate(inq.createdAt)}</span>
           </div>
-          <p class="inq-title">${inq.title}</p>
+          <p class="inq-title">${esc(inq.title)}</p>
         </a>
         <div class="inq-actions">
           <button type="button" class="inq-delete" data-action="delete" data-id="${inq.id}"
@@ -74,7 +69,6 @@ document.addEventListener("DOMContentLoaded", () => {
     `;
   }
 
-  // 문의 삭제 (본인 문의만) — DELETE /customer-center/inquiries/{id}
   async function deleteInquiry(inquiryId, buttonEl) {
     if (!confirm("이 문의를 삭제할까요?\n삭제한 문의는 복구할 수 없습니다.")) return;
 

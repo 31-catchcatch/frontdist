@@ -1,29 +1,6 @@
-/* =========================================================
-   캐치캐치 공통 API 모듈 (js/api.js)
-   ---------------------------------------------------------
-   일반 사용자(구매자) 화면용 fetch 래퍼.
-   admin-api.js 를 일반 사용자용으로 미러링한 것.
-
-   ⚠️ 반드시 auth.js 다음에 로드할 것.
-      auth.js 의 전역 fetch 인터셉터가 먼저 설치돼야
-      /api/v1/ 요청에 Authorization: Bearer 가 자동으로 붙는다.
-      또한 그 인터셉터는 fetch(문자열URL, opts) 형태에서만 동작하므로
-      이 모듈은 항상 URL 을 문자열로 넘긴다. (new Request 금지)
-
-   응답 규약:
-   - ApiResponse = { success, message, data }  (data 가 null 이면 필드 자체가 없음)
-   - PageResponse = { content, page(0-index), size, totalElements, totalPages, last }
-     단, QnA 만 content 대신 qnaList 를 쓴다 → page() 가 흡수한다.
-
-   사용법:
-     const list = await CatchApi.get("/products", { page:0, size:12, sort:"createdAt,desc" });
-     const page = await CatchApi.page("/products", { ... });
-   ========================================================= */
 (function (global) {
   "use strict";
 
-  // BASE 는 auth.js 가 계산해 전역(CATCHCATCH_API_BASE_URL)에 넣어둔 "단일 소스" 값을 그대로 쓴다.
-  // (api.js 는 항상 auth.js 다음에 로드되므로 이 시점엔 이미 설정돼 있음. 미로드 대비 안전망으로 /api/v1)
   const BASE = global.CATCHCATCH_API_BASE_URL || "/api/v1";
 
   // 이미지 없을 때 쓰는 인라인 SVG 플레이스홀더 (외부 요청 0)
@@ -66,7 +43,6 @@
     return s ? "?" + s : "";
   }
 
-  // 코어: ApiResponse 봉투를 벗기고 data 를 반환
   async function request(method, path, { body, query } = {}) {
     const url = BASE + path + toQuery(query);
 
@@ -78,7 +54,6 @@
 
     let response;
     try {
-      // ⚠️ url 은 반드시 문자열 (auth.js 인터셉터 조건)
       response = await fetch(url, opts);
     } catch (networkError) {
       throw new ApiError("서버에 연결할 수 없습니다. 잠시 후 다시 시도해 주세요.", 0);
@@ -96,7 +71,6 @@
       throw new ApiError(message, response.status);
     }
 
-    // data 필드가 없으면(=null 이라 JsonInclude 로 빠짐) null 반환
     return payload ? (payload.data !== undefined ? payload.data : null) : null;
   }
 
@@ -115,8 +89,6 @@
       return request("DELETE", path, { query });
     },
 
-    // 목록 조회 → PageResponse 를 항상 동일 구조로 정규화.
-    // QnA 특례(content 대신 qnaList)와 data:null 을 여기서 한 번에 흡수한다.
     async page(path, query) {
       const data = await request("GET", path, { query });
       const body = data || {};

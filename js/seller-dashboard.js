@@ -1,4 +1,5 @@
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
+  if (!(await CatchAuth.requireRole("SELLER"))) return;
   const API_BASE = (
     window.CATCHCATCH_API_BASE_URL || "/api/v1"
   ).replace(/\/$/, "");

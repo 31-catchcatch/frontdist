@@ -1,0 +1,6 @@
+User-agent: *
+# 관리자 콘솔 (admin-login.html·admin-dashboard.html 등 모든 admin-* 페이지)
+Disallow: /admin
+# 백엔드 API / 업로드 저장소
+Disallow: /api/
+Disallow: /uploads/

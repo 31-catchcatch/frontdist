@@ -1,6 +1,20 @@
-/* 관리자 인증 상태는 일반 사용자 인증과 분리해서 세션 단위로만 보관한다. */
 (function (global) {
   "use strict";
+
+  function esc(s) {
+    return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+    });
+  }
+
+global.esc = esc;
+
+  function safeUrl(v) {
+    try {
+      const u = new URL(v, location.href);
+      return ["http:", "https:", "data:", "blob:"].includes(u.protocol) ? u.href : "#";
+    } catch (_) { return "#"; }
+  }
 
   const KEY_TOKEN = "catchcatch.adminToken";
   const KEY_FLAG = "catchcatch.adminLoggedIn";

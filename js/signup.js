@@ -1,9 +1,5 @@
-// signup.js — 회원가입 페이지 mock 스크립트
-
 document.addEventListener("DOMContentLoaded", () => {
 
-  // API base: auth.js 가 환경(file://·:5500 → localhost:8080, 그 외 → /api/v1)을 판별해
-  // 넣어둔 값을 쓴다. 상대경로를 하드코딩하면 file:// 로 열었을 때 백엔드에 못 닿는다.
   const API_BASE = window.CATCHCATCH_API_BASE_URL || "/api/v1";
 
   // ===== 유형 선택 =====
@@ -39,8 +35,6 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    // 형식(이메일·비밀번호·전화번호) 검증은 백엔드가 최종 제출 시 처리한다.
-    // 프론트에서는 백엔드가 볼 수 없는 것만 확인한다: 비밀번호 일치 / 아이디 중복확인 / 약관.
     if (document.getElementById("pw").value !== document.getElementById("pwConfirm").value) {
       alert("비밀번호가 일치하지 않습니다.");
       return;
@@ -100,7 +94,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     checkUsernameBtn.disabled = true;
     try {
-      // 백엔드가 @RequestParam 이라 body가 아니라 쿼리스트링으로 보내야 한다.
       const res = await fetch(
         `${API_BASE}/auth/check-username?username=${encodeURIComponent(val)}`,
         { method: "POST" }
@@ -113,7 +106,6 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
       }
 
-      // data.data === true 가 "사용 가능"
       if (data.data) {
         checkedUsername = val;
         msg.textContent = `'${val}' 사용 가능한 아이디입니다.`;
@@ -141,7 +133,6 @@ document.addEventListener("DOMContentLoaded", () => {
     let interval = null;
 
     sendBtn.addEventListener("click", () => {
-      // TODO: 인증코드 발송 API 호출
       group.hidden = false;
       clearInterval(interval);
 
@@ -176,7 +167,6 @@ document.addEventListener("DOMContentLoaded", () => {
         msgEl.className = "field-msg error";
         return;
       }
-      // TODO: 실제 검증 API 응답으로 교체
       clearInterval(interval);
       msgEl.textContent = "인증이 완료되었습니다.";
       msgEl.className = "field-msg ok";
@@ -210,7 +200,6 @@ document.addEventListener("DOMContentLoaded", () => {
     password: document.getElementById("pw").value,
     name: document.getElementById("name").value.trim(),
     email: document.getElementById("email").value.trim(),
-    // 하이픈 등 제거해서 숫자만 (백엔드는 \d{9,11} 요구)
     phoneNumber: document.getElementById("phone").value.replace(/[^0-9]/g, ""),
   };
 

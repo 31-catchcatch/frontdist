@@ -1,4 +1,5 @@
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
+  if (!(await CatchAuth.requireRole("SELLER"))) return;
   const tabs = [...document.querySelectorAll(".tab-btn")];
   const contents = [...document.querySelectorAll(".tab-content")];
 
@@ -82,7 +83,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         return `
           <tr data-product-id="${item.productId ?? ""}">
-            <td>${productName}</td>
+            <td>${esc(productName)}</td>
             <td>${orderCount.toLocaleString("ko-KR")}건</td>
             <td>${soldQuantity.toLocaleString("ko-KR")}개</td>
             <td>${currency.format(salesAmount)}</td>

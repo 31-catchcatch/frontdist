@@ -1,9 +1,3 @@
-// home.js — 메인 페이지 (index.html)
-//   - 활성 배너: GET /api/v1/banners (DB의 노출 기간/순서 적용)
-//   - 현재 상품 12개: GET /api/v1/products?sort=createdAt,desc
-//
-// ⚠️ auth.js → api.js → product.js 다음에 로드된다.
-
 document.addEventListener("DOMContentLoaded", () => {
   const grid = document.getElementById("grid");
   const slider = document.getElementById("adSlider");
@@ -45,7 +39,7 @@ document.addEventListener("DOMContentLoaded", () => {
   function thumbHTML(product, index) {
     if (product.thumbnailUrl) {
       return (
-        `<img class="thumb-img" src="${resolveAssetUrl(product.thumbnailUrl)}" alt="${product.name}"` +
+        `<img class="thumb-img" src="${resolveAssetUrl(product.thumbnailUrl)}" alt="${esc(product.name)}"` +
         ` onerror="this.onerror=null;this.src=CatchApi.PLACEHOLDER">`
       );
     }
@@ -59,20 +53,20 @@ document.addEventListener("DOMContentLoaded", () => {
   function card(product, index) {
     const liked = likedIds.has(product.productId) ? " is-liked" : "";
     const brand = product.brandName
-      ? `<span class="brand-nm">${product.brandName}</span>`
+      ? `<span class="brand-nm">${esc(product.brandName)}</span>`
       : `<span class="brand-nm">&nbsp;</span>`;
     const price = product.discountRate > 0
       ? `<span class="disc">${product.discountRate}%</span><span class="price tnum">${CatchApi.won(product.finalPrice)}</span><span class="was tnum">${CatchApi.won(product.price)}</span>`
       : `<span class="price tnum">${CatchApi.won(product.finalPrice)}</span>`;
 
-    return `<article class="card" tabindex="0" data-id="${product.productId}" data-href="${product.detailUrl}" aria-label="${product.name} 상세 보기">
+    return `<article class="card" tabindex="0" data-id="${product.productId}" data-href="${esc(product.detailUrl)}" aria-label="${esc(product.name)} 상세 보기">
       <div class="thumb">
         ${thumbHTML(product, index)}
         <button class="like${liked}" data-like-id="${product.productId}" aria-label="찜하기"><svg viewBox="0 0 24 24"><path d="M12 20s-7-4.6-7-9.3A3.7 3.7 0 0 1 12 8a3.7 3.7 0 0 1 7 2.7C19 15.4 12 20 12 20Z"/></svg></button>
       </div>
       <div class="meta">
         ${brand}
-        <span class="prod-nm">${product.name}</span>
+        <span class="prod-nm">${esc(product.name)}</span>
         <div class="price-row">${price}</div>
       </div>
     </article>`;

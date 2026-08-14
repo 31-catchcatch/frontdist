@@ -1,6 +1,3 @@
-/* 관리자 - 전체 Q&A 모니터링 (GET /admin/qna)
-   ※ 백엔드 QnaResponse에는 작성자 이름이 없어 사용자#ID로, 판매자 칸은 상품명으로 대체.
-     문의 유형은 상품문의만 존재. */
 (function () {
   "use strict";
 
@@ -37,9 +34,9 @@
       <tr data-id="${q.id}">
         <td class="num">${q.id}</td>
         <td><span class="tag role">상품문의</span></td>
-        <td class="strong">${q.title}</td>
+        <td class="strong">${esc(q.title)}</td>
         <td>${q.author}</td>
-        <td class="muted">${q.product}</td>
+        <td class="muted">${esc(q.product)}</td>
         <td><span class="tag ${q.status}">${STATUS[q.status]}</span></td>
         <td class="muted">${q.created}</td>
         <td><button class="btn sm" data-act="view">내용 보기</button></td>

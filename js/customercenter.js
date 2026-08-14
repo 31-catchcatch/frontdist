@@ -147,7 +147,7 @@
           aria-controls="faqAnswer${index}"
         >
           <span class="question-mark">Q</span>
-          <strong>${faq.question}</strong>
+          <strong>${esc(faq.question)}</strong>
           <span class="toggle-mark" aria-hidden="true">＋</span>
         </button>
 
@@ -235,6 +235,7 @@
       moveToLogin();
       return;
     }
+    if (!FILE_PREVIEW_MODE && window.CatchAuth && !(await CatchAuth.requireRole())) return;
 
     if (!inquiryForm.checkValidity()) {
       inquiryForm.reportValidity();
@@ -290,9 +291,6 @@
       resetInquiryForm();
       alert("등록되었습니다.");
 
-      // 등록 응답에 생성된 문의 ID가 없어서(백엔드가 data:null 반환),
-      // 방금 등록한 문의 = 최신순 목록의 첫 건을 조회해 그 상세로 이동한다.
-      // 조회에 실패하면 문의 내역 목록으로 폴백한다.
       let newInquiryId = null;
       try {
         const listResponse = await fetch(`${INQUIRY_API}?page=0&size=1`, {

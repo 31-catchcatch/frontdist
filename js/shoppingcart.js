@@ -5,7 +5,6 @@
   const CHECKOUT_API = "/api/v1/orders/checkout";
   const FILE_PREVIEW_MODE = location.protocol === "file:";
 
-  // 배송비 정책의 SSOT는 백엔드(OrderService)다. 아래 값은 서버에서 정책을 받지 못했을 때만 쓰는 폴백이다.
   const FALLBACK_SHIPPING_FEE = 3000;
   const FALLBACK_FREE_SHIPPING_THRESHOLD = 50000;
 
@@ -151,19 +150,19 @@
           type="checkbox"
           data-select-id="${item.cartItemId}"
           ${item.selected ? "checked" : ""}
-          aria-label="${item.productName} 선택"
+          aria-label="${esc(item.productName)} 선택"
         >
 
         ${
           item.imageUrl
-            ? `<img class="cart-thumb" src="${item.imageUrl}" alt="">`
+            ? `<img class="cart-thumb" src="${esc(item.imageUrl)}" alt="">`
             : '<div class="cart-thumb" aria-hidden="true"></div>'
         }
 
         <div class="cart-info">
-          <span class="cart-brand">${item.brandName}</span>
-          <strong class="cart-name">${item.productName}</strong>
-          <span class="cart-option">${item.optionText || "옵션 없음"}</span>
+          <span class="cart-brand">${esc(item.brandName)}</span>
+          <strong class="cart-name">${esc(item.productName)}</strong>
+          <span class="cart-option">${esc(item.optionText || "옵션 없음")}</span>
 
           <div class="cart-controls">
             <div class="quantity-control">
@@ -225,10 +224,6 @@
     checkoutButton.disabled = selectedItems.length === 0;
   }
 
-  /**
-   * 배송비 정책을 서버에서 받아온다. 체크아웃 페이지와 같은 값을 쓰기 위한 것이므로
-   * 실패해도 장바구니 자체는 폴백 값으로 계속 동작시킨다(로그인 처리는 loadCart가 담당).
-   */
   async function loadShippingPolicy() {
     try {
       const response = await fetch(CHECKOUT_API, {

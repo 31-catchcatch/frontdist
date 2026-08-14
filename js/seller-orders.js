@@ -1,5 +1,6 @@
-(() => {
+(async () => {
   "use strict";
+  if (!(await CatchAuth.requireRole("SELLER"))) return;
 
   const ORDERS_API = "/api/v1/seller/orders";
   const PAGE_SIZE = 10;
@@ -308,12 +309,9 @@
   }
 
   function canUpdateDelivery(status) {
-    // 백엔드는 결제완료/배송준비 상태에서만 택배사·운송장 등록을 허용한다.
     return ["PAYMENT_COMPLETED", "PREPARING"].includes(status.code);
   }
 
-  // 배송완료 처리는 배송중(SHIPPING) 상태에서만 가능하다. (백엔드 completeDelivery)
-  // 이 처리가 끝나야 구매자의 구매확정·정산이 진행된다.
   function canCompleteDelivery(status) {
     return status.code === "SHIPPING";
   }
@@ -353,18 +351,18 @@
           <div class="product-info">
             ${
               order.imageUrl
-                ? `<img class="product-thumb" src="${order.imageUrl}" alt="">`
+                ? `<img class="product-thumb" src="${esc(order.imageUrl)}" alt="">`
                 : `<div class="product-thumb" aria-hidden="true"></div>`
             }
             <div class="product-copy">
-              <strong>${order.productName}</strong>
+              <strong>${esc(order.productName)}</strong>
               <span>${order.optionText || "옵션 없음"}</span>
             </div>
           </div>
         </td>
         <td>
-          <strong class="buyer-name">${order.buyerName}</strong>
-          ${order.buyerUsername ? `<span class="buyer-id">@${order.buyerUsername}</span>` : ""}
+          <strong class="buyer-name">${esc(order.buyerName)}</strong>
+          ${order.buyerUsername ? `<span class="buyer-id">@${esc(order.buyerUsername)}</span>` : ""}
         </td>
         <td>${Number(order.quantity).toLocaleString("ko-KR")}개</td>
         <td>${formatPrice(order.paymentAmount)}</td>
@@ -394,17 +392,17 @@
         <div class="mobile-product-row">
           ${
             order.imageUrl
-              ? `<img class="product-thumb" src="${order.imageUrl}" alt="">`
+              ? `<img class="product-thumb" src="${esc(order.imageUrl)}" alt="">`
               : `<div class="product-thumb" aria-hidden="true"></div>`
           }
           <div class="product-copy">
-            <strong>${order.productName}</strong>
+            <strong>${esc(order.productName)}</strong>
             <span>${order.optionText || "옵션 없음"}</span>
           </div>
         </div>
 
         <div class="mobile-order-meta">
-          <span>구매자</span><b>${order.buyerName}${order.buyerUsername ? ` <span class="buyer-id-inline">@${order.buyerUsername}</span>` : ""}</b>
+          <span>구매자</span><b>${esc(order.buyerName)}${order.buyerUsername ? ` <span class="buyer-id-inline">@${esc(order.buyerUsername)}</span>` : ""}</b>
           <span>수량</span><b>${Number(order.quantity).toLocaleString("ko-KR")}개</b>
           <span>결제 금액</span><b>${formatPrice(order.paymentAmount)}</b>
         </div>
@@ -513,8 +511,6 @@
       return;
     }
 
-    // 백엔드(SellerOrderSearchRequest)는 page/size/deliveryStatus만 지원한다.
-    // keyword/sort는 서버에 없는 파라미터라 보내지 않고, keyword는 받아온 페이지 안에서만 클라이언트 필터링한다.
     const params = new URLSearchParams({
       page: String(page),
       size: String(PAGE_SIZE)
@@ -678,8 +674,6 @@
     }
   }
 
-  // 배송중 → 배송완료 처리. PATCH /seller/orders/{id}/deliver-complete
-  // 이 처리가 끝나야 구매자가 구매확정을 할 수 있고 정산도 생성된다(= 결제 활동 종료).
   async function completeDelivery(orderDetailId) {
     const order = currentOrders.find(
       (item) => String(item.orderDetailId) === String(orderDetailId)

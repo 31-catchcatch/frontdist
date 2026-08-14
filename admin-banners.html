@@ -3,10 +3,11 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="캐치캐치 관리자 · 전체 상품 관리">
-  <title>상품 관리 · 캐치캐치 관리자</title>
+  <meta name="description" content="캐치캐치 관리자 · 메인 배너 관리">
+  <title>배너 관리 · 캐치캐치 관리자</title>
   <link rel="stylesheet" href="css/common.css">
   <link rel="stylesheet" href="css/admin.css">
+  <link rel="stylesheet" href="css/admin-banners.css">
   <script src="js/admin-auth.js"></script>
   <script>AdminAuth.requireLogin();</script>
 </head>
@@ -16,12 +17,12 @@
     <nav aria-label="관리자 메뉴">
       <a href="admin-dashboard.html">대시보드</a>
       <a href="admin-users.html">사용자</a>
-      <a class="is-current" href="admin-products.html">상품</a>
+      <a href="admin-products.html">상품</a>
       <a href="admin-seller-applications.html">입점심사</a>
       <a href="admin-sellers.html">입점업체</a>
       <a href="admin-coupons.html">쿠폰</a>
       <a href="admin-points.html">포인트</a>
-      <a href="admin-banners.html">배너</a>
+      <a class="is-current" href="admin-banners.html">배너</a>
       <a href="admin-qna.html">Q&amp;A</a>
       <a href="admin-inquiries.html">1:1 문의</a>
       <a href="admin-settlements.html">정산</a>
@@ -35,39 +36,44 @@
   <main class="admin-page wrap">
     <div class="page-head">
       <div>
-        <p class="kicker">PRODUCT MODERATION</p>
-        <h1>전체 상품 관리</h1>
-        <p class="desc">등록된 전체 상품을 조회하고, 불법·위험·신고 상품을 강제로 노출 중지 또는 삭제합니다.</p>
+        <p class="kicker">BANNER MANAGEMENT</p>
+        <h1>배너 관리</h1>
+        <p class="desc">메인 페이지 상단 슬라이더에 노출되는 프로모션 배너를 조회하고 관리합니다.</p>
       </div>
-      <span class="preview-badge">실시간 데이터 · GET/DELETE /api/v1/admin/products</span>
+      <span class="preview-badge" id="apiBadge">배너 API 확인 중…</span>
     </div>
+
+    <!-- 관리자 배너 API 가 없을 때만 표시된다 (js/admin-banners.js 의 applyMode) -->
+    <div class="api-notice" id="apiNotice" role="status" hidden></div>
 
     <div class="toolbar">
       <label class="search-box">
         <svg class="icn" viewBox="0 0 24 24" style="width:15px;height:15px"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg>
-        <input type="text" id="q" placeholder="상품명·판매자·ID 검색">
+        <input type="text" id="q" placeholder="배너명·링크 검색">
       </label>
-      <!-- "신고접수"는 백엔드에 신고 기능·데이터가 없어 제거. 판매중지와 삭제는
-           공개 목록에서 똑같이 빠져 API 로 구분할 수 없으므로 한 항목으로 합쳤다. -->
-      <select id="statusFilter">
+      <select id="statusFilter" hidden>
         <option value="">전체 상태</option>
-        <option value="ok">판매중</option>
-        <option value="stop">판매중지·삭제</option>
+        <option value="ok">노출중</option>
+        <option value="wait">예약</option>
+        <option value="stop">중지</option>
+        <option value="done">종료</option>
       </select>
+      <button type="button" class="btn sm" id="reloadBtn">새로고침</button>
+      <button type="button" class="btn sm primary" id="createBtn">배너 등록</button>
       <span class="count">총 <b id="count">0</b>건</span>
     </div>
 
     <div class="table-wrap">
-      <table class="data">
+      <table class="data" id="bannerTable">
         <thead>
           <tr>
-            <th class="chk"><input type="checkbox" id="checkAll" aria-label="전체 선택"></th>
-            <th>상품ID</th>
-            <th class="grow">상품명</th>
-            <th>판매자</th>
-            <th class="num">가격</th>
-            <th>상태</th>
-            <th>등록일</th>
+            <th>배너ID</th>
+            <th class="num">순서</th>
+            <th>이미지</th>
+            <th class="grow">배너명</th>
+            <th>연결 링크</th>
+            <th class="col-admin-only">상태</th>
+            <th class="col-admin-only">노출기간</th>
             <th>관리</th>
           </tr>
         </thead>
@@ -78,14 +84,12 @@
     <div class="pager">
       <button type="button">‹</button>
       <button type="button" class="on">1</button>
-      <button type="button">2</button>
       <button type="button">›</button>
     </div>
   </main>
 
   <script src="js/admin-ui.js"></script>
-  
   <script src="js/admin-api.js"></script>
-  <script src="js/admin-products.js"></script>
+  <script src="js/admin-banners.js"></script>
 </body>
 </html>

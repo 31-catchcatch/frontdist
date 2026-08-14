@@ -1,6 +1,7 @@
 // seller-qna.js — 판매자 상품 Q&A 목록 조회 및 답변 등록/수정
 
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
+  if (!(await CatchAuth.requireRole("SELLER"))) return;
   const API_BASE = (
     window.CATCHCATCH_API_BASE_URL || "/api/v1"
   ).replace(/\/$/, "");
@@ -21,7 +22,6 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("answerText");
   const saveButton =
     document.getElementById("saveAnswerBtn");
-  // S-QA-003: 부적절한 고객 질문 삭제 (없으면 삭제 기능만 비활성)
   const deleteButton =
     document.getElementById("deleteQnaBtn");
 
@@ -193,10 +193,6 @@ document.addEventListener("DOMContentLoaded", () => {
           ? "답변 완료"
           : "답변대기";
 
-        /*
-         * 백엔드 응답에는 작성자 이름이 없고 userId만 있으므로
-         * 현재는 "회원 #ID"로 표시
-         */
         const writer = `회원 #${qna.userId}`;
 
         return `
@@ -210,7 +206,7 @@ document.addEventListener("DOMContentLoaded", () => {
             </td>
 
             <td>
-              ${qna.productName}
+              ${esc(qna.productName)}
             </td>
 
             <td>
@@ -228,8 +224,8 @@ document.addEventListener("DOMContentLoaded", () => {
                   text-align:left;
                 "
               >
-                ${qna.questionTitle ||
-                  qna.questionContent}
+                ${esc(qna.questionTitle ||
+                  qna.questionContent)}
               </button>
             </td>
 
@@ -418,11 +414,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  /**
-   * 문의 삭제 (S-QA-003)
-   * DELETE /api/v1/seller/qna/{qnaId}
-   * 백엔드는 소프트 삭제(is_deleted=true) 처리하며, 이후 목록에서 제외된다.
-   */
   if (deleteButton) {
     deleteButton.addEventListener("click", async () => {
       if (!selectedQnaId) {

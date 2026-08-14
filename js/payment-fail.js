@@ -1,22 +1,7 @@
-/* =========================================================
-   결제 실패 랜딩 (payment-fail.html) — 토스 failUrl
-
-   토스 결제창에서 결제가 중단되면 code / message 를 쿼리스트링으로 실어 이 페이지로 보낸다.
-   (사용자가 결제창을 닫아 취소한 경우에는 orderId 가 오지 않을 수 있다)
-
-   승인 요청 자체가 없었으므로 청구된 금액은 없다. 다만 **주문은 이미 만들어져 있고**
-   그 시점에 재고·쿠폰·포인트가 함께 빠져나갔기 때문에, 그냥 두면 아무도 못 쓰는 자원이
-   잠긴다. 그래서 이 페이지가 주문 취소 API 를 호출해 되돌린다.
-   (checkout.js 도 결제창을 닫았을 때 같은 API 를 부른다. 취소는 멱등이라 겹쳐도 안전하다.)
-
-   ⚠️ sessionStorage(장바구니 선택 정보)를 지우지 않는다.
-      여기서 지우면 "주문서로 돌아가기"를 눌렀을 때 주문할 상품이 사라진다.
-   ========================================================= */
 (function () {
   "use strict";
 
   const API_BASE = (window.CATCHCATCH_API_BASE_URL || "/api/v1").replace(/\/$/, "");
-  // checkout.js 가 결제창으로 넘어가기 직전에 심어둔 { orderId, orderNumber }
   const PENDING_ORDER_KEY = "catchcatch.pendingOrder";
 
   // 토스가 내려주는 대표 코드만 우리 문구로 바꿔준다. 나머지는 토스 메시지를 그대로 보여준다.
@@ -44,14 +29,6 @@
     if (node) node.textContent = value;
   }
 
-  /*
-   * 되돌릴 주문을 찾는다.
-   *
-   * 토스가 failUrl 로 주는 orderId 는 주문번호(문자열)인데 취소 API 는 DB PK 를 받는다.
-   * 둘을 잇는 정보가 checkout.js 가 남긴 pendingOrder 뿐이라, 저장값의 주문번호와
-   * 토스가 준 주문번호가 같을 때만 취소한다. 다른 주문을 건드리지 않기 위한 대조다.
-   * (사용자가 결제창을 닫으면 orderId 가 아예 안 오는데, 그때는 저장값을 그대로 쓴다.)
-   */
   function findPendingOrder(orderNumberFromToss) {
     try {
       const raw = sessionStorage.getItem(PENDING_ORDER_KEY);

@@ -1,6 +1,3 @@
-/* 관리자 - 운영 대시보드 요약
-   ※ 백엔드 /admin/dashboard 요약 엔드포인트가 없어졌으므로,
-     정상 작동하는 개별 목록 API를 조합해 4개 카드를 실시간 집계한다. (프론트 전용) */
 (function () {
   "use strict";
 
@@ -9,7 +6,6 @@
     if (el) el.textContent = value;
   }
 
-  // Page 응답이면 totalElements, List 응답이면 배열 길이로 개수 반환
   async function count(path) {
     const data = await AdminApi.get(path);
     if (data && typeof data.totalElements === "number") return data.totalElements;

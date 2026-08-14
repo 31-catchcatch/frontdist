@@ -1,17 +1,95 @@
 /* admin-inquiries.css — 1:1 문의 관리 전용
-   관리 컬럼의 삭제 버튼을 셀 오른쪽 끝에 고정한다.
-   (내용 보기 / 답변은 왼쪽에 묶고, 삭제는 space-between 으로 오른쪽 끝으로 밀어낸다) */
+   "내용 보기"를 누르면 그 행 아래에 상세 패널(문의 원문 + 답변 입력 + 관리)이 펼쳐진다.
+   답변/삭제는 이 패널 안에서만 하므로 목록 행의 관리 열에는 보기 버튼 하나만 둔다.
 
-/* 이 페이지의 관리 열은 셀 폭을 꽉 채워 삭제 버튼을 오른쪽 끝으로 보낸다.
-   .row-actions 의 기본 min-width:max-content 를 덮어써야 폭이 늘어난다. */
-.data .inq-row-actions {
-  width: 100%;
-  min-width: 0;
-  justify-content: space-between;
-  gap: 12px;
+   admin.css 의 표 규칙을 그대로 따르되 하나는 여기서 덮어쓴다.
+     table.data td { white-space: nowrap } — 문의 본문은 줄바꿈이 필요하다
+   관리 열 폭(기본 236px)은 admin.css 의 `.act-slim` 유틸로 처리한다
+   (admin-inquiries.html 의 <table class="data act-slim">). */
+
+/* ---------- 목록 행 ---------- */
+
+/* 펼쳐진 행은 아래 패널과 한 덩어리로 보이도록 구분선을 지우고 배경을 맞춘다 */
+.data tbody tr.is-open > td { border-bottom: 0; background: var(--paper); }
+.data tbody tr.is-open:hover > td { background: var(--paper); }
+
+/* ---------- 상세 패널 ---------- */
+
+.data tr.inq-detail-row > td {
+  padding: 0 14px 14px;             /* 좌우 14px = 표 셀 padding 과 같은 라인 */
+  background: var(--paper);
+  white-space: normal;              /* 표의 nowrap 해제 */
 }
-.data .inq-row-actions .ra-left {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
+.data tbody tr.inq-detail-row:hover > td { background: var(--paper); }
+
+.inq-detail {
+  display: grid;
+  gap: 16px;
+  padding: 18px;
+  border: 1px solid var(--hairline);
+  border-radius: 12px;              /* table-wrap 16px 와 버튼 8px 사이 */
+  background: var(--surface);
+  white-space: normal;
+}
+
+/* 문의 원문 */
+.inq-detail .inq-question h4 {
+  margin: 0 0 8px;
+  font-size: 14px; font-weight: 700; color: var(--ink);
+  white-space: normal; word-break: break-word;
+}
+.inq-detail .inq-meta {
+  display: flex; flex-wrap: wrap; gap: 5px 14px;
+  margin: 0 0 12px;
+  font-size: 12px; color: var(--mid);
+}
+.inq-detail .inq-body {
+  margin: 0;
+  padding: 12px 14px;
+  font-size: 13px; line-height: 1.7; color: var(--ink-soft);
+  border: 1px solid var(--hairline);
+  border-radius: 9px;
+  background: var(--paper);
+  white-space: pre-wrap;            /* 줄바꿈 있는 문의 본문 그대로 */
+  word-break: break-word;
+}
+
+/* 답변 입력 */
+.inq-detail .inq-answer > label {
+  display: flex; align-items: center; gap: 8px;
+  margin-bottom: 8px;
+  font-size: 12.5px; font-weight: 700; color: var(--ink-soft);
+}
+.inq-detail .inq-answer > label em {
+  margin-left: auto;
+  font-style: normal; font-weight: 500; font-size: 12px; color: var(--mid);
+}
+.inq-detail .inq-answer textarea {
+  display: block; width: 100%; box-sizing: border-box;
+  min-height: 92px; resize: vertical;
+  padding: 11px 13px;
+  font: inherit; font-size: 13px; line-height: 1.7; color: var(--ink);
+  border: 1px solid var(--hairline-strong);
+  border-radius: 9px;               /* toolbar 의 input/select 와 동일 */
+  background: var(--surface);
+}
+.inq-detail .inq-answer textarea::placeholder { color: var(--faint); }
+.inq-detail .inq-answer textarea:focus-visible {
+  outline: none;
+  border-color: var(--ink);
+  box-shadow: 0 0 0 3px rgba(21, 21, 21, .07);
+}
+
+/* 패널 하단 버튼 — 삭제만 오른쪽 끝으로 밀어낸다 */
+.inq-detail .inq-detail-actions {
+  display: flex; align-items: center; gap: 8px;
+  padding-top: 2px;
+}
+.inq-detail .inq-detail-actions .danger { margin-left: auto; }
+
+@media (max-width: 720px) {
+  .inq-detail { padding: 14px; gap: 14px; }
+  .inq-detail .inq-answer > label em { margin-left: 0; width: 100%; }
+  .inq-detail .inq-detail-actions { flex-wrap: wrap; }
+  .inq-detail .inq-detail-actions .danger { margin-left: 0; }
 }
