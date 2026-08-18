@@ -124,6 +124,11 @@ jobs:
               exit 1
             }
 
+            Write-Output "=== 불필요한 파일 제거 ==="
+            Remove-Item -Path "$htmlDir\.gitignore" -ErrorAction SilentlyContinue
+            Remove-Item -Path "$htmlDir\README.md" -ErrorAction SilentlyContinue
+            Remove-Item -Path "$htmlDir\_template.html" -ErrorAction SilentlyContinue
+            
             Write-Output "=== 임시 파일 정리 ==="
             Remove-Item -Path "$tempDir\frontdist.tar.gz" -Force
             Remove-Item -Path "$tempDir\extracted" -Recurse -Force
