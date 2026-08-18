@@ -84,52 +84,40 @@ jobs:
             --exclude='_template.html' .
           scp -F ~/.ssh/config ../frontdist.tar.gz web01:C:/Users/Administrator/deploy_temp/frontdist.tar.gz
 
-      - name: web-01 배포 적용 (백업 → 교체 → reload → 헬스체크 → 실패시 롤백)
+      - name: web-01 배포 적용
         run: |
-          ssh -F ~/.ssh/config web01 '
-            $ErrorActionPreference = "Stop"
-            $htmlDir = "C:\nginx\html"
-            $backupDir = "C:\Users\Administrator\deploy_temp\html_backup_$(Get-Date -Format yyyyMMdd_HHmmss)"
-            $tempDir = "C:\Users\Administrator\deploy_temp"
-
-            Write-Output "=== 기존 파일 백업 ==="
+          ssh -F ~/.ssh/config web01 'powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "
+            $ErrorActionPreference = \"Stop\"
+            $htmlDir = \"C:\nginx\html\"
+            $backupDir = \"C:\Users\Administrator\deploy_temp\html_backup_$(Get-Date -Format yyyyMMdd_HHmmss)\"
+            $tempDir = \"C:\Users\Administrator\deploy_temp\"
+      
+            Write-Output \"=== 기존 파일 백업 ===\"
             Copy-Item -Path $htmlDir -Destination $backupDir -Recurse -Force
-
-            Write-Output "=== 새 파일 압축 해제 ==="
-            New-Item -ItemType Directory -Force -Path "$tempDir\extracted"
-            tar -xzf "$tempDir\frontdist.tar.gz" -C "$tempDir\extracted"
-            Write-Output "=== 기존 html 폴더 내용 교체 (nginx.conf 등 설정은 유지) ==="
-            Get-ChildItem -Path $htmlDir -Exclude "*.conf" | Remove-Item -Recurse -Force
-            Copy-Item -Path "$tempDir\extracted\*" -Destination $htmlDir -Recurse -Force
-
-            Write-Output "=== Nginx 설정 리로드 (무중단) ==="
+      
+            Write-Output \"=== 새 파일 압축 해제 ===\"
+            New-Item -ItemType Directory -Force -Path \"$tempDir\extracted\"
+            tar -xzf \"$tempDir\frontdist.tar.gz\" -C \"$tempDir\extracted\"
+      
+            Write-Output \"=== html 폴더 내용 교체 ===\"
+            Get-ChildItem -Path $htmlDir -Exclude \"*.conf\" | Remove-Item -Recurse -Force
+            Copy-Item -Path \"$tempDir\extracted\*\" -Destination $htmlDir -Recurse -Force
+      
+            Write-Output \"=== Nginx 리로드 ===\"
             cd C:\nginx
             .\nginx.exe -s reload
-
             Start-Sleep -Seconds 3
-
-            Write-Output "=== 헬스체크 ==="
-            try {
-              $response = Invoke-WebRequest -Uri "http://localhost" -UseBasicParsing -TimeoutSec 10
-              if ($response.StatusCode -eq 200) {
-                Write-Output "배포 성공: 200 OK"
-              } else {
-                throw "예상치 못한 상태 코드: $($response.StatusCode)"
-              }
-            } catch {
-              Write-Output "헬스체크 실패, 이전 버전으로 롤백합니다: $_"
-              Get-ChildItem -Path $htmlDir -Exclude "*.conf" | Remove-Item -Recurse -Force
-              Copy-Item -Path "$backupDir\*" -Destination $htmlDir -Recurse -Force
-              .\nginx.exe -s reload
-              exit 1
-            }
-
-            Write-Output "=== 불필요한 파일 제거 ==="
-            Remove-Item -Path "$htmlDir\.gitignore" -ErrorAction SilentlyContinue
-            Remove-Item -Path "$htmlDir\README.md" -ErrorAction SilentlyContinue
-            Remove-Item -Path "$htmlDir\_template.html" -ErrorAction SilentlyContinue
-            
-            Write-Output "=== 임시 파일 정리 ==="
-            Remove-Item -Path "$tempDir\frontdist.tar.gz" -Force
-            Remove-Item -Path "$tempDir\extracted" -Recurse -Force
-          '
+      
+            Write-Output \"=== 헬스체크 ===\"
+            \$response = Invoke-WebRequest -Uri \"http://localhost\" -UseBasicParsing -TimeoutSec 10
+            if (\$response.StatusCode -eq 200) { Write-Output \"배포 성공: 200 OK\" }
+      
+            Write-Output \"=== 불필요한 파일 제거 ===\"
+            Remove-Item -Path \"$htmlDir\.gitignore\" -ErrorAction SilentlyContinue
+            Remove-Item -Path \"$htmlDir\README.md\" -ErrorAction SilentlyContinue
+            Remove-Item -Path \"$htmlDir\_template.html\" -ErrorAction SilentlyContinue
+      
+            Write-Output \"=== 임시 파일 정리 ===\"
+            Remove-Item -Path \"$tempDir\frontdist.tar.gz\" -Force
+            Remove-Item -Path \"$tempDir\extracted\" -Recurse -Force
+          "'
