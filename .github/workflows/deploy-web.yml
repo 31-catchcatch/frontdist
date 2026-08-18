@@ -76,14 +76,19 @@ jobs:
       - name: 정적 파일을 web-01로 전송 (임시 위치)
         run: |
           # 압축 파일은 상위 디렉토리에 생성 (현재 폴더 안에 만들면 자기 자신을 포함하려다 에러 발생)
-          tar -czf ../frontdist.tar.gz --exclude='.git' --exclude='.github' .
+          tar -czf ../frontdist.tar.gz \
+            --exclude='.git' \
+            --exclude='.github' \
+            --exclude='.gitignore' \
+            --exclude='README.md' \
+            --exclude='_template.html' .
           scp -F ~/.ssh/config ../frontdist.tar.gz web01:C:/Users/Administrator/deploy_temp/frontdist.tar.gz
 
       - name: web-01 배포 적용 (백업 → 교체 → reload → 헬스체크 → 실패시 롤백)
         run: |
           ssh -F ~/.ssh/config web01 '
             $ErrorActionPreference = "Stop"
-            $htmlDir = "C:\Users\Administrator\Downloads\nginx-1.31.2\nginx-1.31.2\html"
+            $htmlDir = "C:\nginx\html"
             $backupDir = "C:\Users\Administrator\deploy_temp\html_backup_$(Get-Date -Format yyyyMMdd_HHmmss)"
             $tempDir = "C:\Users\Administrator\deploy_temp"
 
@@ -98,7 +103,7 @@ jobs:
             Copy-Item -Path "$tempDir\extracted\*" -Destination $htmlDir -Recurse -Force
 
             Write-Output "=== Nginx 설정 리로드 (무중단) ==="
-            cd C:\Users\Administrator\Downloads\nginx-1.31.2\nginx-1.31.2
+            cd C:\nginx
             .\nginx.exe -s reload
 
             Start-Sleep -Seconds 3
