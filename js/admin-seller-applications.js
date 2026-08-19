@@ -115,7 +115,7 @@
       APPS = data.map(mapRow);
       applySearch();
     } catch (err) {
-      rowsEl.innerHTML = `<tr class="empty-row"><td colspan="9">${err.message || "목록을 불러오지 못했습니다."}</td></tr>`;
+      rowsEl.innerHTML = `<tr class="empty-row"><td colspan="9">${esc(err.message || "목록을 불러오지 못했습니다.")}</td></tr>`;
       countEl.textContent = 0;
     }
   }

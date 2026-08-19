@@ -356,7 +356,7 @@
             }
             <div class="product-copy">
               <strong>${esc(order.productName)}</strong>
-              <span>${order.optionText || "옵션 없음"}</span>
+              <span>${esc(order.optionText || "옵션 없음")}</span>
             </div>
           </div>
         </td>
@@ -397,7 +397,7 @@
           }
           <div class="product-copy">
             <strong>${esc(order.productName)}</strong>
-            <span>${order.optionText || "옵션 없음"}</span>
+            <span>${esc(order.optionText || "옵션 없음")}</span>
           </div>
         </div>
 

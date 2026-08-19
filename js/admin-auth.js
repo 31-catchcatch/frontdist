@@ -47,10 +47,11 @@ global.esc = esc;
     },
 
     requireLogin() {
-      if (!this.isLoggedIn()) {
-        location.replace(LOGIN_PAGE + "?redirect=" + encodeURIComponent(currentPage()));
-        return false;
-      }
+      if (!this.isLoggedIn()) { location.replace(LOGIN_PAGE + "?redirect=" + encodeURIComponent(currentPage())); return false; }
+      fetch((window.CATCHCATCH_API_BASE_URL || "/api/v1") + "/admin/users?page=0&size=1",
+            { headers: this.authorizationHeader() })
+        .then((r) => { if (r.status === 401 || r.status === 403) { this.clearSession(); location.replace(LOGIN_PAGE); } })
+        .catch(() => {});
       return true;
     },
 

@@ -88,7 +88,7 @@ document.addEventListener("DOMContentLoaded", () => {
     } catch (err) {
       console.error(err);
       $('[data-role="point-history"]').innerHTML =
-        `<tr><td colspan="5" style="text-align:center;padding:40px;color:#e02020;">포인트 정보를 불러오지 못했습니다.<br>${err.message}</td></tr>`;
+        `<tr><td colspan="5" style="text-align:center;padding:40px;color:#e02020;">포인트 정보를 불러오지 못했습니다.<br>${esc(err.message)}</td></tr>`;
     }
   }
 

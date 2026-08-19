@@ -109,7 +109,7 @@ document.addEventListener("DOMContentLoaded", () => {
     } catch (err) {
       console.error(err);
       $('[data-role="review-list"]').innerHTML =
-        `<li style="text-align:center;padding:60px;color:#e02020;">리뷰를 불러오지 못했습니다.<br>${err.message}</li>`;
+        `<li style="text-align:center;padding:60px;color:#e02020;">리뷰를 불러오지 못했습니다.<br>${esc(err.message)}</li>`;
       if (pagination) pagination.innerHTML = "";
     }
   }

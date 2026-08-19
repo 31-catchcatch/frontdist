@@ -91,7 +91,7 @@
       POINTS = data.map(mapRow);
       applyFilter();
     } catch (err) {
-      rowsEl.innerHTML = `<tr class="empty-row"><td colspan="4">${err.message || "목록을 불러오지 못했습니다."}</td></tr>`;
+      rowsEl.innerHTML = `<tr class="empty-row"><td colspan="4">${esc(err.message || "목록을 불러오지 못했습니다.")}</td></tr>`;
       countEl.textContent = 0;
     }
   }

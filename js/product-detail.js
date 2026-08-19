@@ -86,7 +86,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (Array.isArray(product.imageUrls) && product.imageUrls.length) {
       images = product.imageUrls;
     } else if (thumbFromQuery) {
-      images = [thumbFromQuery];
+      images = [SafeUrl(thumbFromQuery)];
     } else {
       images = [CatchApi.PLACEHOLDER];
     }
@@ -267,8 +267,13 @@ document.addEventListener("DOMContentLoaded", () => {
       const blob = await response.blob();
       saveBlob(blob, imageFileName(src, index, blob.type));
     } catch (_) {
-      window.open(src, "_blank", "noopener");
-      alert("이미지를 바로 저장하지 못해 새 탭에서 열었습니다. 사진 위에서 마우스 오른쪽 버튼 → '이미지를 다른 이름으로 저장'을 이용해 주세요.");
+      const safe = SafeUrl(src);                       // auth.js:12 전역 헬퍼
+      if (safe !== "#" && new URL(safe, location.href).origin === location.origin) {
+        window.open(safe, "_blank", "noopener");
+      } else {
+        alert("이미지를 저장하지 못했습니다. 잠시 후 다시 시도해 주세요.");
+        return;
+      }
     } finally {
       btn.disabled = false;
       btn.innerHTML = label;

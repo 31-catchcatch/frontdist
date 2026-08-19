@@ -105,7 +105,7 @@
 
       applyFilter();
     } catch (err) {
-      rowsEl.innerHTML = `<tr class="empty-row"><td colspan="7">${err.message || "정산 데이터를 불러오지 못했습니다."}</td></tr>`;
+      rowsEl.innerHTML = `<tr class="empty-row"><td colspan="7">${esc(err.message || "정산 데이터를 불러오지 못했습니다.")}</td></tr>`;
       countEl.textContent = 0;
     }
   }

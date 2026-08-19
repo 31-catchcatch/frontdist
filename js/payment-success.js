@@ -126,17 +126,6 @@
       );
       if (el.failActions) {
         const first = el.failActions.querySelector("a");
-
-
-
-
-
-
-
-
-
-
-        
         if (first) {
           first.href = "orders.html";
           first.textContent = "주문 내역 확인하기";

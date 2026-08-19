@@ -188,7 +188,7 @@
         dialogContent.innerHTML = `${summary}<dl class="receipt-list">${items}<div class="detail-sum"><dt>상품 금액</dt><dd>${money.format(order.totalProductAmount)}원</dd></div><div><dt>배송비</dt><dd>${money.format(order.shippingFee)}원</dd></div>${discount}${point}<div class="detail-total"><dt>최종 결제 금액</dt><dd>${money.format(finalAmount)}원</dd></div></dl>`;
       }
     } catch (error) {
-      dialogContent.innerHTML = `${summary}<p class="dialog-note">${error.message}</p>`;
+      dialogContent.innerHTML = `${summary}<p class="dialog-note">${esc(error.message)}</p>`;
     }
     dialog.showModal();
   }

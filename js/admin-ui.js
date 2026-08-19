@@ -14,12 +14,12 @@
     const label = `<label>${esc(f.label)}</label>`;
     if (f.type === "select") {
       const opts = f.options
-        .map((o) => `<option value="${o.value}"${o.value === f.value ? " selected" : ""}>${esc(o.label)}</option>`)
+        .map((o) => `<option value="${esc(o.value)}"${o.value === f.value ? " selected" : ""}>${esc(o.label)}</option>`)
         .join("");
-      return `<div class="field">${label}<select name="${f.name}">${opts}</select></div>`;
+      return `<div class="field">${label}<select name="${esc(f.name)}">${opts}</select></div>`;
     }
     if (f.type === "textarea") {
-      return `<div class="field">${label}<textarea name="${f.name}" placeholder="${f.placeholder || ""}">${esc(f.value || "")}</textarea></div>`;
+      return `<div class="field">${label}<textarea name="${f.name}" placeholder="${esc(f.placeholder || "")}">${esc(f.value || "")}</textarea></div>`;
     }
     return `<div class="field">${label}<input name="${f.name}" type="${f.type || "text"}" value="${esc(f.value ?? "")}" placeholder="${f.placeholder || ""}"></div>`;
   }
