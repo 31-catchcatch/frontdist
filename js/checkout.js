@@ -31,12 +31,15 @@
     addressDialog: document.getElementById("addressDialog"),
     addressOptions: document.getElementById("addressOptions"),
     couponSelect: document.getElementById("couponSelect"),
+    couponScope: document.getElementById("couponScope"),
     pointAmount: document.getElementById("pointAmount"),
     availablePoints: document.getElementById("availablePoints"),
     applyPoints: document.getElementById("applyPoints"),
     paymentMethods: document.getElementById("paymentMethods"),
     paymentEmpty: document.getElementById("paymentEmpty"),
     itemTotal: document.getElementById("itemTotal"),
+    productDiscountRow: document.getElementById("productDiscountRow"),
+    productDiscount: document.getElementById("productDiscount"),
     shippingFee: document.getElementById("shippingFee"),
     couponDiscount: document.getElementById("couponDiscount"),
     pointsUsed: document.getElementById("pointsUsed"),
@@ -140,24 +143,85 @@
     return state.addresses.find((address) => String(address.id) === String(state.selectedAddressId)) || null;
   }
 
+  function itemsTotal() {
+    return state.cartItems.reduce((sum, item) => sum + (Number(item.totalPrice) || 0), 0);
+  }
+
+  /** 상품 할인 전 금액. originalPrice 를 안 내려주는 응답에서는 판매가와 같아져 할인 0으로 보인다. */
+  function itemsOriginalTotal() {
+    return state.cartItems.reduce((sum, item) => {
+      const unit = Number(item.originalPrice ?? item.price) || 0;
+      return sum + unit * (Number(item.quantity) || 0);
+    }, 0);
+  }
+
+  /**
+   * 주문 상품을 판매자별 금액으로 모은다.
+   * 판매자를 알 수 없는 상품이 하나라도 있으면 범위를 가릴 수 없으므로 null 을 돌려준다.
+   */
+  function sellerAmounts() {
+    const amounts = new Map();
+    for (const item of state.cartItems) {
+      if (item.sellerId == null) return null;
+      const key = String(item.sellerId);
+      amounts.set(key, (amounts.get(key) || 0) + (Number(item.totalPrice) || 0));
+    }
+    return amounts;
+  }
+
   function getSelectedCoupon() {
     return state.coupons.find((coupon) => String(coupon.userCouponId) === String(state.selectedCouponId)) || null;
   }
 
-  function computeCouponDiscount(coupon, itemTotal) {
-    if (!coupon) return 0;
-    if (itemTotal < Number(coupon.minimumOrderAmount || 0)) return 0;
+  /**
+   * 쿠폰이 적용되는 범위와 그 금액. 쿠폰은 발행한 판매자의 상품 금액에만 적용된다.
+   * 서버 OrderService.placeOrder 와 같은 규칙이라 화면 금액과 서버가 확정하는 금액이 어긋나지 않는다.
+   * 최소 주문금액도 전체가 아닌 "적용 대상 금액" 으로 판정한다.
+   */
+  function couponScope(coupon) {
+    if (!coupon) return null;
+    const amounts = sellerAmounts();
+    // 판매자 정보를 못 받은 응답에서는 예전처럼 전체 금액 기준으로 둔다.
+    const wholeOrder = coupon.sellerId == null || amounts === null;
+    const amount = wholeOrder ? itemsTotal() : (amounts.get(String(coupon.sellerId)) || 0);
+    const minimum = Number(coupon.minimumOrderAmount) || 0;
+
+    let reason = "";
+    if (amount <= 0) reason = "해당 판매자 상품 없음";
+    else if (amount < minimum) reason = `최소 주문금액 ${money.format(minimum)}원 미달`;
+
+    return { wholeOrder, amount, minimum, usable: reason === "", reason };
+  }
+
+  function computeCouponDiscount(coupon, applicableAmount) {
+    if (!coupon || applicableAmount <= 0) return 0;
 
     let discount;
     if (coupon.discountType === "FIXED_AMOUNT") {
       discount = Number(coupon.discountValue) || 0;
     } else {
-      discount = Math.floor((itemTotal * (Number(coupon.discountValue) || 0)) / 100);
+      discount = Math.floor((applicableAmount * (Number(coupon.discountValue) || 0)) / 100);
       if (coupon.maximumDiscountAmount != null) {
         discount = Math.min(discount, Number(coupon.maximumDiscountAmount));
       }
     }
-    return Math.min(discount, itemTotal);
+    return Math.min(discount, applicableAmount);
+  }
+
+  /** 실제로 적용 가능한 쿠폰만 돌려준다. 결제 요청도 이걸 기준으로 보낸다. */
+  function getUsableSelectedCoupon() {
+    const coupon = getSelectedCoupon();
+    const scope = couponScope(coupon);
+    return scope && scope.usable ? coupon : null;
+  }
+
+  function availablePoints() {
+    return Math.max(0, Number(state.defaults && state.defaults.availablePoint) || 0);
+  }
+
+  /** 이 주문에서 실제로 쓸 수 있는 포인트 상한 (보유 포인트와 결제 금액 중 작은 쪽). */
+  function pointLimit() {
+    return summary().pointLimit;
   }
 
   function shippingPolicy() {
@@ -171,12 +235,22 @@
 
   function summary() {
     const policy = shippingPolicy();
-    const itemTotal = state.cartItems.reduce((sum, item) => sum + Number(item.totalPrice || 0), 0);
+    const itemTotal = itemsTotal();
     const shippingFee = state.cartItems.length === 0 || itemTotal >= policy.threshold ? 0 : policy.fee;
-    const couponDiscount = computeCouponDiscount(getSelectedCoupon(), itemTotal);
-    const pointsUsed = Math.max(0, Math.min(state.pointAmount, itemTotal + shippingFee - couponDiscount));
+    const coupon = getSelectedCoupon();
+    const scope = couponScope(coupon);
+    const couponDiscount = scope && scope.usable ? computeCouponDiscount(coupon, scope.amount) : 0;
+    // 결제 금액을 넘는 포인트는 서버 placeOrder 가 INVALID_INPUT 으로 거부하므로 상한을 함께 잡는다.
+    const usablePoint = Math.max(0, Math.min(availablePoints(), itemTotal + shippingFee - couponDiscount));
+    const pointsUsed = Math.max(0, Math.min(state.pointAmount, usablePoint));
     const finalAmount = itemTotal + shippingFee - couponDiscount - pointsUsed;
-    return { itemTotal, shippingFee, couponDiscount, pointsUsed, finalAmount };
+    const originalTotal = itemsOriginalTotal();
+    return {
+      itemTotal, shippingFee, couponDiscount, pointsUsed, finalAmount,
+      pointLimit: usablePoint,
+      originalTotal,
+      productDiscount: Math.max(0, originalTotal - itemTotal),
+    };
   }
 
   function renderItems() {
@@ -225,26 +299,65 @@
     }).join("") || '<p class="section-empty">등록된 배송지가 없습니다.</p>';
   }
 
-  function couponOptionLabel(coupon) {
+  function couponOptionLabel(coupon, scope) {
     const discountLabel = coupon.discountType === "FIXED_AMOUNT"
       ? `${money.format(Number(coupon.discountValue) || 0)}원 할인`
       : `${Number(coupon.discountValue) || 0}% 할인`;
-    return `${esc(coupon.couponName || "쿠폰")} · ${discountLabel}`;
+    const label = `${coupon.couponName || "쿠폰"} · ${discountLabel}`;
+    // 못 쓰는 쿠폰은 사유를 붙여 왜 선택이 안 되는지 알 수 있게 한다.
+    return esc(scope.usable ? label : `${label} — ${scope.reason}`);
+  }
+
+  function couponSellerLabel(coupon) {
+    return coupon.sellerName ? `${coupon.sellerName} 상품` : "해당 판매자 상품";
+  }
+
+  /** 선택한 쿠폰이 어디에 적용되는지 - 여러 판매자가 섞인 장바구니에서 특히 중요하다. */
+  function renderCouponScope() {
+    const coupon = getSelectedCoupon();
+    const scope = couponScope(coupon);
+    if (!coupon || !scope) {
+      elements.couponScope.hidden = true;
+      elements.couponScope.textContent = "";
+      delete elements.couponScope.dataset.state;
+      return;
+    }
+
+    elements.couponScope.hidden = false;
+    if (!scope.usable) {
+      elements.couponScope.dataset.state = "blocked";
+      elements.couponScope.textContent = `이 주문에는 사용할 수 없는 쿠폰입니다. (${scope.reason})`;
+      return;
+    }
+
+    elements.couponScope.dataset.state = "applied";
+    elements.couponScope.textContent = scope.wholeOrder
+      ? `주문 상품 전체 ${formatMoney(scope.amount)}에 적용됩니다.`
+      : `${couponSellerLabel(coupon)} ${formatMoney(scope.amount)}에 적용됩니다.`;
   }
 
   function renderBenefits() {
     elements.couponSelect.disabled = !state.ready;
     elements.couponSelect.innerHTML = `<option value="">쿠폰을 선택하지 않음</option>${state.coupons.map((coupon) => {
+      const scope = couponScope(coupon);
       const selected = String(coupon.userCouponId) === String(state.selectedCouponId) ? " selected" : "";
-      return `<option value="${coupon.userCouponId}"${selected}>${couponOptionLabel(coupon)}</option>`;
+      const disabled = scope.usable ? "" : " disabled";
+      return `<option value="${coupon.userCouponId}"${selected}${disabled}>${couponOptionLabel(coupon, scope)}</option>`;
     }).join("")}`;
+    renderPointInput();
+  }
 
-    const availablePoints = Number(state.defaults && state.defaults.availablePoint) || 0;
+  function renderPointInput() {
+    const available = availablePoints();
+    const limit = pointLimit();
     elements.pointAmount.disabled = !state.ready;
     elements.applyPoints.disabled = !state.ready;
-    elements.pointAmount.max = String(availablePoints);
+    // 결제 금액이 보유 포인트보다 적으면 그쪽이 상한이다. 입력칸 max 와 안내 문구에 함께 반영한다.
+    elements.pointAmount.max = String(limit);
     elements.pointAmount.value = String(state.pointAmount || "");
-    elements.availablePoints.textContent = `보유 포인트 ${money.format(availablePoints)}P`;
+    elements.availablePoints.textContent = limit < available
+      ? `보유 포인트 ${money.format(available)}P · 이 주문 최대 ${money.format(limit)}P`
+      : `보유 포인트 ${money.format(available)}P`;
   }
 
   function renderPayments() {
@@ -264,8 +377,12 @@
   }
 
   function renderSummary() {
-    const { itemTotal, shippingFee, couponDiscount, pointsUsed, finalAmount } = summary();
-    elements.itemTotal.textContent = formatMoney(itemTotal);
+    renderCouponScope();
+    const { originalTotal, productDiscount, shippingFee, couponDiscount, pointsUsed, finalAmount } = summary();
+    // '상품 금액' 은 할인 전 금액을 보여주고, 깎인 만큼을 바로 아래 줄에 따로 세운다.
+    elements.itemTotal.textContent = formatMoney(originalTotal);
+    elements.productDiscountRow.hidden = productDiscount <= 0;
+    elements.productDiscount.textContent = formatDiscount(productDiscount);
     elements.shippingFee.textContent = formatMoney(shippingFee);
     elements.couponDiscount.textContent = formatDiscount(couponDiscount);
     elements.pointsUsed.textContent = formatDiscount(pointsUsed);
@@ -298,16 +415,34 @@
   function validatePointAmount() {
     const raw = elements.pointAmount.value.trim();
     const value = raw === "" ? 0 : Number(raw);
-    const available = Number(state.defaults && state.defaults.availablePoint) || 0;
+    const available = availablePoints();
     if (!Number.isInteger(value) || value < 0) throw new Error("포인트는 0 이상의 정수로 입력해 주세요.");
     if (value > available) throw new Error(`사용 포인트는 보유 포인트(${money.format(available)}P)를 초과할 수 없습니다.`);
-    return value;
+    // 결제 금액을 넘는 만큼은 서버가 받지 않는다. 막지 말고 상한까지만 받아 준다.
+    return Math.min(value, pointLimit());
+  }
+
+  /** 쿠폰이 바뀌면 결제 금액이 줄어 포인트 상한도 내려간다. 넘친 만큼을 깎고 깎였는지 알려 준다. */
+  function clampPointToLimit() {
+    const limit = pointLimit();
+    if (state.pointAmount <= limit) return false;
+    state.pointAmount = limit;
+    renderPointInput();
+    return true;
   }
 
   function applyPoints() {
     try {
+      const raw = elements.pointAmount.value.trim();
+      const requested = raw === "" ? 0 : Number(raw);
       state.pointAmount = validatePointAmount();
-      setNotice("");
+      renderPointInput();
+      setNotice(
+        requested > state.pointAmount
+          ? `결제 금액보다 많은 포인트는 사용할 수 없어 ${money.format(state.pointAmount)}P 로 맞췄습니다.`
+          : "",
+        "info"
+      );
       renderSummary();
       updatePayButton();
     } catch (error) {
@@ -341,14 +476,19 @@
       throw new Error("선택한 상품의 재고가 부족합니다. 수량을 다시 선택해 주세요.");
     }
 
-    const unitPrice = Number(product.price || 0) + Number(option?.additionalPrice || 0);
+    // 상품 할인율이 반영된 실판매가. 서버 placeOrder 도 finalPrice 로 결제 금액을 잡는다.
+    const basePrice = Number(product.finalPrice ?? product.price ?? 0);
+    const unitPrice = basePrice + Number(option?.additionalPrice || 0);
     state.cartItems = [{
       cartItemId: null,
       productId: requestedItem.productId,
+      sellerId: product.sellerId ?? null,
+      sellerName: product.sellerName || null,
       optionId: requestedItem.optionId,
       productName: product.name,
       optionName: option?.optionName || "옵션 없음",
       price: unitPrice,
+      originalPrice: Number(product.price || 0) + Number(option?.additionalPrice || 0),
       quantity: requestedItem.quantity,
       totalPrice: unitPrice * requestedItem.quantity,
       thumbnailUrl: product.thumbnailUrl || null,
@@ -409,7 +549,7 @@
         throw new Error("결제 설정이 준비되지 않았습니다. 잠시 후 다시 시도해 주세요.");
       }
 
-      const coupon = getSelectedCoupon();
+      const coupon = getUsableSelectedCoupon();
 
       const order = await apiFetch("/orders", {
         method: "POST",
@@ -420,7 +560,7 @@
             quantity: item.quantity,
           })),
           couponId: coupon ? coupon.couponId : null,
-          usePoint: state.pointAmount,
+          usePoint: summary().pointsUsed,
           receiverName: address.recipientName,
           receiverPhone: address.recipientPhone,
           zipCode: address.zipCode,
@@ -517,6 +657,12 @@
   });
   elements.couponSelect.addEventListener("change", () => {
     state.selectedCouponId = elements.couponSelect.value;
+
+    // 할인이 늘면 결제 금액이 줄어 이미 넣어 둔 포인트가 상한을 넘길 수 있다.
+    if (clampPointToLimit()) {
+      setNotice(`쿠폰 할인이 적용되어 사용 포인트를 ${money.format(state.pointAmount)}P 로 맞췄습니다.`, "info");
+    }
+
     renderSummary();
   });
   elements.applyPoints.addEventListener("click", applyPoints);

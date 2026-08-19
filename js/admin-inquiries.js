@@ -79,17 +79,17 @@
     ].filter(Boolean);
 
     return `
-      <tr class="inq-detail-row" data-detail-for="${item.id}">
+      <tr class="detail-row" data-detail-for="${item.id}">
         <td colspan="7">
-          <div class="inq-detail">
-            <section class="inq-question">
+          <div class="detail-panel">
+            <section>
               <h4>${esc(item.title)}</h4>
-              <p class="inq-meta">${meta.map((v) => `<span>${esc(String(v))}</span>`).join("")}</p>
-              <p class="inq-body">${esc(item.content || "(내용 없음)")}</p>
+              <p class="detail-meta">${meta.map((v) => `<span>${esc(String(v))}</span>`).join("")}</p>
+              <p class="detail-body">${esc(item.content || "(내용 없음)")}</p>
             </section>
 
             <section class="inq-answer">
-              <label for="inqAnswer-${item.id}">
+              <label class="detail-label" for="inqAnswer-${item.id}">
                 답변 <span class="tag ${item.status}">${STATUS[item.status]}</span>
                 ${answered && item.answeredAt ? `<em>최종 답변 ${esc(String(item.answeredAt).slice(0, 10))}</em>` : ""}
               </label>
@@ -101,7 +101,7 @@
               >${esc(draft)}</textarea>
             </section>
 
-            <div class="inq-detail-actions">
+            <div class="detail-actions">
               <button class="btn sm primary" data-act="save">${answered ? "답변 수정" : "답변 등록"}</button>
               <button class="btn sm" data-act="close">닫기</button>
               <button class="btn sm danger" data-act="delete">문의 삭제</button>

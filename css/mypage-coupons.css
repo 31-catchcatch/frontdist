@@ -203,6 +203,24 @@
   font-weight: 800;
 }
 
+/* 이 쿠폰이 어느 판매자 것인지. '사용 가능' 라벨 옆에 붙여 한눈에 보이게 한다. */
+.coupon-seller {
+  display: inline-flex;
+  align-items: center;
+  max-width: 60%;
+  min-height: 24px;
+  margin-left: 5px;
+  padding: 0 8px;
+  border: 1px solid var(--hairline);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--mid);
+  font-size: 10px;
+  font-weight: 700;
+  vertical-align: top;
+}
+
 .coupon-content h3 {
   margin: 14px 0 0;
   overflow: hidden;
@@ -395,4 +413,21 @@
 .coupon-claim-btn:disabled {
   opacity: .5;
   cursor: default;
+}
+
+
+/* 받기 가능 쿠폰이 있을 때 탭에 개수를 붙인다.
+   기본 탭이 '보유 쿠폰'이라 배지가 없으면 새 쿠폰이 있는지 알 수 없었다. */
+.coupon-tab.has-badge { font-weight: 700; }
+.coupon-state-link {
+  margin-top: 10px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--point);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  text-decoration: underline;
+  cursor: pointer;
 }

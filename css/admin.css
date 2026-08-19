@@ -94,6 +94,69 @@ table.data.act-slim th:last-child,
 table.data.act-slim td:last-child { min-width: 96px; }
 .empty-row td { text-align: center; color: var(--mid); padding: 40px 14px; }
 
+/* ---------- 행 펼침 상세 패널 (1:1 문의 · Q&A 공용) ----------
+   목록 행의 [내용 보기] 를 누르면 바로 아래에 <tr class="detail-row"> 가 끼어든다.
+   페이지별로 다른 건 패널 안쪽 내용뿐이라 껍데기는 여기서 공유한다. */
+
+/* 펼쳐진 행은 아래 패널과 한 덩어리로 보이도록 구분선을 지우고 배경을 맞춘다 */
+.data tbody tr.is-open > td { border-bottom: 0; background: var(--paper); }
+.data tbody tr.is-open:hover > td { background: var(--paper); }
+
+.data tr.detail-row > td {
+  padding: 0 14px 14px;               /* 좌우 14px = 표 셀 padding 과 같은 라인 */
+  background: var(--paper);
+  white-space: normal;                /* table.data 의 nowrap 해제 */
+}
+.data tbody tr.detail-row:hover > td { background: var(--paper); }
+
+.detail-panel {
+  display: grid;
+  gap: 16px;
+  padding: 18px;
+  border: 1px solid var(--hairline);
+  border-radius: 12px;                /* table-wrap 16px 와 버튼 8px 사이 */
+  background: var(--surface);
+  white-space: normal;
+}
+.detail-panel h4 {
+  margin: 0 0 8px;
+  font-size: 14px; font-weight: 700; color: var(--ink);
+  white-space: normal; word-break: break-word;
+}
+.detail-panel .detail-meta {
+  display: flex; flex-wrap: wrap; gap: 5px 14px;
+  margin: 0 0 12px;
+  font-size: 12px; color: var(--mid);
+}
+.detail-panel .detail-body {
+  margin: 0;
+  padding: 12px 14px;
+  font-size: 13px; line-height: 1.7; color: var(--ink-soft);
+  border: 1px solid var(--hairline);
+  border-radius: 9px;
+  background: var(--paper);
+  white-space: pre-wrap;              /* 줄바꿈 있는 본문 그대로 */
+  word-break: break-word;
+}
+.detail-panel .detail-label {
+  display: flex; align-items: center; gap: 8px;
+  margin-bottom: 8px;
+  font-size: 12.5px; font-weight: 700; color: var(--ink-soft);
+}
+.detail-panel .detail-label em {
+  margin-left: auto;
+  font-style: normal; font-weight: 500; font-size: 12px; color: var(--mid);
+}
+.detail-panel .detail-actions { display: flex; align-items: center; gap: 8px; padding-top: 2px; }
+.detail-panel .detail-actions .danger { margin-left: auto; }
+
+@media (max-width: 720px) {
+  .detail-panel { padding: 14px; gap: 14px; }
+  .detail-panel .detail-label em { margin-left: 0; width: 100%; }
+  .detail-panel .detail-actions { flex-wrap: wrap; }
+  .detail-panel .detail-actions .danger { margin-left: 0; }
+}
+
 /* 상태 뱃지 */
 .tag { display: inline-block; font-size: 11px; font-weight: 700; padding: 3px 9px; border-radius: 999px; border: 1px solid var(--hairline-strong); color: var(--ink-soft); }
 .tag.ok   { color: #1f6b3a; border-color: #a9d8bd; background: #ecf7f0; }

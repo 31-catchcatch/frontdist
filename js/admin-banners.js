@@ -25,7 +25,7 @@
   let BANNERS = [];
   let CAN_WRITE = false;      // 관리자 배너 API 사용 가능 여부 (로드 시 1회 결정, 재탐지 안 함)
   let PROBE_STATUS = 0;
-  let COLSPAN = 6;
+  let COLSPAN = 5;   // 읽기전용 기준. applyMode 에서 모드에 맞게 다시 잡는다
 
   const PLACEHOLDER = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(
     '<svg xmlns="http://www.w3.org/2000/svg" width="240" height="100" viewBox="0 0 240 100">' +
@@ -83,17 +83,17 @@
     return "ok";
   }
 
-  function formatDate(value, withTime) {
+  function formatDate(value) {
     if (!value) return "";
-    return String(value).replace("T", " ").slice(0, withTime ? 16 : 10);
+    return String(value).replace("T", " ").slice(0, 10);
   }
 
-  /* 표에서는 날짜만 보여준다. 분 단위까지 넣으면 열이 250px 을 넘겨
+  /* 날짜만 보여준다. 분 단위까지 넣으면 노출기간 열이 250px 을 넘겨
      표가 래퍼를 벗어나고 관리 버튼이 가로 스크롤 뒤로 밀린다.
-     정확한 시각은 [상세] 모달에서 withTime 으로 확인한다. */
-  function periodText(banner, withTime) {
-    const from = formatDate(banner.startAt, withTime);
-    const to = formatDate(banner.endAt, withTime);
+     정확한 시각이 필요하면 [수정] 모달에서 확인한다. */
+  function periodText(banner) {
+    const from = formatDate(banner.startAt);
+    const to = formatDate(banner.endAt);
     if (!from && !to) return "상시";
     return `${from || ""} ~ ${to || ""}`.trim();
   }
@@ -129,9 +129,15 @@
   }
 
   async function fetchPublicBanners() {
-    const response = await fetch(`${API_BASE}/banners?_=${Date.now()}`, {
-      headers: { Accept: "application/json" }
-    });
+    let response;
+    try {
+      response = await fetch(`${API_BASE}/banners?_=${Date.now()}`, {
+        headers: { Accept: "application/json" }
+      });
+    } catch (_) {
+      // 네트워크 실패는 브라우저가 "Failed to fetch" 를 던진다. 그대로 두면 화면에 영문 원문이 뜬다.
+      throw new Error("서버에 연결하지 못했습니다. 잠시 후 다시 시도해 주세요.");
+    }
 
     let payload = null;
     try {
@@ -166,7 +172,7 @@
     tableEl.classList.toggle("mode-admin", CAN_WRITE);
     // 읽기전용은 관리 열에 [상세] 하나뿐이라 기본 236px(버튼 2~3개용)이 과하다
     tableEl.classList.toggle("act-slim", !CAN_WRITE);
-    COLSPAN = CAN_WRITE ? 8 : 6;
+    COLSPAN = CAN_WRITE ? 7 : 5;
 
     statusEl.hidden = !CAN_WRITE;
     createBtn.disabled = !CAN_WRITE;
@@ -180,27 +186,69 @@
     }
 
     createBtn.setAttribute("aria-disabled", "true");
-    createBtn.title = "관리자 배너 API가 연결되면 사용할 수 있습니다.";
+    createBtn.title = "지금은 배너를 조회만 할 수 있습니다.";
     badgeEl.textContent = "공개 API · GET /api/v1/banners";
 
-    const extra =
+    /* 안내는 두 줄로 끝낸다. 관리자에게 필요한 건 "지금 뭘 할 수 있나"와
+       "이 목록이 전부가 아니다" 두 가지뿐이고, 원인별 한 줄만 상황에 따라 덧붙인다.
+       엔드포인트 경로 같은 내부 정보는 화면에 노출하지 않는다. */
+    const cause =
       (PROBE_STATUS === 401 || PROBE_STATUS === 403)
-        ? "<p>관리자 인증이 만료되었을 수도 있습니다. 로그아웃 후 다시 로그인해 보세요.</p>"
-        : (PROBE_STATUS === 0 ? "<p>서버에 연결하지 못했습니다.</p>" : "");
+        ? " 로그아웃 후 다시 로그인해 보세요."
+        : (PROBE_STATUS === 0 ? " 서버에 연결하지 못했습니다." : "");
 
     noticeEl.innerHTML = `
-      <strong>배너 등록·수정·삭제는 아직 사용할 수 없습니다</strong>
-      <p>현재 이 화면은 공개 API(<code>GET /api/v1/banners</code>)만 사용합니다.
-         목록에는 <b>지금 쇼핑몰에 노출 중인 배너만</b> 표시되며, 중지된 배너와 노출기간이 지난 배너는 보이지 않습니다.</p>
-      <p>관리자 배너 API(<code>/api/v1/admin/banners</code>)가 추가되면 등록·수정·삭제가 자동으로 켜집니다.
-         화면을 다시 수정할 필요는 없습니다.</p>
-      ${extra}`;
+      <strong>지금은 조회만 가능합니다</strong>
+      <p>노출 중인 배너만 보이며, 중지·기간만료 배너는 표시되지 않습니다.${esc(cause)}</p>`;
     noticeEl.hidden = false;
   }
 
   /* ---------------------------------------------------------
      목록 렌더
      --------------------------------------------------------- */
+  /* ---------------------------------------------------------
+     노출 순서 변경
+
+     정렬 기준은 sortOrder 오름차순 + 동순위는 id 오름차순 — 백엔드 쿼리와 같은 규칙이라
+     화면 순서가 쇼핑몰 슬라이더 순서와 항상 일치한다.
+
+     저장은 PATCH /admin/banners/order 하나로 "전체 목록"을 0..n-1 로 정규화해 보낸다.
+     - 개별 PUT 두 번으로 자리를 바꾸면 중간에 실패했을 때 두 배너가 같은 sortOrder 를
+       갖고 조용히 깨진다. 배치 엔드포인트는 한 트랜잭션이라 부분 반영이 없다.
+     - 전체를 다시 매기므로 기존에 중복돼 있던 sortOrder 도 함께 정리된다.
+     --------------------------------------------------------- */
+  let canReorder = false;   // 관리자 모드 + 필터 없음일 때만 true
+
+  function orderedBanners() {
+    return [...BANNERS].sort((a, b) => (a.sortOrder - b.sortOrder) || (a.id - b.id));
+  }
+
+  function orderIndexOf(id) {
+    return orderedBanners().findIndex((b) => String(b.id) === String(id));
+  }
+
+  async function moveBanner(id, delta) {
+    const ordered = orderedBanners();
+    const from = ordered.findIndex((b) => String(b.id) === String(id));
+    const to = from + delta;
+    if (from < 0 || to < 0 || to >= ordered.length) return;
+
+    const moved = ordered.slice();
+    [moved[from], moved[to]] = [moved[to], moved[from]];
+
+    const items = moved.map((b, index) => ({ id: b.id, sortOrder: index + 1 }));   // 순서는 1부터
+
+    try {
+      // 서버가 갱신된 전체 목록을 돌려주므로 그것을 정본으로 삼는다
+      const data = await AdminApi.patch("/banners/order", { items });
+      BANNERS = (Array.isArray(data) ? data : []).map(mapRow);
+      applyFilter();
+      AdminUI.toast("노출 순서가 변경되었습니다.");
+    } catch (err) {
+      AdminUI.toast(err.message || "순서 변경에 실패했습니다.");
+    }
+  }
+
   function render(list, total = list.length) {
     if (!list.length) {
       rowsEl.innerHTML = `<tr class="empty-row"><td colspan="${COLSPAN}">조건에 맞는 배너가 없습니다.</td></tr>`;
@@ -217,10 +265,25 @@
       // alt 는 비운다 — 바로 옆 배너명 셀이 접근성 이름 역할을 하므로 중복 낭독을 피한다
       const thumb = `<img class="bn-thumb" src="${esc(imageSrc)}" alt="" loading="lazy">`;
 
+      // 순서 변경은 "전체 순서" 기준이라, 검색·상태 필터가 걸려 있으면 화면에 보이는 위/아래 행이
+      // 실제 이웃이 아니다. 그때는 버튼을 숨겨 엉뚱한 배너와 자리를 바꾸는 일을 막는다.
+      const pos = orderIndexOf(b.id);
+      const reorder = canReorder
+        ? `<span class="order-btns">
+             <button type="button" class="btn sm ghost" data-act="up" aria-label="위로" ${pos <= 0 ? "disabled" : ""}>▲</button>
+             <button type="button" class="btn sm ghost" data-act="down" aria-label="아래로" ${pos < 0 || pos >= BANNERS.length - 1 ? "disabled" : ""}>▼</button>
+           </span>`
+        : "";
+
+      // 노출 순번은 저장된 sort_order 값이 아니라 전체 정렬에서의 자리로 그린다.
+      // 과거 데이터에 0 이나 중복이 남아 있어도 화면에는 1..n 으로 보인다.
+      const orderLabel = pos >= 0 ? String(pos + 1) : "-";
+
       return `
       <tr data-id="${b.id}">
-        <td class="num">${esc(String(b.id))}</td>
-        <td class="num">${esc(String(b.sortOrder))}</td>
+        <td class="num order-cell">
+          <span class="order-value">${esc(orderLabel)}</span>${reorder}
+        </td>
         <td class="bn-thumb-cell">${
           imageHref
             ? `<a class="bn-thumb-link" href="${esc(imageHref)}" target="_blank" rel="noopener">${thumb}</a>`
@@ -237,11 +300,12 @@
         <td class="col-admin-only"><span class="tag ${state.cls}">${state.label}</span></td>
         <td class="col-admin-only muted">${esc(periodText(b))}</td>
         <td>
-          <div class="row-actions">
-            <button type="button" class="btn sm" data-act="detail">상세</button>
-            ${CAN_WRITE ? `
-              <button type="button" class="btn sm" data-act="edit">수정</button>
-              <button type="button" class="btn sm danger" data-act="delete">삭제</button>` : ""}
+          <div class="row-actions">${CAN_WRITE ? `
+            <button type="button" class="btn sm" data-act="edit">수정</button>
+            <button type="button" class="btn sm danger" data-act="delete">삭제</button>` : `
+            <!-- 폴백(읽기전용) 전용. 관리자 모드에서는 [수정] 모달이 같은 값을 편집 가능한 형태로
+                 다 보여주므로 상세는 중복이다. 여기서는 관리 열이 빈 칸이 되지 않게 하는 역할. -->
+            <button type="button" class="btn sm" data-act="detail">상세</button>`}
           </div>
         </td>
       </tr>`;
@@ -255,6 +319,9 @@
   function applyFilter() {
     const q = qEl.value.trim().toLowerCase();
     const status = CAN_WRITE && statusEl ? statusEl.value : "";
+
+    // 필터가 걸리면 화면의 위/아래 행이 전체 순서상의 이웃이 아니게 되므로 순서 버튼을 감춘다
+    canReorder = CAN_WRITE && !q && !status;
 
     listController.setItems(BANNERS.filter((b) => {
       if (status && stateOf(b) !== status) return false;
@@ -276,9 +343,10 @@
      --------------------------------------------------------- */
   function openBannerModal(banner) {
     const isEdit = Boolean(banner);
+    // 신규 배너는 맨 뒤에 붙인다. 순서는 1부터이므로 배너가 없으면 1.
     const nextOrder = BANNERS.length
       ? Math.max(...BANNERS.map((b) => Number(b.sortOrder) || 0)) + 1
-      : 0;
+      : 1;
 
     const value = {
       title: isEdit ? banner.title : "",
@@ -321,7 +389,7 @@
           <div class="field-row">
             <div class="field">
               <label for="bnSortOrder">노출 순서</label>
-              <input id="bnSortOrder" name="sortOrder" type="number" step="1" min="0" value="${esc(String(value.sortOrder))}">
+              <input id="bnSortOrder" name="sortOrder" type="number" step="1" min="1" value="${esc(String(value.sortOrder))}">
               <p class="field-error" data-error-for="sortOrder" hidden></p>
             </div>
             <div class="check-field">
@@ -451,8 +519,8 @@
       }
 
       const sortOrder = Number(sortOrderRaw);
-      if (sortOrderRaw === "" || !Number.isInteger(sortOrder) || sortOrder < 0) {
-        showError("sortOrder", "노출 순서는 0 이상의 정수여야 합니다.");
+      if (sortOrderRaw === "" || !Number.isInteger(sortOrder) || sortOrder < 1) {
+        showError("sortOrder", "노출 순서는 1 이상의 정수여야 합니다.");
         field("sortOrder").focus();
         return;
       }
@@ -537,19 +605,22 @@
     const banner = BANNERS.find((b) => String(b.id) === String(id));
     if (!banner) return;
 
+    if (btn.dataset.act === "up" || btn.dataset.act === "down") {
+      btn.disabled = true;                                   // 연타로 두 번 보내지 않게
+      await moveBanner(id, btn.dataset.act === "up" ? -1 : 1);
+      return;
+    }
+
+    // 폴백(읽기전용)에서만 그려지는 버튼이다. 노출 상태·기간은 넣지 않는다 —
+    // 공개 API 가 active/startAt/endAt 을 주지 않아 그 모드에서는 값을 알 수 없다.
     if (btn.dataset.act === "detail") {
-      const rows = [
+      AdminUI.detail("배너 상세", [
         ["배너 ID", banner.id],
         ["배너명", banner.title],
         ["노출 순서", banner.sortOrder],
         ["이미지 주소", banner.imageUrl || "(없음)"],
         ["연결 링크", banner.linkUrl || "(없음 · 상품 목록으로 이동)"]
-      ];
-      if (CAN_WRITE) {
-        rows.push(["노출 상태", STATE[stateOf(banner)].label]);
-        rows.push(["노출 기간", periodText(banner, true)]);   // 상세에서는 분 단위까지
-      }
-      AdminUI.detail("배너 상세", rows);
+      ]);
       return;
     }
 

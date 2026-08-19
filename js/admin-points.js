@@ -13,6 +13,9 @@
       username: u.username || `#${u.userId}`,   // username 이 비면 내부 ID 로 대체
       name: u.name || "-",
       balance: u.point,
+      // 이 목록은 구매자 대상이다(백엔드 findPointHolders). 판매자/관리자가 섞여 나온다면
+      // 포인트가 남아 있어 예외적으로 포함된 계정이므로, 왜 보이는지 뱃지로 알려준다.
+      role: u.role || "USER",
     };
   }
 
@@ -24,7 +27,11 @@
     }
     rowsEl.innerHTML = list.map((p) => `
       <tr data-id="${p.id}">
-        <td class="strong">${esc(p.username)}</td>
+        <td class="strong">${esc(p.username)}${
+          p.role !== "USER"
+            ? ` <span class="tag role" title="구매자가 아니지만 포인트가 남아 있어 표시됩니다">${esc(p.role)}</span>`
+            : ""
+        }</td>
         <td>${esc(p.name)}</td>
         <td class="num strong">${AdminUI.num(p.balance)} P</td>
         <td><button class="btn sm" data-act="adjust">조정</button></td>

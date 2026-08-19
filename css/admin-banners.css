@@ -25,6 +25,18 @@
 a.bn-thumb-link { display: inline-block; line-height: 0; }
 a.bn-thumb-link:hover .bn-thumb { border-color: var(--ink); }
 
+/* ---------- 노출 순서 ---------- */
+
+/* 숫자와 ▲▼ 를 한 줄에 둔다. .num 이 오른쪽 정렬이라 flex 로 다시 잡는다. */
+.data td.order-cell { white-space: nowrap; }
+.data td.order-cell .order-value { display: inline-block; min-width: 1.4em; text-align: right; }
+.order-btns { display: inline-flex; gap: 2px; margin-left: 8px; vertical-align: middle; }
+.order-btns .btn {
+  padding: 2px 6px; font-size: 10px; line-height: 1.4;
+  border-color: var(--hairline-strong); color: var(--ink-soft); background: var(--surface);
+}
+.order-btns .btn:hover:not(:disabled) { border-color: var(--ink); color: var(--ink); }
+
 /* 연결 링크는 전체 URL 이 들어와 열이 무한정 늘어날 수 있다.
    관리 버튼이 가로 스크롤 뒤로 밀리지 않게 잘라서 보여준다(전체 값은 [상세]에서 확인). */
 .data td.bn-link-cell { max-width: 200px; }
@@ -45,10 +57,6 @@ a.bn-thumb-link:hover .bn-thumb { border-color: var(--ink); }
 .api-notice strong { display: block; margin-bottom: 6px; font-size: 13px; color: var(--ink); }
 .api-notice p { margin: 0 0 4px; }
 .api-notice p:last-child { margin-bottom: 0; }
-.api-notice code {
-  padding: 1px 5px; border: 1px solid var(--hairline-strong); border-radius: 5px;
-  background: var(--surface); font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 11.5px;
-}
 
 /* admin.css 에 .btn 의 disabled 규칙이 없어 비활성 버튼에도 hover 가 그대로 먹는다 */
 .btn:disabled,

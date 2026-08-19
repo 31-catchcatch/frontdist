@@ -83,6 +83,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     return {
       id,
+      kind: "notification",
       result,
       title:
         item.title ||
@@ -135,6 +136,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   function getFilteredItems() {
     if (currentFilter === "unread") return notifications.filter((item) => !item.isRead);
+    if (currentFilter === "pending") return notifications.filter((item) => item.result === "pending");
     if (currentFilter === "approved") return notifications.filter((item) => item.result === "approved");
     if (currentFilter === "rejected") return notifications.filter((item) => item.result === "rejected");
     return notifications;
@@ -144,12 +146,14 @@ document.addEventListener("DOMContentLoaded", async () => {
     const counts = {
       all: notifications.length,
       unread: notifications.filter((item) => !item.isRead).length,
+      pending: notifications.filter((item) => item.result === "pending").length,
       approved: notifications.filter((item) => item.result === "approved").length,
       rejected: notifications.filter((item) => item.result === "rejected").length
     };
 
     document.querySelector('[data-role="count-all"]').textContent = `${counts.all}건`;
     document.querySelector('[data-role="count-unread"]').textContent = `${counts.unread}건`;
+    document.querySelector('[data-role="count-pending"]').textContent = `${counts.pending}건`;
     document.querySelector('[data-role="count-approved"]').textContent = `${counts.approved}건`;
     document.querySelector('[data-role="count-rejected"]').textContent = `${counts.rejected}건`;
 
@@ -161,6 +165,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     const copy = {
       all: ["전체 알림", "최근 알림부터 표시됩니다."],
       unread: ["읽지 않은 알림", "아직 확인하지 않은 알림만 표시됩니다."],
+      pending: ["승인 대기", "관리자 심사를 기다리는 요청입니다."],
       approved: ["승인 알림", "관리자가 승인한 쿠폰 발행 요청입니다."],
       rejected: ["반려 알림", "관리자가 반려한 쿠폰 발행 요청입니다."]
     }[currentFilter];
@@ -207,9 +212,10 @@ document.addEventListener("DOMContentLoaded", async () => {
 
           <div class="notification-side">
             <time class="notification-date">${formatDate(item.createdAt)}</time>
+            ${item.kind === "request" ? "" : `
             <button type="button" class="btn-read" data-action="read" ${item.isRead ? "disabled" : ""}>
               ${item.isRead ? "읽음" : "읽음 처리"}
-            </button>
+            </button>`}
           </div>
 
           ${item.isRead ? "" : '<span class="unread-dot" aria-label="읽지 않은 알림"></span>'}
@@ -249,6 +255,31 @@ document.addEventListener("DOMContentLoaded", async () => {
     return result;
   }
 
+  /* 승인 대기 요청을 목록에 합치기 위한 조회.
+     PENDING 만 가져온다 — 승인/반려는 이미 알림으로 오므로 둘 다 넣으면 같은 건이 두 번 보인다. */
+  async function fetchPendingRequests() {
+    try {
+      const result = await requestApi(`${API_BASE}/seller/coupons/requests?size=100`, { method: "GET" });
+      const items = extractItems(result);
+      return items
+        .filter((item) => String(item.approvalStatus ?? item.status ?? "").toUpperCase() === "PENDING")
+        .map((item) => ({
+          id: `request-${item.requestId}`,
+          kind: "request",              // 알림이 아니라 요청이라 읽음 처리 대상이 아니다
+          result: "pending",
+          title: "쿠폰 발행 요청이 접수되었습니다.",
+          message: "관리자 승인을 기다리는 중입니다. 승인 또는 반려되면 이곳에 결과가 표시됩니다.",
+          couponName: item.couponName ?? "",
+          requestId: item.requestId ?? "",
+          rejectionReason: "",
+          createdAt: item.requestedAt ?? item.createdAt ?? "",
+          isRead: true                  // 읽음/안읽음 개념이 없으므로 미읽음 집계에서 제외한다
+        }));
+    } catch (_) {
+      return [];                        // 대기 목록을 못 받아도 알림 목록은 그대로 보여준다
+    }
+  }
+
   async function loadNotifications() {
     messageElement.hidden = true;
 
@@ -260,9 +291,14 @@ document.addEventListener("DOMContentLoaded", async () => {
       return;
     }
 
-    const result = await requestApi(NOTIFICATION_API, { method: "GET" });
+    const [result, pending] = await Promise.all([
+      requestApi(NOTIFICATION_API, { method: "GET" }),
+      fetchPendingRequests()
+    ]);
+
     notifications = extractItems(result)
       .map(normalizeNotification)
+      .concat(pending)
       .sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
     render();
   }

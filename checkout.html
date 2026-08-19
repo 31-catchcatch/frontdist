@@ -104,6 +104,7 @@
           <select id="couponSelect" disabled>
             <option value="">쿠폰을 불러오는 중입니다.</option>
           </select>
+          <p id="couponScope" class="coupon-scope" aria-live="polite" hidden></p>
         </div>
         <div class="benefit-row point-row">
           <label for="pointAmount">포인트</label>
@@ -127,6 +128,7 @@
       <h2 id="summaryTitle">결제 금액</h2>
       <dl class="price-list">
         <div><dt>상품 금액</dt><dd id="itemTotal">0원</dd></div>
+        <div class="discount" id="productDiscountRow" hidden><dt>상품 할인</dt><dd id="productDiscount">-0원</dd></div>
         <div><dt>배송비</dt><dd id="shippingFee">0원</dd></div>
         <div class="discount"><dt>쿠폰 할인</dt><dd id="couponDiscount">-0원</dd></div>
         <div class="discount"><dt>포인트 사용</dt><dd id="pointsUsed">-0원</dd></div>

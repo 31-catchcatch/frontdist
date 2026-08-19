@@ -7,6 +7,7 @@
   <title>쿠폰 인가 · 캐치캐치 관리자</title>
   <link rel="stylesheet" href="css/common.css">
   <link rel="stylesheet" href="css/admin.css">
+  <link rel="stylesheet" href="css/admin-coupons.css">
   <script src="js/admin-auth.js"></script>
   <script>AdminAuth.requireLogin();</script>
 </head>
@@ -47,29 +48,24 @@
         <svg class="icn" viewBox="0 0 24 24" style="width:15px;height:15px"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg>
         <input type="text" id="q" placeholder="판매자·쿠폰명 검색">
       </label>
+      <!-- 쿠폰이 만들어지는 경로가 둘이라(판매자 요청 심사 / 관리자 직접 발행) 목록을 나눠 본다 -->
+      <select id="viewFilter">
+        <option value="requests">발행 요청 심사</option>
+        <option value="coupons">발행된 쿠폰</option>
+      </select>
       <select id="statusFilter">
         <option value="">전체 상태</option>
         <option value="wait">대기</option>
         <option value="ok">승인</option>
         <option value="stop">반려</option>
       </select>
+      <button type="button" class="btn sm primary" id="createBtn">쿠폰 직접 발행</button>
       <span class="count">총 <b id="count">0</b>건</span>
     </div>
 
     <div class="table-wrap">
       <table class="data">
-        <thead>
-          <tr>
-            <th>판매자</th>
-            <th class="grow">쿠폰명</th>
-            <th class="num">할인</th>
-            <th class="num">발행수량</th>
-            <th>사용기간</th>
-            <th>요청일</th>
-            <th>상태</th>
-            <th>인가</th>
-          </tr>
-        </thead>
+        <thead><tr id="headRow"></tr></thead>
         <tbody id="rows"></tbody>
       </table>
     </div>
