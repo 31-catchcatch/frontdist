@@ -5,10 +5,11 @@
   const money = new Intl.NumberFormat("ko-KR");
   const FALLBACK_FREE_SHIPPING_THRESHOLD = 50000;
   const FALLBACK_SHIPPING_FEE = 3000;
-  const DIRECT_CHECKOUT_KEY = "catchcatch.directCheckoutItem";
-  const CART_CHECKOUT_IDS_KEY = "catchcatch.checkoutCartItemIds";
   const PENDING_ORDER_KEY = "catchcatch.pendingOrder";
-  const DIRECT_CHECKOUT_MODE = new URLSearchParams(location.search).get("mode") === "direct";
+  // [1-3 조치] 주문 대상은 서버가 확정한 초안(draft)으로만 다룬다.
+  //   장바구니/상품상세에서 POST /orders/prepare 로 초안을 만들고 그 식별자만 넘겨받는다.
+  //   화면이 상품·수량을 직접 들고 있지 않으므로 변조할 대상 자체가 없다.
+  const DRAFT_ID = new URLSearchParams(location.search).get("draft");
 
   const PAYMENT_TYPES = [
     { id: "CARD", label: "카드", detail: "국내외 신용카드와 체크카드로 결제합니다.", enabled: true },
@@ -59,10 +60,13 @@
     pointAmount: 0,
     selectedPaymentType: "CARD",
     paying: false,
+    // 초안은 주문 생성 시 서버에서 소멸한다. 한 번 소진되면 이 화면으로는 다시 결제할 수 없다.
+    draftConsumed: false,
   };
 
   function getAccessToken() {
-    return sessionStorage.getItem("catchcatch.accessToken") || localStorage.getItem("catchcatch.accessToken");
+    // [5-1 조치] 저장 키를 직접 읽지 않는다.
+    return window.CatchAuth ? CatchAuth.getToken() : null;
   }
 
   function unwrapData(payload) {
@@ -110,33 +114,6 @@
       throw new Error(detail.message || payload?.message || "요청을 처리하지 못했습니다. 잠시 후 다시 시도해 주세요.");
     }
     return unwrapData(payload);
-  }
-
-  function getSelectedCartItemIds() {
-    try {
-      const raw = sessionStorage.getItem(CART_CHECKOUT_IDS_KEY);
-      const ids = raw ? JSON.parse(raw) : [];
-      return Array.isArray(ids) ? ids.map(String) : [];
-    } catch (_) {
-      return [];
-    }
-  }
-
-  function getDirectCheckoutItem() {
-    if (!DIRECT_CHECKOUT_MODE) return null;
-    try {
-      const raw = sessionStorage.getItem(DIRECT_CHECKOUT_KEY);
-      const item = raw ? JSON.parse(raw) : null;
-      const productId = Number(item?.productId);
-      const optionId = item?.optionId == null ? null : Number(item.optionId);
-      const quantity = Number(item?.quantity);
-      if (!Number.isInteger(productId) || productId <= 0) return null;
-      if (optionId !== null && (!Number.isInteger(optionId) || optionId <= 0)) return null;
-      if (!Number.isInteger(quantity) || quantity <= 0 || quantity > 10) return null;
-      return { productId, optionId, quantity };
-    } catch (_) {
-      return null;
-    }
   }
 
   function getSelectedAddress() {
@@ -391,8 +368,16 @@
 
   function updatePayButton() {
     const hasItems = state.cartItems.length > 0;
-    const enabled = state.ready && hasItems && state.selectedAddressId && state.selectedPaymentType && !state.paying;
+    // draftConsumed 를 여기서 함께 본다. 배송지·결제수단을 다시 고르면 이 함수가 또 불리는데,
+    // 그때 버튼이 되살아나면 이미 소멸한 초안으로 결제를 다시 시도하게 된다.
+    const enabled = state.ready && hasItems && state.selectedAddressId && state.selectedPaymentType
+      && !state.paying && !state.draftConsumed;
     elements.payButton.disabled = !enabled;
+    if (state.draftConsumed && !state.paying) {
+      elements.payButton.textContent = "결제하기";
+      elements.payHelp.textContent = "이 주문서는 사용이 끝났습니다. 상품을 다시 선택해 주세요.";
+      return;
+    }
     if (state.paying) {
       elements.payButton.textContent = "결제를 진행하고 있습니다";
       elements.payHelp.textContent = "결제창을 여는 중입니다. 창을 닫지 마세요.";
@@ -451,48 +436,36 @@
     }
   }
 
-  async function loadCartItems() {
-    const selectedIds = getSelectedCartItemIds();
-    if (!selectedIds.length) {
-      state.cartItems = [];
-      return;
+  /**
+   * [1-3 조치] 서버가 확정해 둔 주문 초안을 화면 표시용으로 가져온다.
+   * 금액은 서버가 잡은 unitPrice/lineAmount 를 그대로 쓴다. 화면이 다시 계산하면
+   * 결제 금액과 어긋날 수 있으므로 여기서는 받은 값을 옮겨 담기만 한다.
+   * originalPrice/sellerId 는 초안이 내려주면 쓰고, 없으면 각각 할인 0·전체 주문 기준으로 폴백한다.
+   */
+  async function loadDraft() {
+    const draft = await apiFetch(`/orders/draft/${encodeURIComponent(DRAFT_ID)}`);
+    const items = Array.isArray(draft?.items) ? draft.items : [];
+    if (!items.length) {
+      throw new Error("주문 정보를 확인할 수 없습니다. 상품을 다시 선택해 주세요.");
     }
-    const allItems = await apiFetch("/carts");
-    state.cartItems = (Array.isArray(allItems) ? allItems : [])
-      .filter((item) => selectedIds.includes(String(item.cartItemId)));
-  }
-
-  async function loadDirectItem(requestedItem) {
-    const product = await apiFetch(`/products/${encodeURIComponent(requestedItem.productId)}`);
-    const options = Array.isArray(product?.options) ? product.options : [];
-    const option = requestedItem.optionId == null
-      ? null
-      : options.find((candidate) => Number(candidate.optionId) === requestedItem.optionId);
-
-    if (!option && (options.length > 0 || requestedItem.optionId !== null)) {
-      throw new Error("선택한 상품 옵션을 확인할 수 없습니다. 상품 상세에서 다시 선택해 주세요.");
-    }
-    if (option && (option.soldOut || Number(option.stockQuantity) < requestedItem.quantity)) {
-      throw new Error("선택한 상품의 재고가 부족합니다. 수량을 다시 선택해 주세요.");
-    }
-
-    // 상품 할인율이 반영된 실판매가. 서버 placeOrder 도 finalPrice 로 결제 금액을 잡는다.
-    const basePrice = Number(product.finalPrice ?? product.price ?? 0);
-    const unitPrice = basePrice + Number(option?.additionalPrice || 0);
-    state.cartItems = [{
-      cartItemId: null,
-      productId: requestedItem.productId,
-      sellerId: product.sellerId ?? null,
-      sellerName: product.sellerName || null,
-      optionId: requestedItem.optionId,
-      productName: product.name,
-      optionName: option?.optionName || "옵션 없음",
-      price: unitPrice,
-      originalPrice: Number(product.price || 0) + Number(option?.additionalPrice || 0),
-      quantity: requestedItem.quantity,
-      totalPrice: unitPrice * requestedItem.quantity,
-      thumbnailUrl: product.thumbnailUrl || null,
-    }];
+    state.cartItems = items.map((item) => {
+      const unitPrice = Number(item.unitPrice) || 0;
+      const quantity = Number(item.quantity) || 0;
+      return {
+        cartItemId: item.cartItemId ?? null,
+        productId: item.productId,
+        sellerId: item.sellerId ?? null,
+        sellerName: item.sellerName || null,
+        optionId: item.optionId,
+        productName: item.productName,
+        optionName: item.optionName || "옵션 없음",
+        price: unitPrice,
+        originalPrice: Number(item.originalUnitPrice ?? unitPrice) || 0,
+        quantity: quantity,
+        totalPrice: Number(item.lineAmount ?? unitPrice * quantity) || 0,
+        thumbnailUrl: item.thumbnailUrl || null,
+      };
+    });
   }
 
   function buildOrderName() {
@@ -554,11 +527,8 @@
       const order = await apiFetch("/orders", {
         method: "POST",
         body: JSON.stringify({
-          items: state.cartItems.map((item) => ({
-            productId: item.productId,
-            optionId: item.optionId,
-            quantity: item.quantity,
-          })),
+          // [1-3 조치] 상품·수량은 보내지 않는다. 서버가 draftId 로 확정해 둔 내용만 사용한다.
+          draftId: DRAFT_ID,
           couponId: coupon ? coupon.couponId : null,
           usePoint: summary().pointsUsed,
           receiverName: address.recipientName,
@@ -571,6 +541,9 @@
       });
 
       createdOrder = order;
+      // 주문이 만들어진 시점에 서버는 이 초안을 소멸시킨다. 결제가 실패해도 같은 draftId 로
+      // 다시 주문할 수 없으므로, 이 뒤로는 화면을 재사용하지 못하게 잠근다.
+      state.draftConsumed = true;
       try {
         sessionStorage.setItem(PENDING_ORDER_KEY, JSON.stringify({
           orderId: order.orderId,
@@ -597,8 +570,13 @@
             error?.code === "USER_CANCEL" ? "결제창에서 결제 취소" : "결제 시작 실패"
           )
         : false;
-      setNotice(paymentErrorMessage(error, canceled));
       state.paying = false;
+      setNotice(
+        state.draftConsumed
+          ? `${paymentErrorMessage(error, canceled)} 상품을 다시 선택해 주세요.`
+          : paymentErrorMessage(error, canceled),
+        state.draftConsumed ? "info" : "error"
+      );
       updatePayButton();
     }
   }
@@ -606,21 +584,12 @@
   async function initialize() {
     if (!window.CatchAuth || !window.CatchAuth.requireLogin()) return;
 
-    const directItem = getDirectCheckoutItem();
-    const selectedCartItemIds = getSelectedCartItemIds();
-    const hasCheckoutItems = DIRECT_CHECKOUT_MODE
-      ? Boolean(directItem)
-      : selectedCartItemIds.length > 0;
-    if (!hasCheckoutItems) {
+    // [1-3 조치] draftId 없이는 주문서를 열 수 없다. 주소로 직접 들어와도 살 것이 없다.
+    if (!DRAFT_ID) {
       elements.loading.hidden = true;
       elements.content.hidden = false;
       renderAll();
-      setNotice(
-        DIRECT_CHECKOUT_MODE
-          ? "바로구매 상품 정보가 없습니다. 상품 상세에서 다시 선택해 주세요."
-          : "장바구니에서 주문할 상품을 선택해 주세요.",
-        "info"
-      );
+      setNotice("주문 정보가 없습니다. 장바구니나 상품 상세에서 다시 선택해 주세요.", "info");
       return;
     }
 
@@ -629,7 +598,7 @@
         apiFetch("/orders/checkout"),
         apiFetch("/users/me/addresses"),
         apiFetch("/users/me/coupons?size=100"),
-        DIRECT_CHECKOUT_MODE ? loadDirectItem(directItem) : loadCartItems(),
+        loadDraft(),
       ]);
       state.defaults = defaults;
       state.addresses = Array.isArray(addresses) ? addresses : [];

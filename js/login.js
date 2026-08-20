@@ -82,12 +82,8 @@
       }
 
       const tokenData = (result && result.data) || {};
-      if (tokenData.accessToken) {
-        localStorage.setItem("catchcatch.accessToken", tokenData.accessToken);
-      }
-      if (tokenData.refreshToken) {
-        localStorage.setItem("catchcatch.refreshToken", tokenData.refreshToken);
-      }
+      // [5-1][4-1 조치] 토큰 저장은 CatchAuth 한 곳에서만 처리한다 (refreshToken 미저장).
+      CatchAuth.saveTokens(tokenData);
 
       // 로그인 성공 상태 저장
       sessionStorage.setItem("catchcatch.loggedIn", "true");

@@ -47,7 +47,8 @@ document.addEventListener("DOMContentLoaded", () => {
   let existingImageUrl = null; // 수정 모드에서 이미 등록돼 있던 이미지 URL
 
   function getAccessToken() {
-    return sessionStorage.getItem("catchcatch.accessToken") || localStorage.getItem("catchcatch.accessToken");
+    // [5-1 조치] 저장 키를 직접 읽지 않는다.
+    return window.CatchAuth ? CatchAuth.getToken() : null;
   }
 
   async function apiFetch(path, options = {}) {

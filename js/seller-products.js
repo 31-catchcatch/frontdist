@@ -62,9 +62,8 @@
     : "all";
 
   function getToken() {
-    return window.CatchAuth?.getToken?.() ||
-      sessionStorage.getItem("catchcatch.accessToken") ||
-      localStorage.getItem("catchcatch.accessToken");
+    // [5-1 조치] 저장 키를 직접 읽지 않는다.
+    return window.CatchAuth ? CatchAuth.getToken() : null;
   }
 
   function isLoggedIn() {
@@ -78,10 +77,8 @@
   }
 
   function clearLoginState() {
-    sessionStorage.removeItem("catchcatch.loggedIn");
-    sessionStorage.removeItem("catchcatch.loginType");
-    sessionStorage.removeItem("catchcatch.accessToken");
-    localStorage.removeItem("catchcatch.accessToken");
+    // [5-1 조치] 저장 키 직접 접근 제거. 화면 이동은 기존처럼 각 호출부가 담당한다.
+    if (window.CatchAuth) CatchAuth.clearSession();
   }
 
   if (!FILE_PREVIEW_MODE && !isLoggedIn()) {

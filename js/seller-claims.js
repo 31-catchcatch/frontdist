@@ -102,7 +102,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   // ===== 토큰 꺼내기 =====
   function getToken() {
-    return localStorage.getItem("catchcatch.accessToken");
+    // [5-1 조치] 저장 키를 직접 읽지 않는다.
+    return window.CatchAuth ? CatchAuth.getToken() : null;
   }
 
   function authHeaders(withBody) {

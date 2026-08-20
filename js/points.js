@@ -65,7 +65,8 @@ document.addEventListener("DOMContentLoaded", () => {
   // ===== API에서 진짜 데이터 받아오기 =====
   async function loadPoints() {
     try {
-      const token = localStorage.getItem("catchcatch.accessToken");
+      // [5-1 조치] 저장 키를 직접 읽지 않는다.
+      const token = window.CatchAuth ? CatchAuth.getToken() : null;
 
       const res = await fetch("/api/v1/users/me/points", {
         method: "GET",

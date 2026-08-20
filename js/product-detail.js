@@ -359,20 +359,28 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
 
-    // 바로구매 → 장바구니를 거치지 않고 선택 상품만 주문서로 전달
-    $('[data-action="buy-now"]').addEventListener("click", () => {
+    // 바로구매 → [1-3 조치] 서버가 주문 대상·금액을 확정하고 초안(draft) 식별자를 돌려준다.
+    //   예전에는 sessionStorage 에만 담아 주문서로 넘겼다. 서버는 결제 요청 시점에야 "무엇을
+    //   사려는지" 를 처음 받았고, 그래서 productId/optionId/수량 변조를 대조할 기준이 없었다.
+    $('[data-action="buy-now"]').addEventListener("click", async (event) => {
       if (blockIfSeller()) return;
       if (!requireOption()) return;
       if (!CatchAuth.requireLogin()) return;
+      const button = event.currentTarget;
+      button.disabled = true;
       try {
-        sessionStorage.setItem(DIRECT_CHECKOUT_KEY, JSON.stringify({
-          productId: productId,
-          optionId: selectedOption ? selectedOption.optionId : null,
-          quantity: qty,
-        }));
+        const draft = await CatchApi.post("/orders/prepare", {
+          items: [{
+            productId: productId,
+            optionId: selectedOption ? selectedOption.optionId : null,
+            quantity: qty,
+          }],
+        });
+        sessionStorage.removeItem(DIRECT_CHECKOUT_KEY);
         sessionStorage.removeItem(CART_CHECKOUT_IDS_KEY);
-        location.href = "checkout.html?mode=direct";
+        location.href = "checkout.html?draft=" + encodeURIComponent(draft.draftId);
       } catch (err) {
+        button.disabled = false;
         alert(err.message || "주문 진행에 실패했습니다.");
       }
     });

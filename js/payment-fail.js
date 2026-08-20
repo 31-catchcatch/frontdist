@@ -7,14 +7,14 @@
   // 토스가 내려주는 대표 코드만 우리 문구로 바꿔준다. 나머지는 토스 메시지를 그대로 보여준다.
   // 참고: https://docs.tosspayments.com/reference/error-codes
   const FRIENDLY_MESSAGE = {
-    PAY_PROCESS_CANCELED: "결제를 취소하셨습니다. 다시 결제하시려면 주문서로 돌아가 주세요.",
+    PAY_PROCESS_CANCELED: "결제를 취소하셨습니다. 다시 주문하시려면 상품을 선택해 주세요.",
     PAY_PROCESS_ABORTED: "결제 진행 중 오류가 발생해 결제가 중단되었습니다.",
     REJECT_CARD_COMPANY: "카드사에서 결제를 거절했습니다. 다른 카드로 시도하거나 카드사에 문의해 주세요.",
     INVALID_CARD_EXPIRATION: "카드 유효기간이 올바르지 않습니다.",
     EXCEED_MAX_CARD_INSTALLMENT_PLAN: "선택하신 할부 개월 수는 사용할 수 없습니다.",
     NOT_SUPPORTED_INSTALLMENT_PLAN_CARD_OR_MERCHANT: "이 카드로는 할부 결제를 사용할 수 없습니다.",
     EXCEED_MAX_PAYMENT_AMOUNT: "결제 한도를 초과했습니다.",
-    USER_CANCEL: "결제를 취소하셨습니다. 다시 결제하시려면 주문서로 돌아가 주세요.",
+    USER_CANCEL: "결제를 취소하셨습니다. 다시 주문하시려면 상품을 선택해 주세요.",
   };
 
   const el = {

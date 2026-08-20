@@ -33,7 +33,8 @@
   const money = new Intl.NumberFormat('ko-KR');
 
   function getAccessToken() {
-    return sessionStorage.getItem("catchcatch.accessToken") || localStorage.getItem("catchcatch.accessToken");
+    // [5-1 조치] 저장 키를 직접 읽지 않는다.
+    return window.CatchAuth ? CatchAuth.getToken() : null;
   }
 
   async function apiFetch(path, options = {}) {
