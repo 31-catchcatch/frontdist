@@ -1,44 +1,40 @@
-/* =========================================================
-   캐치캐치 공통 인증 모듈 (js/auth.js) — U-AUTH-008
-   ---------------------------------------------------------
-   ⚠️ 리더만 수정합니다. 팀원은 가져다 쓰기만 하세요.
-
-   로그인 상태 규칙 (login.html에서 로그인 성공 시 저장):
-   - sessionStorage 'catchcatch.loggedIn'    = 'true'
-   - sessionStorage/localStorage 'catchcatch.accessToken' = 토큰문자열
-
-   페이지에서 쓰는 법:
-   1) <head>나 </body> 앞에  <script src="js/auth.js"></script>  추가
-   2) 로그인 필요한 페이지 맨 위에서:  CatchAuth.requireLogin();
-   3) 로그인 여부 확인:  if (CatchAuth.isLoggedIn()) { ... }
-   ========================================================= */
 (function (global) {
   "use strict";
 
-  // === API BASE 단일 소스(SSOT) ===
-  // 개발/배포 환경 판별(file://·Live Server 5500 → localhost:8080, 그 외 → /api/v1 상대경로)은
-  // 프로젝트 전체에서 오직 여기서만 계산해 전역(CATCHCATCH_API_BASE_URL)에 넣는다.
-  // auth.js는 거의 모든 페이지에서 페이지별 스크립트보다 먼저 로드되므로,
-  // api.js·login.js·seller-*.js 등 다른 스크립트는 이 값을 "window.CATCHCATCH_API_BASE_URL || '/api/v1'"
-  // 로 읽기만 하면 되고, 같은 판별 로직을 각자 복제하지 않는다.
-  if (!global.CATCHCATCH_API_BASE_URL) {
-    global.CATCHCATCH_API_BASE_URL =
-      location.protocol === "file:" || location.port === "5500"
-        ? "http://localhost:8080/api/v1"
-        : "/api/v1";
+  function esc(s) {
+    return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+    });
   }
+  
+global.esc = esc;
+
+  function SafeUrl(v) {
+    try {
+      const u = new URL(v, location.href);
+      return ["http:", "https:", "data:", "blob:"].includes(u.protocol) ? u.href : "#";
+    } catch (_) { return "#"; }
+  }
+global.SafeUrl = SafeUrl; 
+
+  // [5-1 조치] 배포본에 개발 환경 주소(localhost:8080)를 남기지 않는다.
+  //            로컬 개발은 이 스크립트보다 먼저 window.CATCHCATCH_API_BASE_URL 을 주입할 것.
+  global.CATCHCATCH_API_BASE_URL = global.CATCHCATCH_API_BASE_URL || "/api/v1";
 
   const KEY_FLAG = "catchcatch.loggedIn";
+  const KEY_TYPE = "catchcatch.loginType";
   const KEY_TOKEN = "catchcatch.accessToken";
-  const KEY_REFRESH = "catchcatch.refreshToken";
+  const KEY_REFRESH = "catchcatch.refreshToken";   // 저장하지 않는다. 과거 저장분 정리에만 쓴다.
 
-  // 저장된 액세스 토큰을 꺼낸다 (session 우선, 없으면 local).
+  // [4-1 조치] 프론트는 재발급(/auth/refresh)을 호출하지 않아 refreshToken 을 보관할 이유가 없다.
+  //            저장을 멈추는 것만으로는 이미 저장된 값이 남으므로 로드 시 1회 정리한다.
+  try { localStorage.removeItem(KEY_REFRESH); } catch (_) { /* 스토리지 차단 환경 */ }
+
   function readToken() {
     return sessionStorage.getItem(KEY_TOKEN) || localStorage.getItem(KEY_TOKEN);
   }
 
   const CatchAuth = {
-    // 로그인 상태인지 확인
     isLoggedIn() {
       return (
         sessionStorage.getItem(KEY_FLAG) === "true" ||
@@ -47,46 +43,80 @@
       );
     },
 
-    // 저장된 액세스 토큰 반환 (없으면 null)
     getToken() {
       return readToken();
     },
 
-    // 로그인 응답의 data({ accessToken, refreshToken })를 저장한다.
-    // login.js 외에 다른 로그인 경로(판매자/관리자)에서도 재사용 가능.
+    async requireRole(role) {
+      const token = this.getToken();
+      const base = global.CATCHCATCH_API_BASE_URL || "/api/v1";
+      const me = token
+        ? await fetch(base + "/users/me")
+            .then(r => r.ok ? r.json() : null)
+            .then(j => (j && j.data) ? j.data : null)
+            .catch(() => null)
+        : null;
+      if (!me) {
+        const here = location.pathname.split("/").pop() + location.search;
+        location.href = "login.html?redirect=" + encodeURIComponent(here);
+        return false;
+      }
+      if (role && me.role !== role) { location.href = "index.html"; return false; }
+      return true;
+    },
+
+    safeRedirect(fallback) {
+      const v = new URLSearchParams(location.search).get("redirect");
+      return v && /^[a-z0-9_-]+\.html(?:\?[^#]*)?$/i.test(v) ? v : (fallback || "index.html");
+    },
+
     saveTokens(data) {
       if (!data) return;
       if (data.accessToken) localStorage.setItem(KEY_TOKEN, data.accessToken);
-      if (data.refreshToken) localStorage.setItem(KEY_REFRESH, data.refreshToken);
+      // [4-1 조치] refreshToken 은 저장하지 않는다 (사용처 없는 자격증명 보관 금지).
       sessionStorage.setItem(KEY_FLAG, "true");
     },
 
-    // 로그인 필요한 페이지에서 호출 — 비로그인 시 로그인 페이지로 보냄
     requireLogin() {
       if (!this.isLoggedIn()) {
         const here = location.pathname.split("/").pop() + location.search;
         location.href = "login.html?redirect=" + encodeURIComponent(here);
         return false;
       }
+      this.requireRole();
       return true;
     },
 
-    // 로그아웃 — 저장된 상태 비우고 메인으로
-    logout() {
+    /** [5-1 조치] 화면 이동 없이 로그인 상태만 정리한다. 각 화면의 clearLoginState() 가 이걸 쓴다. */
+    clearSession() {
       sessionStorage.removeItem(KEY_FLAG);
+      sessionStorage.removeItem(KEY_TYPE);
       sessionStorage.removeItem(KEY_TOKEN);
       localStorage.removeItem(KEY_TOKEN);
       localStorage.removeItem(KEY_REFRESH);
+    },
+
+    /**
+     * [4-2 조치] 서버에 로그아웃을 알린 뒤 로컬 상태를 정리한다.
+     *
+     * 종전에는 스토리지만 비워서, 서버는 그 토큰을 남은 유효기간 동안 계속 유효로 봤다.
+     * 서버 호출이 실패해도(오프라인·서버 오류) 로컬 정리와 화면 이동은 그대로 진행한다.
+     */
+    async logout() {
+      const token = readToken();
+      if (token) {
+        try {
+          await originalFetch(global.CATCHCATCH_API_BASE_URL + "/auth/user/logout", {
+            method: "POST",
+            headers: { Authorization: "Bearer " + token },
+          });
+        } catch (_) { /* 통신 실패해도 로컬 정리는 진행 */ }
+      }
+      this.clearSession();
       location.href = "index.html";
     },
   };
 
-  // === 전역 fetch 인터셉터 ===
-  // 모든 페이지가 이 auth.js를 (페이지별 스크립트보다 먼저) 로드하므로,
-  // 여기서 window.fetch를 한 번 감싸두면 각 페이지 코드를 수정하지 않아도
-  // 백엔드(/api/v1/...)로 가는 요청에 자동으로 Authorization: Bearer 헤더가 붙는다.
-  // - 같은 백엔드 경로 요청에만 적용 (외부 URL은 건드리지 않음)
-  // - 이미 Authorization을 직접 설정한 요청(checkout.js 등)은 덮어쓰지 않음
   const originalFetch = window.fetch.bind(window);
   window.fetch = function (input, init) {
     const opts = init ? { ...init } : {};
@@ -95,7 +125,12 @@
       url = typeof input === "string" ? input : (input && input.url) || "";
     } catch (_) { /* noop */ }
 
-    const isApiCall = url.indexOf("/api/v1/") !== -1;
+    let isApiCall = false;
+    try {
+      const abs = new URL(url, location.href);
+      const apiBase = new URL(global.CATCHCATCH_API_BASE_URL || "/api/v1", location.href);
+      isApiCall = abs.origin === apiBase.origin && abs.pathname.indexOf("/api/v1/") === 0;
+    } catch (_) { /* noop */ }
     const token = readToken();
 
     if (isApiCall && token && typeof input === "string") {
@@ -110,10 +145,16 @@
   };
 
   // 헤더 공통 처리: 페이지 로드 시 자동 실행
-  document.addEventListener("DOMContentLoaded", () => {
-    const loggedIn = CatchAuth.isLoggedIn();
+  document.addEventListener("DOMContentLoaded", async () => {
+    const base = global.CATCHCATCH_API_BASE_URL || "/api/v1";
+    const me = CatchAuth.getToken()
+      ? await fetch(base + "/users/me")
+          .then(r => r.ok ? r.json() : null)
+          .then(j => (j && j.data) ? j.data : null)
+          .catch(() => null)
+      : null; 
+    const loggedIn = !!me;
 
-    // 마이페이지 아이콘: 비로그인 시 로그인 페이지로 우회
     const mypageLink = document.getElementById("mypageLink");
     if (mypageLink) {
       mypageLink.addEventListener("click", (e) => {
@@ -136,7 +177,7 @@
     });
 
     // 판매자로 로그인했을 때만 상단 카테고리에 '판매 관리' 노출
-    const isSeller = loggedIn && sessionStorage.getItem("catchcatch.loginType") === "seller";
+    const isSeller = !!me && me.role === "SELLER";
     document.querySelectorAll("[data-seller-only]").forEach((el) => {
       el.hidden = !isSeller;
     });

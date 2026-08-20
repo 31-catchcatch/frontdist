@@ -1,10 +1,3 @@
-// addresses.js — 일반 회원 배송지 관리 API 연동
-//
-// GET    /api/v1/users/me/addresses
-// POST   /api/v1/users/me/addresses
-// PUT    /api/v1/users/me/addresses/{addressId}
-// DELETE /api/v1/users/me/addresses/{addressId}
-
 document.addEventListener("DOMContentLoaded", () => {
   "use strict";
 
@@ -100,7 +93,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function fullAddress(address) {
-    return [address.baseAddress, address.detailAddress]
+    return [esc(address.baseAddress), esc(address.detailAddress)]
       .filter(Boolean)
       .join(" ");
   }
@@ -119,16 +112,16 @@ document.addEventListener("DOMContentLoaded", () => {
 
     rowsElement.innerHTML = addresses.map((address) => `
       <tr data-address-id="${address.id}">
-        <td>${address.addressName}</td>
-        <td>${address.recipientName}</td>
+        <td>${esc(address.addressName)}</td>
+        <td>${esc(address.recipientName)}</td>
         <td>${fullAddress(address)}</td>
-        <td>${address.recipientPhone}</td>
+        <td>${esc(address.recipientPhone)}</td>
         <td class="default-cell">
           <input
             type="checkbox"
             class="default-address"
             data-action="default"
-            aria-label="${address.addressName}을 기본 배송지로 설정"
+            aria-label="${esc(address.addressName)}을 기본 배송지로 설정"
             ${address.defaultAddress ? "checked" : ""}
           >
         </td>

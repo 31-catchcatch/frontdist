@@ -50,6 +50,9 @@
 .benefit-row select, .benefit-row input { width: 100%; height: 42px; border: 1px solid var(--hairline-strong); border-radius: 0; background: var(--surface); color: var(--ink); font: inherit; font-size: 13px; padding: 0 11px; }
 .benefit-row select:focus, .benefit-row input:focus { border-color: var(--ink); outline: 0; }
 .benefit-row select:disabled, .benefit-row input:disabled { color: var(--faint); background: #f4f4f4; }
+.benefit-row select option:disabled { color: var(--faint); }
+.coupon-scope { grid-column: 2; margin: -4px 0 0; font-size: 12px; line-height: 1.5; color: var(--mid); }
+.coupon-scope[data-state="blocked"] { color: #a22e27; }
 .point-row { grid-template-columns: 86px minmax(0, 1fr) auto; }
 .point-control { position: relative; }
 .point-control input { padding-right: 118px; }

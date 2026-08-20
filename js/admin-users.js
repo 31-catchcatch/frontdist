@@ -1,4 +1,3 @@
-/* 관리자 - 사용자 목록/정지 (GET /admin/users, PATCH /admin/users/{id}/status) */
 (function () {
   "use strict";
 
@@ -13,7 +12,6 @@
 
   let USERS = [];
 
-  // 백엔드 AdminUserResponse → 화면에서 쓰는 형태로 변환
   function mapUser(u) {
     return {
       id: u.userId,
@@ -23,14 +21,12 @@
       role: u.role,
       point: u.point,
       deleted: u.deleted,
-      // 별도 정지 플래그 없이 is_deleted를 그대로 재사용한다 (탈퇴=정지 동일 취급).
       status: u.deleted ? "stop" : "ok",
       joined: (u.createdAt || "").slice(0, 10),
       createdAt: u.createdAt,
     };
   }
 
-  // 상세 모달 — 목록 API가 이미 준 정보만 표시 (백엔드 추가 호출 없음)
   function showDetail(user) {
     AdminUI.detail("사용자 상세", [
       ["사용자 ID", user.id],
@@ -52,10 +48,10 @@
     }
     rowsEl.innerHTML = list.map((u) => `
       <tr data-id="${u.id}">
-        <td class="chk"><input type="checkbox" aria-label="${u.name} 선택"></td>
-        <td class="strong">${u.username}</td>
-        <td class="strong">${u.name}</td>
-        <td class="muted">${u.email}</td>
+        <td class="chk"><input type="checkbox" aria-label="${esc(u.name)} 선택"></td>
+        <td class="strong">${esc(u.username)}</td>
+        <td class="strong">${esc(u.name)}</td>
+        <td class="muted">${esc(u.email)}</td>
         <td><span class="tag role">${ROLE[u.role] || u.role}</span></td>
         <td><span class="tag ${u.status}">${STATUS[u.status]}</span></td>
         <td class="muted">${u.joined}</td>
@@ -130,7 +126,7 @@
       USERS = data.filter((u) => u.role !== "ADMIN").map(mapUser);
       applyFilter();
     } catch (err) {
-      rowsEl.innerHTML = `<tr class="empty-row"><td colspan="8">${err.message || "목록을 불러오지 못했습니다."}</td></tr>`;
+      rowsEl.innerHTML = `<tr class="empty-row"><td colspan="8">${esc(err.message || "목록을 불러오지 못했습니다.")}</td></tr>`;
       countEl.textContent = 0;
     }
   }

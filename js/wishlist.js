@@ -1,7 +1,3 @@
-// wishlist.js
-// GET  /api/v1/users/me/wishlist
-// POST /api/v1/products/{productId}/like
-
 document.addEventListener("DOMContentLoaded", () => {
   if (
     !window.CatchAuth ||
@@ -22,9 +18,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const $ = (selector) => document.querySelector(selector);
 
-  // 판매자 계정은 장바구니 기능을 쓸 수 없다. (product-detail.js 와 동일 정책)
-  // 이 페이지의 "장바구니 담기"는 실제로 담지 않고 상세 페이지로 보내기만 하지만,
-  // 판매자에게는 이동 없이 같은 안내를 보여줘야 동작이 일관된다.
   function blockIfSeller() {
     if (!CatchAuth.isLoggedIn()) return false;
     if (sessionStorage.getItem("catchcatch.loginType") !== "seller") return false;
@@ -78,11 +71,10 @@ document.addEventListener("DOMContentLoaded", () => {
   const cardHTML = (item) => {
     const productId = Number(item.productId);
     const productName =
-      item.name ?? "상품명 없음";
+      esc(item.name ?? "상품명 없음");
 
     const imageUrl =
-      item.thumbnailUrl ||
-      CatchApi.PLACEHOLDER;
+      SafeUrl(item.thumbnailUrl || CatchApi.PLACEHOLDER);
 
     const price =
       Number(item.price ?? 0);

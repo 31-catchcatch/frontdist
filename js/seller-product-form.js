@@ -1,5 +1,6 @@
-(() => {
+(async () => {
   "use strict";
+  if (!(await CatchAuth.requireRole("SELLER"))) return;
 
   const FILE_UPLOAD_API = "/api/v1/files/upload";
   const SELLER_PRODUCT_API = "/api/v1/seller/products";
@@ -9,11 +10,8 @@
   const params = new URLSearchParams(location.search);
   const productId = params.get("id");
   const isEditMode = Boolean(productId);
-  // 목록 페이지의 "수정" 링크가 현재 판매 상태를 넘겨준다.
-  // (상세 조회 API 응답에는 status 가 없어 이 값으로 초기 선택을 맞춘다.)
   const initialStatus = params.get("status");
 
-  // 어떤 형태의 상태 문자열이 와도 셀렉트 값(ON_SALE / SUSPENDED / SOLD_OUT)으로 정규화한다.
   function toStatusValue(raw) {
     const token = String(raw ?? "").trim().toUpperCase().replace(/[\s-]+/g, "_");
     if (["SUSPENDED", "STOPPED", "STOP", "PAUSED", "SALES_STOPPED", "판매중지", "판매정지"].includes(token)) {
@@ -61,10 +59,8 @@
   let savedImageUrls = [];
 
   function isSellerLoggedIn() {
-    const loggedIn =
-      sessionStorage.getItem("catchcatch.loggedIn") === "true" ||
-      Boolean(sessionStorage.getItem("catchcatch.accessToken")) ||
-      Boolean(localStorage.getItem("catchcatch.accessToken"));
+    // [5-1 조치] 토큰 보유 여부는 공용 모듈에 위임한다 (판매자 여부 판단은 기존 유지).
+    const loggedIn = Boolean(window.CatchAuth && CatchAuth.isLoggedIn());
 
     return (
       loggedIn &&
@@ -81,20 +77,14 @@
     );
   }
 
-  /*
-   * file:// 더블클릭 실행에서는 디자인 확인을 위해 인증 검사를 건너뜁니다.
-   * localhost 또는 실제 서버 환경에서는 판매자 로그인을 확인합니다.
-   */
   if (location.protocol !== "file:" && !isSellerLoggedIn()) {
     moveToSellerLogin();
     return;
   }
 
   function clearLoginState() {
-    sessionStorage.removeItem("catchcatch.loggedIn");
-    sessionStorage.removeItem("catchcatch.loginType");
-    sessionStorage.removeItem("catchcatch.accessToken");
-    localStorage.removeItem("catchcatch.accessToken");
+    // [5-1 조치] 저장 키 직접 접근 제거. 화면 이동은 기존처럼 각 호출부가 담당한다.
+    if (window.CatchAuth) CatchAuth.clearSession();
   }
 
   function handleUnauthorized(response) {
@@ -174,7 +164,7 @@
 
     imagePreviewList.innerHTML = previewItems.map((item, index) => `
       <div class="preview-item">
-        <img src="${item.url}" alt="상품 이미지 미리보기 ${index + 1}">
+        <img src="${esc(item.url)}" alt="상품 이미지 미리보기 ${index + 1}">
         ${index === 0 ? '<span class="main-badge">대표</span>' : ""}
         <button
           class="preview-remove"
@@ -225,7 +215,7 @@
     const row = document.createElement("div");
     row.className = "option-row";
     row.innerHTML = `
-      <input type="text" class="option-name" placeholder="사이즈 등 옵션명 (예: M / 블랙)" maxlength="100" required value="${data?.optionName ?? ""}">
+      <input type="text" class="option-name" placeholder="사이즈 등 옵션명 (예: M / 블랙)" maxlength="100" required value="${esc(data?.optionName ?? "")}">
       <input type="number" class="option-price" placeholder="추가 금액" min="0" step="100" value="${data?.additionalPrice ?? 0}">
       <input type="number" class="option-stock" placeholder="재고 수량" min="0" step="1" value="${data?.stockQuantity ?? ""}">
       <button type="button" class="option-remove" aria-label="옵션 삭제">×</button>
@@ -309,10 +299,6 @@
           </option>
         `).join("");
     } catch (error) {
-      /*
-       * 백엔드 미연결 상태에서도 화면을 확인할 수 있도록
-       * 기본 카테고리를 표시합니다.
-       */
       categoryId.innerHTML = `
         <option value="">카테고리 선택</option>
         <option value="outer">아우터</option>
@@ -349,7 +335,7 @@
 
       brandId.innerHTML =
         '<option value="">브랜드 선택</option>' +
-        brands.map((brand) => `<option value="${brand.id}">${brand.name}</option>`).join("");
+        brands.map((brand) => `<option value="${brand.id}">${esc(brand.name)}</option>`).join("");
     } catch (error) {
       showMessage(error.message || "브랜드 목록을 불러오지 못했습니다.");
     }
@@ -587,8 +573,6 @@
         );
       }
 
-      // 판매 상태 반영: PUT 수정 API 는 status 를 다루지 않으므로 전용 PATCH 로 따로 보낸다.
-      // 품절(SOLD_OUT)은 재고에서 자동 산출되는 값이라 수동 설정 대상이 아니다.
       if (
         isEditMode &&
         (salesStatus.value === "ON_SALE" || salesStatus.value === "SUSPENDED")

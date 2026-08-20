@@ -1,8 +1,5 @@
 // product-list.js — 상품목록/검색 결과 (product-list.html + search.html 공용)
-// U-MAIN-001 상품 리스트·검색 결과 조회 → GET /api/v1/products
 // URL 파라미터: ?cat=카테고리슬러그  ?q=검색어  ?brand=브랜드id  ?view=best
-//
-// ⚠️ auth.js → api.js → catalog.js → product.js 다음에 로드된다.
 
 document.addEventListener("DOMContentLoaded", () => {
   // ===== DOM 참조 =====
@@ -16,8 +13,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const PER_PAGE = 12;
 
-  // 프론트 정렬값 → 백엔드 sort 파라미터 (안전한 값만)
-  // ⚠️ finalPrice 정렬은 백엔드 500. price(정가) 기준으로만 정렬 가능.
   //    타이브레이크로 id,desc 를 함께 보내 페이징 중복/누락 방지.
   const SORT_MAP = {
     new: "createdAt,desc",
@@ -53,7 +48,7 @@ document.addEventListener("DOMContentLoaded", () => {
     } else if (urlCat && CatchCatalog.SLUG_TO_NAME[urlCat]) {
       titleEl.textContent = CatchCatalog.SLUG_TO_NAME[urlCat];
     } else if (urlView === "best") {
-      titleEl.textContent = "신상품"; // 베스트 데이터 부재 → 최신순 신상품으로 대체
+      titleEl.textContent = "신상품";
     } else {
       titleEl.textContent = "전체 상품";
     }
@@ -71,7 +66,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function cardHTML(p) {
-    const brand = p.brandName ? `<p class="card-brand">${p.brandName}</p>` : "";
+    const brand = p.brandName ? `<p class="card-brand">${esc(p.brandName)}</p>` : "";
     const discount =
       p.discountRate > 0
         ? `<span class="card-origin"><s>${CatchApi.won(p.price)}</s></span> <span class="card-rate">${p.discountRate}%</span>`
@@ -79,13 +74,13 @@ document.addEventListener("DOMContentLoaded", () => {
     const liked = likedIds.has(p.productId) ? " is-liked" : "";
     return `
       <div class="product-card">
-        <a href="${p.detailUrl}">
+        <a href="${esc(p.detailUrl)}">
           <div class="card-thumb">
-            <img src="${CatchApi.thumb(p.thumbnailUrl)}" alt="${p.name}"
+            <img src="${SafeUrl(p.thumbnailUrl || CatchApi.PLACEHOLDER)}" alt="${esc(p.name)}"
                  onerror="this.onerror=null;this.src=CatchApi.PLACEHOLDER">
           </div>
           ${brand}
-          <p class="card-name">${p.name}</p>
+          <p class="card-name">${esc(p.name)}</p>
           <div class="card-price">
             <span class="card-final">${CatchApi.won(p.finalPrice)}</span>
             ${discount}

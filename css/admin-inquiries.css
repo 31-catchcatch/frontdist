@@ -1,17 +1,22 @@
 /* admin-inquiries.css — 1:1 문의 관리 전용
-   관리 컬럼의 삭제 버튼을 셀 오른쪽 끝에 고정한다.
-   (내용 보기 / 답변은 왼쪽에 묶고, 삭제는 space-between 으로 오른쪽 끝으로 밀어낸다) */
 
-/* 이 페이지의 관리 열은 셀 폭을 꽉 채워 삭제 버튼을 오른쪽 끝으로 보낸다.
-   .row-actions 의 기본 min-width:max-content 를 덮어써야 폭이 늘어난다. */
-.data .inq-row-actions {
-  width: 100%;
-  min-width: 0;
-  justify-content: space-between;
-  gap: 12px;
+   "내용 보기"를 누르면 그 행 아래에 상세 패널이 펼쳐진다. 답변/삭제는 그 안에서만 한다.
+   패널 껍데기(.detail-row / .detail-panel / .detail-meta / .detail-body / .detail-actions)와
+   관리 열 폭(.act-slim)은 admin.css 의 공용 컴포넌트를 쓴다 — Q&A 화면과 공유한다.
+   이 파일에는 이 페이지에만 있는 "답변 입력" 부분만 둔다. */
+
+.detail-panel .inq-answer textarea {
+  display: block; width: 100%; box-sizing: border-box;
+  min-height: 92px; resize: vertical;
+  padding: 11px 13px;
+  font: inherit; font-size: 13px; line-height: 1.7; color: var(--ink);
+  border: 1px solid var(--hairline-strong);
+  border-radius: 9px;                 /* toolbar 의 input/select 와 동일 */
+  background: var(--surface);
 }
-.data .inq-row-actions .ra-left {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
+.detail-panel .inq-answer textarea::placeholder { color: var(--faint); }
+.detail-panel .inq-answer textarea:focus-visible {
+  outline: none;
+  border-color: var(--ink);
+  box-shadow: 0 0 0 3px rgba(21, 21, 21, .07);
 }

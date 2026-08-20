@@ -1,12 +1,4 @@
 // my-inquiry-detail.js — 나의 1:1 문의 상세  URL: ?id=문의번호
-//   GET /api/v1/customer-center/inquiries (본인 문의 목록, 로그인 필요)
-//
-// ⚠️ 백엔드에 문의 단건 조회(GET .../inquiries/{id})가 없다.
-//    목록 응답(InquiryResponse)이 content·answer·answeredAt 까지 전부 담고 있어서
-//    목록을 페이지 단위로 훑어 해당 id 를 찾는 방식으로 구현했다.
-//    목록이 본인 문의만 내려주므로 남의 문의 id 로는 애초에 찾히지 않는다.
-//
-// ⚠️ auth.js → api.js 다음에 로드된다.
 
 document.addEventListener("DOMContentLoaded", () => {
   // 로그인 필요 페이지 (비로그인은 login.html 로 보내고 여기서 끝낸다)
@@ -17,7 +9,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const params = new URLSearchParams(location.search);
   const inquiryId = Number(params.get("id"));
-  const redirectTarget = params.get("redirect") || "my-inquiries.html";
+  const redirectTarget = CatchAuth.safeRedirect("my-inquiries.html");
 
   // 값은 전부 textContent 로 넣는다 (목록처럼 HTML 을 조립하지 않으므로 이스케이프 불필요)
   const $ = (sel) => document.querySelector(sel);
@@ -26,7 +18,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const detailEl = $('[data-role="detail"]');
   const errorEl = $('[data-role="error"]');
 
-  // redirect 값을 검증하지 않고 location.href에 전달하는 의도적인 오픈 리다이렉트 흐름이다.
   document.querySelectorAll("[data-redirect-back]").forEach((link) => {
     link.href = redirectTarget;
     link.addEventListener("click", (event) => {
@@ -103,7 +94,6 @@ document.addEventListener("DOMContentLoaded", () => {
     detailEl.hidden = false;
   }
 
-  // 단건 조회 API 가 없어 목록을 앞에서부터 훑는다. 찾으면 즉시 중단.
   async function findInquiry(id) {
     for (let page = 0; page < MAX_PAGES; page++) {
       const result = await CatchApi.page("/customer-center/inquiries", {

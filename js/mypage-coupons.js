@@ -14,6 +14,7 @@
   const panelDesc = document.getElementById("couponPanelDesc");
 
   let coupons = [];
+  let claimableCount = 0;   // 탭 배지·빈 화면 안내에 쓴다
   let currentTab = "mine"; // 'mine'(보유) | 'claimable'(받을 수 있는)
   let mineCount = 0;       // 상단 '사용 가능 쿠폰' 개수 = 보유 쿠폰 수 (탭 무관)
 
@@ -54,11 +55,8 @@
   ];
 
   function isLoggedIn() {
-    return (
-      sessionStorage.getItem("catchcatch.loggedIn") === "true" ||
-      Boolean(sessionStorage.getItem("catchcatch.accessToken")) ||
-      Boolean(localStorage.getItem("catchcatch.accessToken"))
-    );
+    // [5-1 조치] 토큰 저장 키를 직접 읽지 않고 공용 인증 모듈에 위임한다.
+    return Boolean(window.CatchAuth && CatchAuth.isLoggedIn());
   }
 
   function moveToLogin() {
@@ -68,16 +66,15 @@
   }
 
   function clearLoginState() {
-    sessionStorage.removeItem("catchcatch.loggedIn");
-    sessionStorage.removeItem("catchcatch.loginType");
-    sessionStorage.removeItem("catchcatch.accessToken");
-    localStorage.removeItem("catchcatch.accessToken");
+    // [5-1 조치] 저장 키 직접 접근 제거. 화면 이동은 기존처럼 각 호출부가 담당한다.
+    if (window.CatchAuth) CatchAuth.clearSession();
   }
 
   if (!FILE_PREVIEW_MODE && !isLoggedIn()) {
     moveToLogin();
     return;
   }
+  if (!FILE_PREVIEW_MODE && window.CatchAuth) { CatchAuth.requireRole(); }
 
   function handleUnauthorized(response) {
     if (response.status !== 401 && response.status !== 403) {
@@ -173,7 +170,11 @@
         coupon.targetDescription ??
         coupon.applicableProducts ??
         coupon.conditionDescription ??
-        "사용 조건에 맞는 상품"
+        "",
+      // 쿠폰이 어느 판매자 것인지. 관리자가 발행한 플랫폼 쿠폰은 둘 다 null 이라
+      // 사용 범위가 주문 전체다.
+      sellerId: coupon.sellerId ?? null,
+      sellerName: coupon.sellerName ?? null
     };
   }
 
@@ -189,6 +190,11 @@
     return Array.isArray(items)
       ? items.map(normalizeCoupon)
       : [];
+  }
+
+  /* 이 쿠폰을 어디에 쓸 수 있는지. 쿠폰은 발행한 판매자의 상품에만 적용된다. */
+  function getScopeText(coupon) {
+    return coupon.sellerName || "해당 판매자 상품";
   }
 
   function getDiscountText(coupon) {
@@ -216,7 +222,7 @@
     }
 
     if (coupon.applicableTarget) {
-      conditions.push(coupon.applicableTarget);
+      conditions.push(esc(coupon.applicableTarget));
     }
 
     return conditions.join(" · ") || "사용 조건 없음";
@@ -271,6 +277,16 @@
     });
   }
 
+  /* 받기 탭에 개수 배지를 붙인다.
+     기본 탭이 '보유 쿠폰'이라, 새로 발행된 쿠폰이 있어도 탭을 눌러보기 전엔 알 수가 없었다. */
+  function updateClaimableBadge() {
+    const tab = [...couponTabs].find((t) => t.dataset.tab === "claimable");
+    if (!tab) return;
+    const base = "받을 수 있는 쿠폰";
+    tab.textContent = claimableCount > 0 ? `${base} ${claimableCount}` : base;
+    tab.classList.toggle("has-badge", claimableCount > 0);
+  }
+
   function renderCoupons() {
     const sortedCoupons = getSortedCoupons();
 
@@ -279,11 +295,19 @@
       mineCount.toLocaleString("ko-KR");
 
     if (!sortedCoupons.length) {
+      // 보유 쿠폰이 없어도 받을 게 있으면 그쪽으로 안내한다 (그냥 "없습니다"로 끝내면
+      // 발행된 쿠폰이 있는 줄도 모르고 나가게 된다)
+      const hasClaimable = currentTab !== "claimable" && claimableCount > 0;
       couponList.innerHTML = `
         <p class="coupon-state">
           ${currentTab === "claimable"
             ? "받을 수 있는 쿠폰이 없습니다."
             : "보유한 쿠폰이 없습니다."}
+          ${hasClaimable
+            ? `<br><button type="button" class="coupon-state-link" data-action="go-claimable">
+                 지금 받을 수 있는 쿠폰 ${claimableCount}장 보기
+               </button>`
+            : ""}
         </p>
       `;
       return;
@@ -318,9 +342,10 @@
 
           <div class="coupon-content">
             <span class="coupon-label">${currentTab === "claimable" ? "받기 가능" : "사용 가능"}</span>
+            <span class="coupon-seller">${esc(getScopeText(coupon))}</span>
 
-            <h3 title="${coupon.couponName}">
-              ${coupon.couponName}
+            <h3 title="${esc(coupon.couponName)}">
+              ${esc(coupon.couponName)}
             </h3>
 
             <p class="coupon-condition">
@@ -352,6 +377,27 @@
         </article>
       `;
     }).join("");
+  }
+
+  /* 받기 가능 개수만 따로 센다. 보유 탭을 보고 있을 때도 배지를 띄워야 하기 때문이다.
+     실패해도 화면은 그대로 두고 배지만 생략한다. */
+  async function refreshClaimableCount() {
+    if (FILE_PREVIEW_MODE) return;
+    try {
+      const response = await fetch(CLAIMABLE_API, { method: "GET", credentials: "include" });
+      if (!response.ok) return;
+      const data = await response.json();
+      claimableCount = extractCoupons(data).length;
+      updateClaimableBadge();
+
+      // 개수는 목록보다 늦게 도착한다. 보유 탭이 비어 있는 상태였다면
+      // 안내 문구를 넣기 위해 한 번 더 그린다.
+      if (currentTab !== "claimable" && coupons.length === 0) {
+        renderCoupons();
+      }
+    } catch (_) {
+      /* 배지는 부가 정보라 조용히 넘어간다 */
+    }
   }
 
   async function loadCoupons() {
@@ -395,6 +441,10 @@
       coupons = extractCoupons(data);
       // 보유 탭을 로드할 때만 '사용 가능 쿠폰(보유)' 개수를 실제 목록으로 동기화한다.
       if (!isClaimable) mineCount = coupons.length;
+      else {
+        claimableCount = coupons.length;   // 받기 탭을 보고 있으면 그 결과가 곧 최신 개수
+        updateClaimableBadge();
+      }
       renderCoupons();
     } catch (error) {
       couponList.innerHTML = `
@@ -478,5 +528,13 @@
   });
 
   couponSort.addEventListener("change", renderCoupons);
+
+  // 빈 화면에서 '받을 수 있는 쿠폰 보기'를 누르면 탭을 옮긴다
+  couponList.addEventListener("click", (event) => {
+    if (!event.target.closest('[data-action="go-claimable"]')) return;
+    const tab = [...couponTabs].find((t) => t.dataset.tab === "claimable");
+    if (tab) tab.click();
+  });
   loadCoupons();
+  refreshClaimableCount();
 })();

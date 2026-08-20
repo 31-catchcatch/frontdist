@@ -1,11 +1,7 @@
-/* 관리자 - 입점 신청 심사
-   GET  /admin/sellers/applications?status=
-   POST /admin/sellers/applications/{appId}/status  {decision, rejectionReason} */
 (function () {
   "use strict";
 
   const STATUS = { wait: "대기", ok: "승인", stop: "반려" };
-  // 화면 필터 코드 → 백엔드 SellerApplicationStatus
   const TO_ENUM = { wait: "PENDING", ok: "APPROVED", stop: "REJECTED", "": "PENDING" };
   // 백엔드 status → 화면 코드
   const FROM_ENUM = { PENDING: "wait", APPROVED: "ok", REJECTED: "stop", CANCELED: "stop" };
@@ -39,9 +35,9 @@
     rowsEl.innerHTML = list.map((a) => `
       <tr data-id="${a.id}">
         <td class="num">${a.id}</td>
-        <td class="strong">${a.company}</td>
-        <td class="muted">${a.biz}</td>
-        <td>${a.ceo}</td>
+        <td class="strong">${esc(a.company)}</td>
+        <td class="muted">${esc(a.biz)}</td>
+        <td>${esc(a.ceo)}</td>
         <td class="muted">${a.category}</td>
         <td><button class="btn sm ghost" data-act="docs">서류 보기</button></td>
         <td class="muted">${a.created}</td>
@@ -78,7 +74,8 @@
     const act = btn.dataset.act;
 
     if (act === "docs") {
-      if (app.fileUrl) window.open(app.fileUrl, "_blank");
+      if (app.fileUrl && /^https?:\/\//i.test(app.fileUrl)) window.open(app.fileUrl, "_blank", "noopener");
+      else if (app.fileUrl) AdminUI.toast("서류 URL 형식이 올바르지 않습니다.");
       else AdminUI.toast("제출된 서류 파일이 없습니다.");
       return;
     }
@@ -118,7 +115,7 @@
       APPS = data.map(mapRow);
       applySearch();
     } catch (err) {
-      rowsEl.innerHTML = `<tr class="empty-row"><td colspan="9">${err.message || "목록을 불러오지 못했습니다."}</td></tr>`;
+      rowsEl.innerHTML = `<tr class="empty-row"><td colspan="9">${esc(err.message || "목록을 불러오지 못했습니다.")}</td></tr>`;
       countEl.textContent = 0;
     }
   }

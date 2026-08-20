@@ -1,19 +1,10 @@
-// brand.js — 브랜드 목록 페이지
-//   조회: GET /api/v1/brands  → [{id, name, logoUrl}]
-//
-// 백엔드에 없어 UI에서 뺀 것: 영문명(en), 상품수(count)
-// 브랜드 찜: 기능을 사용하지 않기로 하여 백엔드 API(+brand_likes 테이블)까지 제거됨
-// 초성(initial)은 이름에서 계산 → 필터 유지.
-//
-// ⚠️ auth.js → api.js → catalog.js 다음에 로드된다.
-
 document.addEventListener("DOMContentLoaded", () => {
   const $ = (sel) => document.querySelector(sel);
   const gridEl = $('[data-role="brand-grid"]');
   const emptyEl = $('[data-role="brand-empty"]');
   const totalEl = $('[data-role="total"]');
 
-  let brands = []; // { id, name, logoUrl, initial }
+  let brands = [];
   let currentFilter = "all";
 
   // 로고 없을 때 이니셜 2글자 뱃지로 폴백
@@ -30,13 +21,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function cardHTML(b) {
     const logo = b.logoUrl
-      ? `<img src="${b.logoUrl}" alt="${b.name}" ` +
+      ? `<img src="${esc(b.logoUrl)}" alt="${esc(b.name)}" ` +
         `onerror="this.onerror=null;this.src=CatchApi.PLACEHOLDER">`
       : logoFallback(b.name);
     return `
       <div class="brand-card" data-id="${b.id}">
         <a href="product-list.html?brand=${b.id}" class="brand-logo">${logo}</a>
-        <a href="product-list.html?brand=${b.id}" class="brand-name">${b.name}</a>
+        <a href="product-list.html?brand=${b.id}" class="brand-name">${esc(b.name)}</a>
       </div>
     `;
   }

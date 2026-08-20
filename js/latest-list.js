@@ -1,9 +1,3 @@
-// latest-list.js — 최근 본 상품 (localStorage 기반, API 아님)
-//   백엔드 설계상 최근 본 상품은 RDB 가 아니라 localStorage 로 구현하기로 결정됨.
-//   데이터는 product-detail.js 의 CatchProduct.pushRecentlyViewed() 가 쌓는다.
-//
-// ⚠️ auth.js → api.js → product.js 다음에 로드된다.
-
 document.addEventListener("DOMContentLoaded", () => {
   const grid = document.querySelector('[data-role="recent-grid"]');
   const empty = document.querySelector('[data-role="recent-empty"]');
@@ -20,19 +14,19 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function itemHTML(p) {
     const brand = p.brandName
-      ? `<p class="brand-name">${p.brandName}</p>`
+      ? `<p class="brand-name">${esc(p.brandName)}</p>`
       : `<p class="brand-name">&nbsp;</p>`;
     const detailUrl = "product-detail.html?id=" + p.productId +
       (p.brandName ? "&brand=" + encodeURIComponent(p.brandName) : "");
     return `
       <div class="product-item" data-href="${detailUrl}">
         <div class="product-image">
-          <img src="${CatchApi.thumb(p.thumbnailUrl)}" alt="${p.name}"
+          <img src="${SafeUrl(p.thumbnailUrl || CatchApi.PLACEHOLDER)}" alt="${esc(p.name)}"
                onerror="this.onerror=null;this.src=CatchApi.PLACEHOLDER">
         </div>
         <div class="product-info">
           ${brand}
-          <h4>${p.name}</h4>
+          <h4>${esc(p.name)}</h4>
           <p class="price">${CatchApi.won(p.finalPrice)}</p>
           <p class="view-time">방문일시 : ${fmtTime(p.viewedAt)}</p>
         </div>

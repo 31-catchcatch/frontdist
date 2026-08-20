@@ -1,24 +1,11 @@
-/* =========================================================
-   결제 성공 랜딩 (payment-success.html) — 토스 successUrl
-
-   토스 결제창이 승인 가능한 상태가 되면 이 페이지로 리다이렉트하면서
-   paymentKey / orderId / amount 를 쿼리스트링에 실어 보낸다.
-   **여기서 서버에 승인을 요청해야 실제로 결제가 확정된다.**
-   이 페이지에 도달한 것만으로는 아직 돈이 빠져나가지 않았다.
-
-   ⚠️ 토스는 리다이렉트 후 10분 안에 승인을 요청해야 한다.
-   ========================================================= */
 (function () {
   "use strict";
 
   const API_BASE = (window.CATCHCATCH_API_BASE_URL || "/api/v1").replace(/\/$/, "");
   const money = new Intl.NumberFormat("ko-KR");
 
-  // checkout.js 가 주문서로 넘길 때 심어둔 값. 결제가 확정된 뒤에만 지운다.
-  // (실패 후 주문서로 되돌아왔을 때 장바구니 선택이 남아 있어야 하므로 checkout.js 에서 지우지 않는다)
   const CART_CHECKOUT_IDS_KEY = "catchcatch.checkoutCartItemIds";
   const DIRECT_CHECKOUT_KEY = "catchcatch.directCheckoutItem";
-  // 결제 실패 시 되돌릴 주문을 가리키는 값. 결제가 확정됐으면 되돌릴 일이 없으므로 함께 지운다.
   const PENDING_ORDER_KEY = "catchcatch.pendingOrder";
 
   const el = {
@@ -110,13 +97,11 @@
   }
 
   async function run() {
-    // 비로그인이면 로그인 페이지로 보낸다. requireLogin 이 location.search 를 통째로
-    // redirect 파라미터에 실어주므로 로그인 후 paymentKey 를 유지한 채 이 페이지로 돌아온다.
     if (!window.CatchAuth || !window.CatchAuth.requireLogin()) return;
 
     const query = new URLSearchParams(location.search);
     const paymentKey = query.get("paymentKey");
-    const orderId = query.get("orderId"); // = Order.orderNumber
+    const orderId = query.get("orderId");
     const amount = Number(query.get("amount"));
 
     if (!paymentKey || !orderId || !Number.isFinite(amount) || amount <= 0) {
@@ -168,8 +153,6 @@
       return;
     }
 
-    // 409 는 서버의 PAYMENT-004(이미 결제가 완료된 주문). 이 페이지를 새로고침하면 여기로 온다.
-    // 응답 봉투에 에러코드 필드가 없어 상태코드로 구분한다.
     if (result.status === 409) {
       clearCheckoutSelection();
       showSuccess("이미 결제가 완료된 주문입니다", "중복 승인은 처리되지 않았습니다.", {

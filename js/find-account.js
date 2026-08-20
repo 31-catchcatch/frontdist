@@ -1,17 +1,3 @@
-// find-account.js — 아이디 찾기 및 임시 비밀번호 발급 API 연동
-//
-// 일반 회원:
-//   POST /api/v1/auth/user/find-account
-//
-// 판매자:
-//   POST /api/v1/auth/seller/find-account
-//
-// 아이디 찾기 요청:
-//   { type: "ID", name, username: null, email }
-//
-// 비밀번호 찾기 요청:
-//   { type: "PASSWORD", name: null, username, email }
-
 document.addEventListener("DOMContentLoaded", () => {
   const $ = (selector) => document.querySelector(selector);
 
@@ -34,9 +20,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const pwResultMessage = $('[data-role="pw-result-message"]');
   const pwMessage = $('[data-role="pw-message"]');
   const pwSubmit = $('[data-role="pw-submit"]');
-
-  let idAccountType = "user";
-  let pwAccountType = "user";
 
   function showTab(tab) {
     tabButtons.forEach((button) => {
@@ -62,39 +45,8 @@ document.addEventListener("DOMContentLoaded", () => {
     goPwButton.addEventListener("click", () => showTab("pw"));
   }
 
-  function bindAccountTypeTabs(role, onChange) {
-    const container = document.querySelector(
-      `[data-role="${role}-account-type"]`
-    );
-
-    if (!container) return;
-
-    const buttons = [
-      ...container.querySelectorAll("[data-account-type]")
-    ];
-
-    buttons.forEach((button) => {
-      button.addEventListener("click", () => {
-        buttons.forEach((item) => {
-          item.classList.toggle("is-active", item === button);
-        });
-
-        onChange(button.dataset.accountType);
-      });
-    });
-  }
-
-  bindAccountTypeTabs("id", (type) => {
-    idAccountType = type;
-  });
-
-  bindAccountTypeTabs("pw", (type) => {
-    pwAccountType = type;
-  });
-
-  function getFindAccountUrl(accountType) {
-    const type = accountType === "seller" ? "seller" : "user";
-    return `${API_BASE}/auth/${type}/find-account`;
+  function getFindAccountUrl() {
+    return `${API_BASE}/auth/user/find-account`;
   }
 
   function setMessage(element, text = "", type = "") {
@@ -119,8 +71,8 @@ document.addEventListener("DOMContentLoaded", () => {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
   }
 
-  async function requestFindAccount(accountType, payload) {
-    const response = await fetch(getFindAccountUrl(accountType), {
+  async function requestFindAccount(payload) {
+    const response = await fetch(getFindAccountUrl(), {
       method: "POST",
       credentials: "include",
       headers: {
@@ -184,7 +136,7 @@ document.addEventListener("DOMContentLoaded", () => {
     setLoading(idSubmit, true, "아이디 찾기");
 
     try {
-      const data = await requestFindAccount(idAccountType, {
+      const data = await requestFindAccount({
         type: "ID",
         name,
         username: null,
@@ -214,6 +166,51 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
+  const resetPwForm = $("#resetPwForm");
+  const pwAccountSummary = $('[data-role="pw-account-summary"]');
+  const pw2Message = $('[data-role="pw2-message"]');
+  const pw2Submit = $('[data-role="pw2-submit"]');
+  const pwBackButton = $('[data-action="pw-back"]');
+
+  // 1단계에서 확인이 끝난 계정. 2단계 요청에 그대로 쓴다.
+  let verifiedAccount = null;
+
+  function showPwStep(step) {
+    const onPassword = step === "password";
+    findPwForm.hidden = onPassword;
+    resetPwForm.hidden = !onPassword;
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  async function verifyAccount(username, email) {
+    const response = await fetch(`${API_BASE}/auth/verify-account`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Accept: "application/json" },
+      body: JSON.stringify({ username, email })
+    });
+
+    let result = {};
+    try {
+      result = await response.json();
+    } catch (_) {
+      result = {};
+    }
+
+    if (!response.ok) {
+      throw new Error(result.message || "존재하지 않는 사용자입니다.");
+    }
+  }
+
+  pwBackButton.addEventListener("click", () => {
+    setMessage(pw2Message);
+    $("#pwNew").value = "";
+    $("#pwNewConfirm").value = "";
+    verifiedAccount = null;
+    showPwStep("account");
+    $("#pwUsername").focus();
+  });
+
+  // --- 1단계 : 계정 확인 ---
   findPwForm.addEventListener("submit", async (event) => {
     event.preventDefault();
 
@@ -235,40 +232,100 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     if (!isValidEmail(email)) {
-      setMessage(
-        pwMessage,
-        "이메일 형식을 확인해 주세요.",
-        "error"
-      );
+      setMessage(pwMessage, "이메일 형식을 확인해 주세요.", "error");
       $("#pwEmail").focus();
       return;
     }
 
-    setLoading(pwSubmit, true, "임시 비밀번호 받기");
+    setLoading(pwSubmit, true, "비밀번호 재설정");
 
     try {
-      const data = await requestFindAccount(pwAccountType, {
-        type: "PASSWORD",
-        name: null,
-        username,
-        email
-      });
+      await verifyAccount(username, email);
 
-      pwResultMessage.textContent =
-        data.message ||
-        "가입 이메일로 임시 비밀번호를 발송했습니다.";
+      verifiedAccount = { username, email };
+      pwAccountSummary.textContent = `${username} (${email}) 계정의 새 비밀번호를 설정합니다.`;
+      setMessage(pw2Message);
+      $("#pwNew").value = "";
+      $("#pwNewConfirm").value = "";
 
-      findPwForm.hidden = true;
-      pwResult.hidden = false;
+      showPwStep("password");
+      $("#pwNew").focus();
     } catch (error) {
-      console.error("비밀번호 찾기 실패:", error);
+      console.error("계정 확인 실패:", error);
       setMessage(pwMessage, error.message, "error");
     } finally {
-      setLoading(
-        pwSubmit,
-        false,
-        "임시 비밀번호 받기"
-      );
+      setLoading(pwSubmit, false, "비밀번호 재설정");
+    }
+  });
+
+  // --- 2단계 : 새 비밀번호 설정 ---
+  resetPwForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
+
+    if (!verifiedAccount) {
+      showPwStep("account");
+      setMessage(pwMessage, "계정 확인을 먼저 진행해 주세요.", "error");
+      return;
+    }
+
+    const newPassword = $("#pwNew").value;
+    const confirmPassword = $("#pwNewConfirm").value;
+
+    setMessage(pw2Message);
+
+    if (newPassword.length < 8) {
+      setMessage(pw2Message, "새 비밀번호는 8자 이상이어야 합니다.", "error");
+      $("#pwNew").focus();
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      setMessage(pw2Message, "새 비밀번호가 서로 일치하지 않습니다.", "error");
+      $("#pwNewConfirm").focus();
+      return;
+    }
+
+    setLoading(pw2Submit, true, "비밀번호 변경");
+
+    try {
+      const response = await fetch(`${API_BASE}/auth/reset-password`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Accept: "application/json" },
+        body: JSON.stringify({
+          username: verifiedAccount.username,
+          email: verifiedAccount.email,
+          newPassword
+        })
+      });
+
+      let result = {};
+      try {
+        result = await response.json();
+      } catch (_) {
+        result = {};
+      }
+
+      if (!response.ok) {
+        // 확인 이후 계정이 사라진 경우 등. 1단계로 되돌려 다시 입력하게 한다.
+        if (response.status === 404) {
+          verifiedAccount = null;
+          showPwStep("account");
+          setMessage(pwMessage, result.message || "존재하지 않는 사용자입니다.", "error");
+          return;
+        }
+        throw new Error(result.message || `비밀번호 변경에 실패했습니다. (${response.status})`);
+      }
+
+      pwResultMessage.textContent =
+        result.message || "새 비밀번호로 변경되었습니다. 다시 로그인해 주세요.";
+      verifiedAccount = null;
+      resetPwForm.hidden = true;
+      pwResult.hidden = false;
+    } catch (error) {
+      console.error("비밀번호 재설정 실패:", error);
+      setMessage(pw2Message, error.message, "error");
+    } finally {
+      setLoading(pw2Submit, false, "비밀번호 변경");
     }
   });
 

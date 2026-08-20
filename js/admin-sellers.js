@@ -1,6 +1,3 @@
-/* 관리자 - 입점 업체 목록/상태변경
-   GET /admin/sellers,  PUT /admin/sellers/{sellerId}/status  {status}
-   ※ 등록 상품 수는 백엔드 미제공이라 '-' 표기. */
 (function () {
   "use strict";
 
@@ -32,16 +29,15 @@
 
   function render(list, total = list.length) {
     if (!list.length) {
-      rowsEl.innerHTML = '<tr class="empty-row"><td colspan="7">조건에 맞는 업체가 없습니다.</td></tr>';
+      rowsEl.innerHTML = '<tr class="empty-row"><td colspan="6">조건에 맞는 업체가 없습니다.</td></tr>';
       countEl.textContent = 0;
       return;
     }
     rowsEl.innerHTML = list.map((s) => `
       <tr data-id="${s.id}">
         <td class="num">${s.id}</td>
-        <td class="strong">${s.company}</td>
-        <td>${s.ceo}</td>
-        <td class="num muted">-</td>
+        <td class="strong">${esc(s.company)}</td>
+        <td>${esc(s.ceo)}</td>
         <td class="muted">${s.joined}</td>
         <td><span class="tag ${s.status}">${STATUS[s.status]}</span></td>
         <td>
@@ -120,7 +116,7 @@
       SELLERS = data.map(mapRow);
       applyFilter();
     } catch (err) {
-      rowsEl.innerHTML = `<tr class="empty-row"><td colspan="7">${err.message || "목록을 불러오지 못했습니다."}</td></tr>`;
+      rowsEl.innerHTML = `<tr class="empty-row"><td colspan="6">${esc(err.message || "목록을 불러오지 못했습니다.")}</td></tr>`;
       countEl.textContent = 0;
     }
   }

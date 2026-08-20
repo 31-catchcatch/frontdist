@@ -1,10 +1,7 @@
-(() => {
+(async () => {
   "use strict";
+  if (!(await CatchAuth.requireRole("SELLER"))) return;
 
-  /*
-   * 판매자 회원정보 조회·수정 API는 제안값입니다.
-   * 실제 백엔드 URI가 다르면 아래 상수만 변경하면 됩니다.
-   */
   const SELLER_PROFILE_API = "/api/v1/seller/me";
   const EMAIL_SEND_API = "/api/v1/auth/email-verification";
   const EMAIL_VERIFY_API = "/api/v1/auth/seller/verify";
@@ -46,8 +43,6 @@
     document.getElementById("businessNumber");
   const representativeName =
     document.getElementById("representativeName");
-  // 담당자 → 대표자로 통합: 연락처는 대표자 전화번호 입력칸에서 받는다.
-  // (백엔드 조회/수정 필드명은 managerPhone → contactNumber 그대로라 payload 키는 managerPhone 유지)
   const representativePhone =
     document.getElementById("representativePhone");
 
@@ -65,10 +60,8 @@
   };
 
   function isSellerLoggedIn() {
-    const loggedIn =
-      sessionStorage.getItem("catchcatch.loggedIn") === "true" ||
-      Boolean(sessionStorage.getItem("catchcatch.accessToken")) ||
-      Boolean(localStorage.getItem("catchcatch.accessToken"));
+    // [5-1 조치] 토큰 보유 여부는 공용 모듈에 위임한다 (판매자 여부 판단은 기존 유지).
+    const loggedIn = Boolean(window.CatchAuth && CatchAuth.isLoggedIn());
 
     return (
       loggedIn &&
@@ -85,10 +78,8 @@
   }
 
   function clearLoginState() {
-    sessionStorage.removeItem("catchcatch.loggedIn");
-    sessionStorage.removeItem("catchcatch.loginType");
-    sessionStorage.removeItem("catchcatch.accessToken");
-    localStorage.removeItem("catchcatch.accessToken");
+    // [5-1 조치] 저장 키 직접 접근 제거. 화면 이동은 기존처럼 각 호출부가 담당한다.
+    if (window.CatchAuth) CatchAuth.clearSession();
   }
 
   if (!FILE_PREVIEW_MODE && !isSellerLoggedIn()) {
@@ -159,7 +150,6 @@
         business.representativeName ??
         business.ceoName ??
         "",
-      // 대표자 연락처 (백엔드 응답 키는 managerPhone = contactNumber)
       representativePhone:
         body.managerPhone ??
         body.managerContact ??
@@ -497,7 +487,6 @@
         businessNumber.value.replace(/\D/g, ""),
       representativeName:
         representativeName.value.trim(),
-      // 백엔드 수정 요청 키는 managerPhone(→contactNumber). 값은 대표자 전화번호 입력칸에서.
       managerPhone:
         representativePhone ? representativePhone.value.replace(/\D/g, "") : ""
     };

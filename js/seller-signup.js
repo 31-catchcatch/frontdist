@@ -1,10 +1,5 @@
-// seller-signup.js — 판매자 회원가입 mock 스크립트
-// S-AUTH-003 판매자 회원가입 / S-AUTH-004 판매자 본인인증
-
 document.addEventListener("DOMContentLoaded", () => {
 
-  // API base: auth.js 가 환경(file://·:5500 → localhost:8080, 그 외 → /api/v1)을 판별해
-  // 넣어둔 값을 쓴다. 상대경로를 하드코딩하면 file:// 로 열었을 때 백엔드에 못 닿는다.
   const API_BASE = window.CATCHCATCH_API_BASE_URL || "/api/v1";
 
   const form = document.getElementById("signupForm");
@@ -28,8 +23,6 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    // 형식(이메일·비밀번호·사업자번호·전화번호) 검증은 백엔드가 최종 제출 시 처리한다.
-    // 프론트에서는 백엔드가 볼 수 없는 비밀번호 일치 / 약관만 확인한다.
     if (document.getElementById("pw").value !== document.getElementById("pwConfirm").value) {
       alert("비밀번호가 일치하지 않습니다.");
       return;
@@ -87,7 +80,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     checkUsernameBtn.disabled = true;
     try {
-      // 백엔드가 @RequestParam 이라 body가 아니라 쿼리스트링으로 보낸다.
       const res = await fetch(
         `${API_BASE}/auth/check-username?username=${encodeURIComponent(val)}`,
         { method: "POST" }
@@ -100,7 +92,6 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
       }
 
-      // data.data === true 가 "사용 가능"
       if (data.data) {
         msg.textContent = `'${val}' 사용 가능한 아이디입니다.`;
         msg.className = "field-msg ok";
@@ -126,8 +117,6 @@ document.addEventListener("DOMContentLoaded", () => {
     let interval = null;
 
     sendBtn.addEventListener("click", () => {
-      // TODO: 이메일 → POST /api/v1/auth/email-verification
-      //       휴대폰 → POST /api/v1/auth/seller/verify
       group.hidden = false;
       clearInterval(interval);
 
@@ -162,7 +151,6 @@ document.addEventListener("DOMContentLoaded", () => {
         msgEl.className = "field-msg error";
         return;
       }
-      // TODO: 실제 검증 API 응답으로 교체
       clearInterval(interval);
       msgEl.textContent = "인증이 완료되었습니다.";
       msgEl.className = "field-msg ok";
@@ -199,14 +187,12 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // ===== 최종 제출 (S-AUTH-003) — 회원가입 + 입점신청 동시 =====
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
     const $ = (id) => document.getElementById(id);
     const digits = (v) => (v || "").replace(/[^0-9]/g, "");
 
     try {
-      // ① 사업자등록증 파일 업로드 → URL 확보
       if (!$("bizFile") || !$("bizFile").files[0]) {
         alert("사업자등록증 파일을 첨부해 주세요.");
         return;
@@ -218,10 +204,6 @@ document.addEventListener("DOMContentLoaded", () => {
       const fileUrl = upData?.data?.fileUrl;
       if (!upRes.ok || !fileUrl) { alert("파일 업로드에 실패했습니다."); return; }
 
-      // ② 판매자 회원가입 = 계정(role=SELLER) + 입점신청(PENDING) 동시 처리
-      // 사람 이름/전화는 모두 대표자 정보로 통합한다.
-      //  - 이름  : 대표자명(ceoName)      → name / representativeName
-      //  - 전화  : 대표자 전화번호(ceoPhone) → phoneNumber / contactNumber
       const ceoPhone = digits($("ceoPhone").value);
       const payload = {
         username: $("userId").value.trim(),

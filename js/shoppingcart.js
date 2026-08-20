@@ -5,7 +5,6 @@
   const CHECKOUT_API = "/api/v1/orders/checkout";
   const FILE_PREVIEW_MODE = location.protocol === "file:";
 
-  // 배송비 정책의 SSOT는 백엔드(OrderService)다. 아래 값은 서버에서 정책을 받지 못했을 때만 쓰는 폴백이다.
   const FALLBACK_SHIPPING_FEE = 3000;
   const FALLBACK_FREE_SHIPPING_THRESHOLD = 50000;
 
@@ -53,11 +52,8 @@
   ];
 
   function isLoggedIn() {
-    return (
-      sessionStorage.getItem("catchcatch.loggedIn") === "true" ||
-      Boolean(sessionStorage.getItem("catchcatch.accessToken")) ||
-      Boolean(localStorage.getItem("catchcatch.accessToken"))
-    );
+    // [5-1 조치] 토큰 저장 키를 직접 읽지 않고 공용 인증 모듈에 위임한다.
+    return Boolean(window.CatchAuth && CatchAuth.isLoggedIn());
   }
 
   function moveToLogin() {
@@ -72,10 +68,8 @@
   }
 
   function clearLoginState() {
-    sessionStorage.removeItem("catchcatch.loggedIn");
-    sessionStorage.removeItem("catchcatch.loginType");
-    sessionStorage.removeItem("catchcatch.accessToken");
-    localStorage.removeItem("catchcatch.accessToken");
+    // [5-1 조치] 저장 키 직접 접근 제거. 화면 이동은 기존처럼 각 호출부가 담당한다.
+    if (window.CatchAuth) CatchAuth.clearSession();
   }
 
   function handleUnauthorized(response) {
@@ -151,19 +145,19 @@
           type="checkbox"
           data-select-id="${item.cartItemId}"
           ${item.selected ? "checked" : ""}
-          aria-label="${item.productName} 선택"
+          aria-label="${esc(item.productName)} 선택"
         >
 
         ${
           item.imageUrl
-            ? `<img class="cart-thumb" src="${item.imageUrl}" alt="">`
+            ? `<img class="cart-thumb" src="${esc(item.imageUrl)}" alt="">`
             : '<div class="cart-thumb" aria-hidden="true"></div>'
         }
 
         <div class="cart-info">
-          <span class="cart-brand">${item.brandName}</span>
-          <strong class="cart-name">${item.productName}</strong>
-          <span class="cart-option">${item.optionText || "옵션 없음"}</span>
+          <span class="cart-brand">${esc(item.brandName)}</span>
+          <strong class="cart-name">${esc(item.productName)}</strong>
+          <span class="cart-option">${esc(item.optionText || "옵션 없음")}</span>
 
           <div class="cart-controls">
             <div class="quantity-control">
@@ -225,10 +219,6 @@
     checkoutButton.disabled = selectedItems.length === 0;
   }
 
-  /**
-   * 배송비 정책을 서버에서 받아온다. 체크아웃 페이지와 같은 값을 쓰기 위한 것이므로
-   * 실패해도 장바구니 자체는 폴백 값으로 계속 동작시킨다(로그인 처리는 loadCart가 담당).
-   */
   async function loadShippingPolicy() {
     try {
       const response = await fetch(CHECKOUT_API, {
@@ -440,20 +430,34 @@
     }
   });
 
-  checkoutButton.addEventListener("click", () => {
+  // [1-3 조치] 주문 대상과 금액은 서버가 확정한다.
+  //   예전에는 선택한 cartItemId 를 sessionStorage 에 담아 주문서로 넘겼다. 서버는 결제 요청
+  //   시점에야 "무엇을 사려는지" 를 처음 받았고, 그래서 productId/optionId/수량 변조를 대조할
+  //   기준이 없었다. 이제는 여기서 초안(draft)을 만들고 그 식별자만 주문서로 넘긴다.
+  checkoutButton.addEventListener("click", async () => {
     const selectedIds = cartItems
       .filter((item) => item.selected)
       .map((item) => item.cartItemId);
 
     if (!selectedIds.length) return;
 
-    sessionStorage.setItem(
-      "catchcatch.checkoutCartItemIds",
-      JSON.stringify(selectedIds)
-    );
-    sessionStorage.removeItem("catchcatch.directCheckoutItem");
+    if (FILE_PREVIEW_MODE) {
+      showMessage("미리보기에서는 주문을 진행할 수 없습니다.");
+      return;
+    }
 
-    location.href = "checkout.html";
+    checkoutButton.disabled = true;
+    try {
+      const draft = await CatchApi.post("/orders/prepare", { cartItemIds: selectedIds });
+      sessionStorage.removeItem("catchcatch.checkoutCartItemIds");
+      sessionStorage.removeItem("catchcatch.directCheckoutItem");
+      location.href = "checkout.html?draft=" + encodeURIComponent(draft.draftId);
+    } catch (error) {
+      // CatchApi 는 fetch 응답을 직접 넘겨주지 않으므로 상태 코드로 같은 판정을 한다.
+      if (handleUnauthorized({ status: error && error.status })) return;
+      checkoutButton.disabled = false;
+      showMessage(error.message || "주문 진행에 실패했습니다. 잠시 후 다시 시도해 주세요.");
+    }
   });
 
   loadCart();

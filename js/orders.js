@@ -1,6 +1,4 @@
 // orders.js — 주문 내역/배송추적/구매확정/교환환불 (U-ORDER-005~010)  URL: ?orderId=
-//
-// ⚠️ auth.js 다음에 로드된다.
 
 (function () {
   "use strict";
@@ -22,7 +20,7 @@
   };
   const STATUS_CLASS = { SHIPPING: "shipping", DELIVERED: "delivered", CONFIRMED: "confirmed" };
 
-  let rows = []; // 주문(Order) + 상품별(OrderDetail) 평탄화 목록
+  let rows = [];
   let activeMonths = 3;
   let selectedRow = null;
   const list = document.getElementById('orderList');
@@ -35,7 +33,8 @@
   const money = new Intl.NumberFormat('ko-KR');
 
   function getAccessToken() {
-    return sessionStorage.getItem("catchcatch.accessToken") || localStorage.getItem("catchcatch.accessToken");
+    // [5-1 조치] 저장 키를 직접 읽지 않는다.
+    return window.CatchAuth ? CatchAuth.getToken() : null;
   }
 
   async function apiFetch(path, options = {}) {
@@ -95,11 +94,11 @@
     }
     // 썸네일이 없는 상품은 기존처럼 CSS로 그린 회색 박스를 유지한다.
     const thumb = row.thumbnailUrl
-      ? `<img src="${row.thumbnailUrl}" alt="">`
+      ? `<img src="${esc(row.thumbnailUrl)}" alt="">`
       : `<span></span>`;
     return `<article class="order-card" id="order-${row.orderDetailId}" data-order-id="${row.orderId}" data-order-detail-id="${row.orderDetailId}">
       <header class="order-card-head"><div><time>${formatDate(row.createdAt)}</time><span class="order-no">주문번호 ${row.orderNumber}</span></div><a href="#" data-action="order-detail" data-id="${row.orderDetailId}">주문 상세 <span aria-hidden="true">›</span></a></header>
-      <div class="order-product"><div class="product-thumb" aria-hidden="true">${thumb}</div><div class="product-info"><strong>${row.productName}</strong><p>${row.quantity}개</p><b>${money.format(row.orderFinalAmount)}원</b></div><span class="status ${statusClass}">${statusLabel}</span></div>
+      <div class="order-product"><div class="product-thumb" aria-hidden="true">${thumb}</div><div class="product-info"><strong>${esc(row.productName)}</strong><p>${row.quantity}개</p><b>${money.format(row.orderFinalAmount)}원</b></div><span class="status ${statusClass}">${statusLabel}</span></div>
       <div class="order-actions"><div class="document-actions"><button type="button" class="text-btn" data-action="delivery" data-id="${row.orderDetailId}">배송 조회</button><button type="button" class="text-btn" data-action="receipt" data-id="${row.orderDetailId}">전자 영수증</button><button type="button" class="text-btn" data-action="statement" data-id="${row.orderDetailId}">거래명세서</button></div><div class="primary-actions">${action}</div></div>
     </article>`;
   }
@@ -126,7 +125,7 @@
 
   async function openDialog(type, row) {
     selectedRow = row;
-    const summary = `<div class="dialog-order-summary"><span>${formatDate(row.createdAt)} · 주문번호 ${row.orderNumber}</span><strong>${row.productName}</strong></div>`;
+    const summary = `<div class="dialog-order-summary"><span>${formatDate(row.createdAt)} · 주문번호 ${row.orderNumber}</span><strong>${esc(row.productName)}</strong></div>`;
 
     try {
       if (type === 'delivery') {
@@ -136,12 +135,12 @@
         if (!info || (!info.courierCompany && !info.trackingNumber)) {
           dialogContent.innerHTML = `${summary}<p class="dialog-note">아직 등록된 배송 정보가 없습니다.</p>`;
         } else {
-          dialogContent.innerHTML = `${summary}<div class="tracking-number"><span>${info.courierCompany || "-"}</span><b>${info.trackingNumber || "-"}</b></div><p class="dialog-note">배송 상태: ${STATUS_LABEL[info.deliveryStatus] || info.deliveryStatus}</p>`;
+          dialogContent.innerHTML = `${summary}<div class="tracking-number"><span>${esc(info.courierCompany || "-")}</span><b>${esc(info.trackingNumber || "-")}</b></div><p class="dialog-note">배송 상태: ${STATUS_LABEL[info.deliveryStatus] || info.deliveryStatus}</p>`;
         }
       } else if (type === 'receipt') {
         dialogKicker.textContent = 'ELECTRONIC RECEIPT'; dialogTitle.textContent = '전자 영수증';
         const receipt = await apiFetch(`/orders/${row.orderId}/receipt`);
-        dialogContent.innerHTML = `${summary}<dl class="receipt-list"><div><dt>결제 금액</dt><dd>${money.format(receipt.amount)}원</dd></div><div><dt>결제 수단</dt><dd>${receipt.payMethod || "-"}</dd></div><div><dt>승인 일시</dt><dd>${(receipt.paidAt || "").toString().replace("T", " ").slice(0, 16)}</dd></div><div><dt>거래 ID</dt><dd>${receipt.pgTransactionId || "-"}</dd></div></dl><p class="dialog-note">전자 영수증은 결제 내역 확인용으로 제공됩니다.</p>`;
+        dialogContent.innerHTML = `${summary}<dl class="receipt-list"><div><dt>결제 금액</dt><dd>${money.format(receipt.amount)}원</dd></div><div><dt>결제 수단</dt><dd>${esc(receipt.payMethod || "-")}</dd></div><div><dt>승인 일시</dt><dd>${(receipt.paidAt || "").toString().replace("T", " ").slice(0, 16)}</dd></div><div><dt>거래 ID</dt><dd>${esc(receipt.pgTransactionId || "-")}</dd></div></dl><p class="dialog-note">전자 영수증은 결제 내역 확인용으로 제공됩니다.</p>`;
       } else if (type === 'statement') {
         dialogKicker.textContent = 'TRANSACTION STATEMENT'; dialogTitle.textContent = '거래명세서';
         const order = await apiFetch(`/orders/${row.orderId}/statement`);
@@ -156,7 +155,7 @@
 
         // 품목은 주문 전체(모든 상품)를 나열한다 → 상품 금액 합계로 이어진다.
         const items = (order.orderDetails || [])
-          .map((d) => `<div><dt>${d.productName}</dt><dd>${d.quantity}개 / ${money.format(d.totalPrice)}원</dd></div>`)
+          .map((d) => `<div><dt>${esc(d.productName)}</dt><dd>${d.quantity}개 / ${money.format(d.totalPrice)}원</dd></div>`)
           .join("");
         const discount = order.couponDiscountAmount > 0
           ? `<div><dt>쿠폰 할인</dt><dd>-${money.format(order.couponDiscountAmount)}원</dd></div>` : "";
@@ -181,7 +180,7 @@
         } catch (_) { /* 폴백 유지 */ }
 
         const items = (order.orderDetails || [])
-          .map((d) => `<div><dt>${d.productName} · ${d.quantity}개 <em>(${STATUS_LABEL[d.deliveryStatus] || d.deliveryStatus})</em></dt><dd>${money.format(d.totalPrice)}원</dd></div>`)
+          .map((d) => `<div><dt>${esc(d.productName)} · ${d.quantity}개 <em>(${STATUS_LABEL[d.deliveryStatus] || d.deliveryStatus})</em></dt><dd>${money.format(d.totalPrice)}원</dd></div>`)
           .join("");
         const discount = order.couponDiscountAmount > 0
           ? `<div><dt>쿠폰 할인</dt><dd>-${money.format(order.couponDiscountAmount)}원</dd></div>` : "";
@@ -190,7 +189,7 @@
         dialogContent.innerHTML = `${summary}<dl class="receipt-list">${items}<div class="detail-sum"><dt>상품 금액</dt><dd>${money.format(order.totalProductAmount)}원</dd></div><div><dt>배송비</dt><dd>${money.format(order.shippingFee)}원</dd></div>${discount}${point}<div class="detail-total"><dt>최종 결제 금액</dt><dd>${money.format(finalAmount)}원</dd></div></dl>`;
       }
     } catch (error) {
-      dialogContent.innerHTML = `${summary}<p class="dialog-note">${error.message}</p>`;
+      dialogContent.innerHTML = `${summary}<p class="dialog-note">${esc(error.message)}</p>`;
     }
     dialog.showModal();
   }

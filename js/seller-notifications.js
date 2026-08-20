@@ -1,15 +1,5 @@
-// seller-notifications.js — 판매자 쿠폰 관리 (seller-notifications.html)
-//   1) 쿠폰 발행 요청  POST  /api/v1/seller/coupons/request
-//   2) 알림 조회/읽음  GET   /api/v1/notifications, PATCH /api/v1/notifications/{id}/read
-//
-// [알아둘 것] 화면의 "발행 요청 결과"는 현재 백엔드에서 채워지지 않는다.
-//   - NotificationType 에 쿠폰 타입이 없다 (ORDER/DELIVERY/REFUND/QNA_ANSWER 뿐)
-//   - AdminCouponService.reviewRequest 가 승인/반려 시 알림을 보내지 않는다
-//   - 판매자용 쿠폰 목록 API 도 없다 (CouponRequestRepository 에 쿼리는 있으나 미연결)
-//   그래서 요청 상태를 알 수 있는 유일한 지점은 POST 응답의 approvalStatus 다.
-//   아래 previewNotifications 의 COUPON_APPROVED/REJECTED 는 file:// 미리보기용 가짜 데이터다.
-
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
+  if (!(await CatchAuth.requireRole("SELLER"))) return;
   const API_BASE = (window.CATCHCATCH_API_BASE_URL || "/api/v1").replace(/\/$/, "");
   const NOTIFICATION_API = `${API_BASE}/notifications`;
 
@@ -30,30 +20,6 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   const isFilePreview = location.protocol === "file:";
-
-  const previewNotifications = [
-    {
-      notificationId: 301,
-      type: "COUPON_APPROVED",
-      title: "쿠폰 발행 요청이 승인되었습니다.",
-      message: "‘여름 시즌 10% 할인’ 쿠폰 발행 요청이 관리자 승인되었습니다. 설정한 사용 기간에 맞춰 쿠폰이 활성화됩니다.",
-      couponName: "여름 시즌 10% 할인",
-      requestId: 12,
-      createdAt: "2026-07-16T14:20:00",
-      isRead: false
-    },
-    {
-      notificationId: 300,
-      type: "COUPON_REJECTED",
-      title: "쿠폰 발행 요청이 반려되었습니다.",
-      message: "‘신규 회원 정액 할인’ 요청이 반려되었습니다. 반려 사유: 최대 할인금액을 다시 확인해 주세요.",
-      couponName: "신규 회원 정액 할인",
-      requestId: 11,
-      rejectionReason: "최대 할인금액을 다시 확인해 주세요.",
-      createdAt: "2026-07-15T11:05:00",
-      isRead: true
-    }
-  ];
 
   function getBody(result) {
     return result?.data ?? result ?? {};
@@ -88,14 +54,19 @@ document.addEventListener("DOMContentLoaded", () => {
       ""
     ).toUpperCase();
 
-    const text = `${item.title ?? ""} ${item.message ?? item.content ?? ""}`;
+    const title = String(item.title ?? "");
+    const text = `${title} ${item.message ?? item.content ?? ""}`;
 
-    if (raw.includes("APPROV") || raw.includes("ACCEPT") || text.includes("승인")) {
-      return "approved";
-    }
-    if (raw.includes("REJECT") || raw.includes("DENY") || text.includes("반려")) {
+    // 제목을 본문보다 먼저 본다. 반려 사유 본문에 "승인"이 섞일 수 있어서
+    // (예: "승인 기준 미달") 본문 전체로 먼저 판정하면 반려가 승인으로 뒤집힌다.
+    if (raw.includes("REJECT") || raw.includes("DENY") || title.includes("반려")) {
       return "rejected";
     }
+    if (raw.includes("APPROV") || raw.includes("ACCEPT") || title.includes("승인")) {
+      return "approved";
+    }
+    if (text.includes("반려")) return "rejected";
+    if (text.includes("승인")) return "approved";
     if (raw.includes("PENDING") || text.includes("대기")) {
       return "pending";
     }
@@ -112,6 +83,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     return {
       id,
+      kind: "notification",
       result,
       title:
         item.title ||
@@ -164,6 +136,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function getFilteredItems() {
     if (currentFilter === "unread") return notifications.filter((item) => !item.isRead);
+    if (currentFilter === "pending") return notifications.filter((item) => item.result === "pending");
     if (currentFilter === "approved") return notifications.filter((item) => item.result === "approved");
     if (currentFilter === "rejected") return notifications.filter((item) => item.result === "rejected");
     return notifications;
@@ -173,12 +146,14 @@ document.addEventListener("DOMContentLoaded", () => {
     const counts = {
       all: notifications.length,
       unread: notifications.filter((item) => !item.isRead).length,
+      pending: notifications.filter((item) => item.result === "pending").length,
       approved: notifications.filter((item) => item.result === "approved").length,
       rejected: notifications.filter((item) => item.result === "rejected").length
     };
 
     document.querySelector('[data-role="count-all"]').textContent = `${counts.all}건`;
     document.querySelector('[data-role="count-unread"]').textContent = `${counts.unread}건`;
+    document.querySelector('[data-role="count-pending"]').textContent = `${counts.pending}건`;
     document.querySelector('[data-role="count-approved"]').textContent = `${counts.approved}건`;
     document.querySelector('[data-role="count-rejected"]').textContent = `${counts.rejected}건`;
 
@@ -190,6 +165,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const copy = {
       all: ["전체 알림", "최근 알림부터 표시됩니다."],
       unread: ["읽지 않은 알림", "아직 확인하지 않은 알림만 표시됩니다."],
+      pending: ["승인 대기", "관리자 심사를 기다리는 요청입니다."],
       approved: ["승인 알림", "관리자가 승인한 쿠폰 발행 요청입니다."],
       rejected: ["반려 알림", "관리자가 반려한 쿠폰 발행 요청입니다."]
     }[currentFilter];
@@ -227,18 +203,19 @@ document.addEventListener("DOMContentLoaded", () => {
 
           <div class="notification-content">
             <div class="notification-headline">
-              <h4>${item.title}</h4>
+              <h4>${esc(item.title)}</h4>
               <span class="notification-badge ${item.result}">${resultText(item.result)}</span>
             </div>
-            <p class="notification-text">${item.message}</p>
-            ${meta.length ? `<div class="notification-meta">${meta.map((value) => `<span>${value}</span>`).join("")}</div>` : ""}
+            <p class="notification-text">${esc(item.message)}</p>
+            ${meta.length ? `<div class="notification-meta">${meta.map((value) => `<span>${esc(value)}</span>`).join("")}</div>` : ""}
           </div>
 
           <div class="notification-side">
             <time class="notification-date">${formatDate(item.createdAt)}</time>
+            ${item.kind === "request" ? "" : `
             <button type="button" class="btn-read" data-action="read" ${item.isRead ? "disabled" : ""}>
               ${item.isRead ? "읽음" : "읽음 처리"}
-            </button>
+            </button>`}
           </div>
 
           ${item.isRead ? "" : '<span class="unread-dot" aria-label="읽지 않은 알림"></span>'}
@@ -278,18 +255,50 @@ document.addEventListener("DOMContentLoaded", () => {
     return result;
   }
 
+  /* 승인 대기 요청을 목록에 합치기 위한 조회.
+     PENDING 만 가져온다 — 승인/반려는 이미 알림으로 오므로 둘 다 넣으면 같은 건이 두 번 보인다. */
+  async function fetchPendingRequests() {
+    try {
+      const result = await requestApi(`${API_BASE}/seller/coupons/requests?size=100`, { method: "GET" });
+      const items = extractItems(result);
+      return items
+        .filter((item) => String(item.approvalStatus ?? item.status ?? "").toUpperCase() === "PENDING")
+        .map((item) => ({
+          id: `request-${item.requestId}`,
+          kind: "request",              // 알림이 아니라 요청이라 읽음 처리 대상이 아니다
+          result: "pending",
+          title: "쿠폰 발행 요청이 접수되었습니다.",
+          message: "관리자 승인을 기다리는 중입니다. 승인 또는 반려되면 이곳에 결과가 표시됩니다.",
+          couponName: item.couponName ?? "",
+          requestId: item.requestId ?? "",
+          rejectionReason: "",
+          createdAt: item.requestedAt ?? item.createdAt ?? "",
+          isRead: true                  // 읽음/안읽음 개념이 없으므로 미읽음 집계에서 제외한다
+        }));
+    } catch (_) {
+      return [];                        // 대기 목록을 못 받아도 알림 목록은 그대로 보여준다
+    }
+  }
+
   async function loadNotifications() {
     messageElement.hidden = true;
 
     if (isFilePreview) {
-      notifications = previewNotifications.map(normalizeNotification);
+      notifications = [];
       render();
+      messageElement.textContent = "미리보기 모드에서는 알림을 불러오지 않습니다.";
+      messageElement.hidden = false;
       return;
     }
 
-    const result = await requestApi(NOTIFICATION_API, { method: "GET" });
+    const [result, pending] = await Promise.all([
+      requestApi(NOTIFICATION_API, { method: "GET" }),
+      fetchPendingRequests()
+    ]);
+
     notifications = extractItems(result)
       .map(normalizeNotification)
+      .concat(pending)
       .sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
     render();
   }
@@ -351,15 +360,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // =========================================================
-  // 쿠폰 발행 요청 (seller-dashboard 에서 이관)
-  // POST /api/v1/seller/coupons/request
-  //
-  // 백엔드는 "요청"만 받는다. 실제 쿠폰은 관리자가 승인해야 생성된다.
-  //  - 필수: couponName, discountType, discountValue, totalQuantity, validFrom, validUntil
-  //  - 선택: minimumOrderAmount(비우면 서버가 0), maximumDiscountAmount(비우면 null)
-  //  - PERCENTAGE 는 1~100 만 허용 (SellerCouponService.validateDiscount)
-  // =========================================================
   const COUPON_REQUEST_API = `${API_BASE}/seller/coupons/request`;
   const STATUS_KO = { PENDING: "승인 대기", APPROVED: "승인", REJECTED: "반려", CANCELED: "취소" };
 
@@ -385,7 +385,6 @@ document.addEventListener("DOMContentLoaded", () => {
   couponTypeSelect.addEventListener("change", syncDiscountHint);
   syncDiscountHint();
 
-  // 값이 없으면 null (서버가 minimumOrderAmount 는 0 으로, maximumDiscountAmount 는 null 로 처리)
   const optionalNumber = (el) => (el.value.trim() ? Number(el.value) : null);
 
   couponForm.addEventListener("submit", async (event) => {
@@ -459,8 +458,6 @@ document.addEventListener("DOMContentLoaded", () => {
       couponForm.reset();
       syncDiscountHint();
 
-      // 판매자 쿠폰 목록 API 가 없어서, 방금 만든 요청의 상태를 알 수 있는 곳은
-      // 이 응답뿐이다. 그래서 응답의 approvalStatus 를 그대로 보여준다.
       const status = getBody(result)?.approvalStatus;
       showCouponMessage(
         status

@@ -1,0 +1,22 @@
+/* admin-qna.css — 상품 Q&A 모니터링 전용
+
+   패널 껍데기(.detail-row / .detail-panel / .detail-meta / .detail-body / .detail-actions)와
+   관리 열 폭(.act-slim)은 admin.css 의 공용 컴포넌트를 쓴다 — 1:1 문의 화면과 공유한다.
+   이 화면은 조회 전용이라(관리자 Q&A 는 GET 하나뿐) 답변은 읽기 전용 블록으로만 보여준다. */
+
+/* 답변 블록 — 문의 본문과 구분되도록 왼쪽에 선을 준다 */
+.detail-panel .qna-answer .detail-body {
+  border-left: 3px solid var(--hairline-strong);
+  background: var(--surface);
+}
+.detail-panel .qna-answer.is-answered .detail-body { border-left-color: #a9d8bd; }
+
+/* 미답변 상태 안내 */
+.detail-panel .qna-empty {
+  margin: 0;
+  padding: 12px 14px;
+  font-size: 12.5px; color: var(--mid);
+  border: 1px dashed var(--hairline-strong);
+  border-radius: 9px;
+  background: var(--paper);
+}

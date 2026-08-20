@@ -1,5 +1,4 @@
 // points.js — 포인트 페이지
-// GET /api/v1/users/me/points (백엔드 작성완료)
 // 로그인 필요 페이지
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -28,7 +27,7 @@ document.addEventListener("DOMContentLoaded", () => {
       return `
         <tr>
           <td>${date}</td>
-          <td>${h.reason}</td>
+          <td>${esc(h.reason)}</td>
           <td>${type}</td>
           <td class="${cls}">${sign}${won(h.amount)} P</td>
           <td>${won(h.balanceAfter)} P</td>
@@ -38,7 +37,6 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // ===== 요약 표 그리기 =====
-  // ※ 백엔드 API에 요약 데이터가 없어서, 내역으로 계산
   function renderSummary(list) {
     // 보유 포인트 = 가장 최근 내역의 잔액
     const balance = list.length > 0 ? list[0].balanceAfter : 0;
@@ -67,7 +65,8 @@ document.addEventListener("DOMContentLoaded", () => {
   // ===== API에서 진짜 데이터 받아오기 =====
   async function loadPoints() {
     try {
-      const token = localStorage.getItem("catchcatch.accessToken");
+      // [5-1 조치] 저장 키를 직접 읽지 않는다.
+      const token = window.CatchAuth ? CatchAuth.getToken() : null;
 
       const res = await fetch("/api/v1/users/me/points", {
         method: "GET",
@@ -82,10 +81,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       const json = await res.json();
 
-      // 3겹 껍질 벗기기: json.data.content 가 진짜 내역 목록
       const list = json.data.content;
-
-      console.log("받은 데이터:", list);  // 확인용 (나중에 지워도 됨)
 
       renderSummary(list);
       renderHistory(list);
@@ -93,7 +89,7 @@ document.addEventListener("DOMContentLoaded", () => {
     } catch (err) {
       console.error(err);
       $('[data-role="point-history"]').innerHTML =
-        `<tr><td colspan="5" style="text-align:center;padding:40px;color:#e02020;">포인트 정보를 불러오지 못했습니다.<br>${err.message}</td></tr>`;
+        `<tr><td colspan="5" style="text-align:center;padding:40px;color:#e02020;">포인트 정보를 불러오지 못했습니다.<br>${esc(err.message)}</td></tr>`;
     }
   }
 

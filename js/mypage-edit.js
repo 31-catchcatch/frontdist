@@ -27,11 +27,8 @@
   };
 
   function isLoggedIn() {
-    return (
-      sessionStorage.getItem("catchcatch.loggedIn") === "true" ||
-      Boolean(sessionStorage.getItem("catchcatch.accessToken")) ||
-      Boolean(localStorage.getItem("catchcatch.accessToken"))
-    );
+    // [5-1 조치] 토큰 저장 키를 직접 읽지 않고 공용 인증 모듈에 위임한다.
+    return Boolean(window.CatchAuth && CatchAuth.isLoggedIn());
   }
 
   function moveToLogin() {
@@ -41,16 +38,15 @@
   }
 
   function clearLoginState() {
-    sessionStorage.removeItem("catchcatch.loggedIn");
-    sessionStorage.removeItem("catchcatch.loginType");
-    sessionStorage.removeItem("catchcatch.accessToken");
-    localStorage.removeItem("catchcatch.accessToken");
+    // [5-1 조치] 저장 키 직접 접근 제거. 화면 이동은 기존처럼 각 호출부가 담당한다.
+    if (window.CatchAuth) CatchAuth.clearSession();
   }
 
   if (!FILE_PREVIEW_MODE && !isLoggedIn()) {
     moveToLogin();
     return;
   }
+  if (!FILE_PREVIEW_MODE && window.CatchAuth) { CatchAuth.requireRole(); }
 
   function handleUnauthorized(response) {
     if (response.status !== 401 && response.status !== 403) {
@@ -284,10 +280,6 @@
     submitButton.textContent = "저장 중...";
 
     try {
-      /*
-       * 백엔드 Update DTO의 필드명이 다르면 createPayload()의
-       * 키 이름만 실제 명세에 맞게 변경하면 됩니다.
-       */
       const response = await fetch(PROFILE_API, {
         method: "PUT",
         headers: {

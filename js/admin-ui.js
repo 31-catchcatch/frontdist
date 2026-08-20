@@ -11,21 +11,21 @@
   "use strict";
 
   function fieldHtml(f) {
-    const label = `<label>${f.label}</label>`;
+    const label = `<label>${esc(f.label)}</label>`;
     if (f.type === "select") {
       const opts = f.options
-        .map((o) => `<option value="${o.value}"${o.value === f.value ? " selected" : ""}>${o.label}</option>`)
+        .map((o) => `<option value="${esc(o.value)}"${o.value === f.value ? " selected" : ""}>${esc(o.label)}</option>`)
         .join("");
-      return `<div class="field">${label}<select name="${f.name}">${opts}</select></div>`;
+      return `<div class="field">${label}<select name="${esc(f.name)}">${opts}</select></div>`;
     }
     if (f.type === "textarea") {
-      return `<div class="field">${label}<textarea name="${f.name}" placeholder="${f.placeholder || ""}">${f.value || ""}</textarea></div>`;
+      return `<div class="field">${label}<textarea name="${f.name}" placeholder="${esc(f.placeholder || "")}">${esc(f.value || "")}</textarea></div>`;
     }
-    return `<div class="field">${label}<input name="${f.name}" type="${f.type || "text"}" value="${f.value ?? ""}" placeholder="${f.placeholder || ""}"></div>`;
+    return `<div class="field">${label}<input name="${f.name}" type="${f.type || "text"}" value="${esc(f.value ?? "")}" placeholder="${f.placeholder || ""}"></div>`;
   }
 
   const AdminUI = {
-    createListController({ pager, render, pageSize = 5 }) {
+    createListController({ pager, render, pageSize = 10 }) {
       let items = [];
       let currentPage = 1;
 
@@ -85,12 +85,12 @@
       const bd = document.createElement("div");
       bd.className = "modal-backdrop open";
       bd.innerHTML = `<div class="modal">
-        <h3>${title}</h3>
+        <h3>${esc(title)}</h3>
         <table style="width:100%;border-collapse:collapse;font-size:13px;margin:6px 0 14px">
           ${(rows || []).map(([k, v]) => `
             <tr>
               <th style="text-align:left;padding:6px 10px;color:#888;font-weight:600;white-space:nowrap;vertical-align:top">${k}</th>
-              <td style="padding:6px 10px">${v}</td>
+              <td style="padding:6px 10px">${esc(v)}</td>
             </tr>`).join("")}
         </table>
         <div class="modal-actions"><button type="button" class="btn primary" data-close>닫기</button></div>
@@ -107,8 +107,8 @@
         const bd = document.createElement("div");
         bd.className = "modal-backdrop open";
         bd.innerHTML = `<div class="modal">
-          <h3>${opts.title || "확인"}</h3>
-          <p>${opts.message || ""}</p>
+          <h3>${esc(opts.title || "확인")}</h3>
+          <p>${esc(opts.message || "")}</p>
           <div class="modal-actions">
             <button type="button" class="btn" data-cancel>취소</button>
             <button type="button" class="btn ${opts.danger ? "danger" : "primary"}" data-ok>${opts.okText || "확인"}</button>
@@ -128,8 +128,8 @@
         const bd = document.createElement("div");
         bd.className = "modal-backdrop open";
         bd.innerHTML = `<div class="modal">
-          <h3>${opts.title || ""}</h3>
-          ${opts.message ? `<p>${opts.message}</p>` : ""}
+          <h3>${esc(opts.title || "")}</h3>
+          ${opts.message ? `<p>${esc(opts.message)}</p>` : ""}
           <form>
             ${(opts.fields || []).map(fieldHtml).join("")}
             <div class="modal-actions">

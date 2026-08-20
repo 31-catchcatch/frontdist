@@ -1,0 +1,7 @@
+/* admin-coupons.css — 쿠폰 인가/발행 전용
+
+   한 화면에서 두 목록을 오간다(발행 요청 심사 / 발행된 쿠폰).
+   표 헤더는 js/admin-coupons.js 의 applyView() 가 모드에 맞춰 다시 그린다. */
+
+/* 심사 목록에서만 쓰는 상태 필터는 발행 목록에서 감춘다 */
+#statusFilter[hidden] { display: none; }

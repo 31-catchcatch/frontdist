@@ -1,11 +1,3 @@
-// review-write.js — 리뷰 작성/수정 겸용
-//  작성(U-REVIEW-001): POST /api/v1/products/{productId}/reviews
-//    받는 파라미터: ?orderDetailId=주문상세ID&productId=상품ID (orders.html에서 전달)
-//  수정: PUT /api/v1/reviews/{reviewId}
-//    받는 파라미터: ?reviewId=리뷰ID&edit=true (my-reviews.html에서 전달)
-//    - 백엔드에 리뷰 단건 GET 이 없어, 프리필 데이터는 sessionStorage("catchcatch.editReview")
-//      우선, 없으면 /users/me/reviews 목록에서 폴백 조회한다.
-
 document.addEventListener("DOMContentLoaded", () => {
   "use strict";
 
@@ -51,11 +43,12 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   let rating = 0;
-  let photo = null;            // 새로 첨부한 사진 { file, url }  (백엔드가 imageUrl 1개만 지원)
+  let photo = null;
   let existingImageUrl = null; // 수정 모드에서 이미 등록돼 있던 이미지 URL
 
   function getAccessToken() {
-    return sessionStorage.getItem("catchcatch.accessToken") || localStorage.getItem("catchcatch.accessToken");
+    // [5-1 조치] 저장 키를 직접 읽지 않는다.
+    return window.CatchAuth ? CatchAuth.getToken() : null;
   }
 
   async function apiFetch(path, options = {}) {
@@ -118,7 +111,6 @@ document.addEventListener("DOMContentLoaded", () => {
     charNow.textContent = bodyInput.value.length;
   });
 
-  // ===== 사진 첨부 (최대 1장, 백엔드가 imageUrl 1개만 지원) =====
   const photoInput = $('[data-role="photo-input"]');
   const photoList = $('[data-role="photo-list"]');
   const photoAdd = $('[data-role="photo-add"]');
@@ -142,7 +134,7 @@ document.addEventListener("DOMContentLoaded", () => {
   function renderPhotos() {
     const url = currentPhotoUrl();
     photoList.innerHTML = url
-      ? `<div class="photo-item"><img src="${url}" alt="첨부 사진"><button type="button" data-photo-remove aria-label="사진 삭제">✕</button></div>`
+      ? `<div class="photo-item"><img src="${SafeUrl(url)}" alt="첨부 사진"><button type="button" data-photo-remove aria-label="사진 삭제">✕</button></div>`
       : "";
     photoAdd.hidden = Boolean(url);
   }
@@ -151,7 +143,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!e.target.closest("[data-photo-remove]")) return;
     if (photo) URL.revokeObjectURL(photo.url);
     photo = null;
-    existingImageUrl = null; // 기존 이미지도 제거 → 저장 시 imageUrl:null
+    existingImageUrl = null;
     renderPhotos();
   });
 

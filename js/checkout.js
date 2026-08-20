@@ -3,20 +3,14 @@
 
   const API_BASE = (window.CATCHCATCH_API_BASE_URL || "/api/v1").replace(/\/$/, "");
   const money = new Intl.NumberFormat("ko-KR");
-  // 배송비 정책의 SSOT는 백엔드(OrderService)다. GET /orders/checkout 응답의
-  // shippingFee / freeShippingThreshold 를 쓰고, 아래 값은 그 응답을 못 받았을 때만 쓰는 폴백이다.
   const FALLBACK_FREE_SHIPPING_THRESHOLD = 50000;
   const FALLBACK_SHIPPING_FEE = 3000;
-  const DIRECT_CHECKOUT_KEY = "catchcatch.directCheckoutItem";
-  const CART_CHECKOUT_IDS_KEY = "catchcatch.checkoutCartItemIds";
-  // 결제창으로 넘어가기 직전 주문의 { orderId(DB PK), orderNumber }.
-  // 결제 실패 랜딩(payment-fail.js)이 어떤 주문을 되돌려야 하는지 알아내는 데 쓴다.
-  // 토스는 failUrl 로 주문번호만 돌려주는데 취소 API 는 DB PK 를 받기 때문이다.
   const PENDING_ORDER_KEY = "catchcatch.pendingOrder";
-  const DIRECT_CHECKOUT_MODE = new URLSearchParams(location.search).get("mode") === "direct";
+  // [1-3 조치] 주문 대상은 서버가 확정한 초안(draft)으로만 다룬다.
+  //   장바구니/상품상세에서 POST /orders/prepare 로 초안을 만들고 그 식별자만 넘겨받는다.
+  //   화면이 상품·수량을 직접 들고 있지 않으므로 변조할 대상 자체가 없다.
+  const DRAFT_ID = new URLSearchParams(location.search).get("draft");
 
-  // 현재 연동 범위는 카드 결제뿐이다. 나머지는 백엔드 연동(가상계좌 입금통보 웹훅 등)이
-  // 없어 선택할 수 없게 두되, 배열에서 빼지는 않는다 — 나중에 되살릴 자리를 남겨둔다.
   const PAYMENT_TYPES = [
     { id: "CARD", label: "카드", detail: "국내외 신용카드와 체크카드로 결제합니다.", enabled: true },
     { id: "VIRTUAL_ACCOUNT", label: "무통장입금", detail: "주문 완료 후 발급되는 전용 계좌로 입금해 주세요.", enabled: false },
@@ -38,12 +32,15 @@
     addressDialog: document.getElementById("addressDialog"),
     addressOptions: document.getElementById("addressOptions"),
     couponSelect: document.getElementById("couponSelect"),
+    couponScope: document.getElementById("couponScope"),
     pointAmount: document.getElementById("pointAmount"),
     availablePoints: document.getElementById("availablePoints"),
     applyPoints: document.getElementById("applyPoints"),
     paymentMethods: document.getElementById("paymentMethods"),
     paymentEmpty: document.getElementById("paymentEmpty"),
     itemTotal: document.getElementById("itemTotal"),
+    productDiscountRow: document.getElementById("productDiscountRow"),
+    productDiscount: document.getElementById("productDiscount"),
     shippingFee: document.getElementById("shippingFee"),
     couponDiscount: document.getElementById("couponDiscount"),
     pointsUsed: document.getElementById("pointsUsed"),
@@ -63,10 +60,13 @@
     pointAmount: 0,
     selectedPaymentType: "CARD",
     paying: false,
+    // 초안은 주문 생성 시 서버에서 소멸한다. 한 번 소진되면 이 화면으로는 다시 결제할 수 없다.
+    draftConsumed: false,
   };
 
   function getAccessToken() {
-    return sessionStorage.getItem("catchcatch.accessToken") || localStorage.getItem("catchcatch.accessToken");
+    // [5-1 조치] 저장 키를 직접 읽지 않는다.
+    return window.CatchAuth ? CatchAuth.getToken() : null;
   }
 
   function unwrapData(payload) {
@@ -116,60 +116,91 @@
     return unwrapData(payload);
   }
 
-  // 장바구니 페이지(shoppingcart.js)가 "선택 상품 주문하기" 클릭 시 저장해 둔 cartItemId 목록
-  function getSelectedCartItemIds() {
-    try {
-      const raw = sessionStorage.getItem(CART_CHECKOUT_IDS_KEY);
-      const ids = raw ? JSON.parse(raw) : [];
-      return Array.isArray(ids) ? ids.map(String) : [];
-    } catch (_) {
-      return [];
-    }
-  }
-
-  // 상품 상세의 바로구매가 저장한 최소 식별값. 이름·가격·재고는 API에서 다시 확인한다.
-  function getDirectCheckoutItem() {
-    if (!DIRECT_CHECKOUT_MODE) return null;
-    try {
-      const raw = sessionStorage.getItem(DIRECT_CHECKOUT_KEY);
-      const item = raw ? JSON.parse(raw) : null;
-      const productId = Number(item?.productId);
-      const optionId = item?.optionId == null ? null : Number(item.optionId);
-      const quantity = Number(item?.quantity);
-      if (!Number.isInteger(productId) || productId <= 0) return null;
-      if (optionId !== null && (!Number.isInteger(optionId) || optionId <= 0)) return null;
-      if (!Number.isInteger(quantity) || quantity <= 0 || quantity > 10) return null;
-      return { productId, optionId, quantity };
-    } catch (_) {
-      return null;
-    }
-  }
-
   function getSelectedAddress() {
     return state.addresses.find((address) => String(address.id) === String(state.selectedAddressId)) || null;
+  }
+
+  function itemsTotal() {
+    return state.cartItems.reduce((sum, item) => sum + (Number(item.totalPrice) || 0), 0);
+  }
+
+  /** 상품 할인 전 금액. originalPrice 를 안 내려주는 응답에서는 판매가와 같아져 할인 0으로 보인다. */
+  function itemsOriginalTotal() {
+    return state.cartItems.reduce((sum, item) => {
+      const unit = Number(item.originalPrice ?? item.price) || 0;
+      return sum + unit * (Number(item.quantity) || 0);
+    }, 0);
+  }
+
+  /**
+   * 주문 상품을 판매자별 금액으로 모은다.
+   * 판매자를 알 수 없는 상품이 하나라도 있으면 범위를 가릴 수 없으므로 null 을 돌려준다.
+   */
+  function sellerAmounts() {
+    const amounts = new Map();
+    for (const item of state.cartItems) {
+      if (item.sellerId == null) return null;
+      const key = String(item.sellerId);
+      amounts.set(key, (amounts.get(key) || 0) + (Number(item.totalPrice) || 0));
+    }
+    return amounts;
   }
 
   function getSelectedCoupon() {
     return state.coupons.find((coupon) => String(coupon.userCouponId) === String(state.selectedCouponId)) || null;
   }
 
-  function computeCouponDiscount(coupon, itemTotal) {
-    if (!coupon) return 0;
-    if (itemTotal < Number(coupon.minimumOrderAmount || 0)) return 0;
+  /**
+   * 쿠폰이 적용되는 범위와 그 금액. 쿠폰은 발행한 판매자의 상품 금액에만 적용된다.
+   * 서버 OrderService.placeOrder 와 같은 규칙이라 화면 금액과 서버가 확정하는 금액이 어긋나지 않는다.
+   * 최소 주문금액도 전체가 아닌 "적용 대상 금액" 으로 판정한다.
+   */
+  function couponScope(coupon) {
+    if (!coupon) return null;
+    const amounts = sellerAmounts();
+    // 판매자 정보를 못 받은 응답에서는 예전처럼 전체 금액 기준으로 둔다.
+    const wholeOrder = coupon.sellerId == null || amounts === null;
+    const amount = wholeOrder ? itemsTotal() : (amounts.get(String(coupon.sellerId)) || 0);
+    const minimum = Number(coupon.minimumOrderAmount) || 0;
+
+    let reason = "";
+    if (amount <= 0) reason = "해당 판매자 상품 없음";
+    else if (amount < minimum) reason = `최소 주문금액 ${money.format(minimum)}원 미달`;
+
+    return { wholeOrder, amount, minimum, usable: reason === "", reason };
+  }
+
+  function computeCouponDiscount(coupon, applicableAmount) {
+    if (!coupon || applicableAmount <= 0) return 0;
 
     let discount;
     if (coupon.discountType === "FIXED_AMOUNT") {
       discount = Number(coupon.discountValue) || 0;
     } else {
-      discount = Math.floor((itemTotal * (Number(coupon.discountValue) || 0)) / 100);
+      discount = Math.floor((applicableAmount * (Number(coupon.discountValue) || 0)) / 100);
       if (coupon.maximumDiscountAmount != null) {
         discount = Math.min(discount, Number(coupon.maximumDiscountAmount));
       }
     }
-    return Math.min(discount, itemTotal);
+    return Math.min(discount, applicableAmount);
   }
 
-  /** 서버가 내려준 배송비 정책. 없으면 폴백 상수. */
+  /** 실제로 적용 가능한 쿠폰만 돌려준다. 결제 요청도 이걸 기준으로 보낸다. */
+  function getUsableSelectedCoupon() {
+    const coupon = getSelectedCoupon();
+    const scope = couponScope(coupon);
+    return scope && scope.usable ? coupon : null;
+  }
+
+  function availablePoints() {
+    return Math.max(0, Number(state.defaults && state.defaults.availablePoint) || 0);
+  }
+
+  /** 이 주문에서 실제로 쓸 수 있는 포인트 상한 (보유 포인트와 결제 금액 중 작은 쪽). */
+  function pointLimit() {
+    return summary().pointLimit;
+  }
+
   function shippingPolicy() {
     const fee = Number(state.defaults?.shippingFee);
     const threshold = Number(state.defaults?.freeShippingThreshold);
@@ -181,12 +212,22 @@
 
   function summary() {
     const policy = shippingPolicy();
-    const itemTotal = state.cartItems.reduce((sum, item) => sum + Number(item.totalPrice || 0), 0);
+    const itemTotal = itemsTotal();
     const shippingFee = state.cartItems.length === 0 || itemTotal >= policy.threshold ? 0 : policy.fee;
-    const couponDiscount = computeCouponDiscount(getSelectedCoupon(), itemTotal);
-    const pointsUsed = Math.max(0, Math.min(state.pointAmount, itemTotal + shippingFee - couponDiscount));
+    const coupon = getSelectedCoupon();
+    const scope = couponScope(coupon);
+    const couponDiscount = scope && scope.usable ? computeCouponDiscount(coupon, scope.amount) : 0;
+    // 결제 금액을 넘는 포인트는 서버 placeOrder 가 INVALID_INPUT 으로 거부하므로 상한을 함께 잡는다.
+    const usablePoint = Math.max(0, Math.min(availablePoints(), itemTotal + shippingFee - couponDiscount));
+    const pointsUsed = Math.max(0, Math.min(state.pointAmount, usablePoint));
     const finalAmount = itemTotal + shippingFee - couponDiscount - pointsUsed;
-    return { itemTotal, shippingFee, couponDiscount, pointsUsed, finalAmount };
+    const originalTotal = itemsOriginalTotal();
+    return {
+      itemTotal, shippingFee, couponDiscount, pointsUsed, finalAmount,
+      pointLimit: usablePoint,
+      originalTotal,
+      productDiscount: Math.max(0, originalTotal - itemTotal),
+    };
   }
 
   function renderItems() {
@@ -198,13 +239,13 @@
       const name = item.productName || "상품명 없음";
       // 썸네일이 없는 상품은 기존처럼 상품명 첫 글자를 그린다.
       const thumb = item.thumbnailUrl
-        ? `<img src="${item.thumbnailUrl}" alt="">`
+        ? `<img src="${esc(item.thumbnailUrl)}" alt="">`
         : `<span aria-hidden="true">${name.charAt(0) || "C"}</span>`;
       return `<article class="order-item">
         <div class="item-thumb">${thumb}</div>
         <div>
-          <strong class="item-name">${name}</strong>
-          <p class="item-option">${item.optionName || "옵션 없음"} · ${Number(item.quantity) || 1}개</p>
+          <strong class="item-name">${esc(name)}</strong>
+          <p class="item-option">${esc(item.optionName || "옵션 없음")} · ${Number(item.quantity) || 1}개</p>
         </div>
         <strong class="item-price">${formatMoney(item.totalPrice)}</strong>
       </article>`;
@@ -212,7 +253,7 @@
   }
 
   function formatAddressDetail(address) {
-    return [address.zipCode && `(${address.zipCode})`, address.baseAddress, address.detailAddress].filter(Boolean).join(" ");
+    return [address.zipCode && `(${esc(address.zipCode)})`, esc(address.baseAddress), esc(address.detailAddress)].filter(Boolean).join(" ");
   }
 
   function renderAddress() {
@@ -222,7 +263,7 @@
       elements.selectedAddress.innerHTML = '<p class="address-empty">선택할 배송지가 없습니다. 배송지 관리에서 배송지를 등록해 주세요.</p>';
       return;
     }
-    elements.selectedAddress.innerHTML = `<strong class="address-name">${address.recipientName}</strong><span class="address-phone">${address.recipientPhone}</span><p class="address-detail">${formatAddressDetail(address)}</p>`;
+    elements.selectedAddress.innerHTML = `<strong class="address-name">${esc(address.recipientName)}</strong><span class="address-phone">${esc(address.recipientPhone)}</span><p class="address-detail">${formatAddressDetail(address)}</p>`;
   }
 
   function renderAddressOptions() {
@@ -230,31 +271,70 @@
       const checked = String(address.id) === String(state.selectedAddressId) ? " checked" : "";
       return `<label class="address-option">
         <input type="radio" name="address" value="${address.id}"${checked}>
-        <span><strong>${address.recipientName}</strong><span>${address.recipientPhone}</span><p>${formatAddressDetail(address)}</p></span>
+        <span><strong>${esc(address.recipientName)}</strong><span>${esc(address.recipientPhone)}</span><p>${formatAddressDetail(address)}</p></span>
       </label>`;
     }).join("") || '<p class="section-empty">등록된 배송지가 없습니다.</p>';
   }
 
-  function couponOptionLabel(coupon) {
+  function couponOptionLabel(coupon, scope) {
     const discountLabel = coupon.discountType === "FIXED_AMOUNT"
       ? `${money.format(Number(coupon.discountValue) || 0)}원 할인`
       : `${Number(coupon.discountValue) || 0}% 할인`;
-    return `${coupon.couponName || "쿠폰"} · ${discountLabel}`;
+    const label = `${coupon.couponName || "쿠폰"} · ${discountLabel}`;
+    // 못 쓰는 쿠폰은 사유를 붙여 왜 선택이 안 되는지 알 수 있게 한다.
+    return esc(scope.usable ? label : `${label} — ${scope.reason}`);
+  }
+
+  function couponSellerLabel(coupon) {
+    return coupon.sellerName ? `${coupon.sellerName} 상품` : "해당 판매자 상품";
+  }
+
+  /** 선택한 쿠폰이 어디에 적용되는지 - 여러 판매자가 섞인 장바구니에서 특히 중요하다. */
+  function renderCouponScope() {
+    const coupon = getSelectedCoupon();
+    const scope = couponScope(coupon);
+    if (!coupon || !scope) {
+      elements.couponScope.hidden = true;
+      elements.couponScope.textContent = "";
+      delete elements.couponScope.dataset.state;
+      return;
+    }
+
+    elements.couponScope.hidden = false;
+    if (!scope.usable) {
+      elements.couponScope.dataset.state = "blocked";
+      elements.couponScope.textContent = `이 주문에는 사용할 수 없는 쿠폰입니다. (${scope.reason})`;
+      return;
+    }
+
+    elements.couponScope.dataset.state = "applied";
+    elements.couponScope.textContent = scope.wholeOrder
+      ? `주문 상품 전체 ${formatMoney(scope.amount)}에 적용됩니다.`
+      : `${couponSellerLabel(coupon)} ${formatMoney(scope.amount)}에 적용됩니다.`;
   }
 
   function renderBenefits() {
     elements.couponSelect.disabled = !state.ready;
     elements.couponSelect.innerHTML = `<option value="">쿠폰을 선택하지 않음</option>${state.coupons.map((coupon) => {
+      const scope = couponScope(coupon);
       const selected = String(coupon.userCouponId) === String(state.selectedCouponId) ? " selected" : "";
-      return `<option value="${coupon.userCouponId}"${selected}>${couponOptionLabel(coupon)}</option>`;
+      const disabled = scope.usable ? "" : " disabled";
+      return `<option value="${coupon.userCouponId}"${selected}${disabled}>${couponOptionLabel(coupon, scope)}</option>`;
     }).join("")}`;
+    renderPointInput();
+  }
 
-    const availablePoints = Number(state.defaults && state.defaults.availablePoint) || 0;
+  function renderPointInput() {
+    const available = availablePoints();
+    const limit = pointLimit();
     elements.pointAmount.disabled = !state.ready;
     elements.applyPoints.disabled = !state.ready;
-    elements.pointAmount.max = String(availablePoints);
+    // 결제 금액이 보유 포인트보다 적으면 그쪽이 상한이다. 입력칸 max 와 안내 문구에 함께 반영한다.
+    elements.pointAmount.max = String(limit);
     elements.pointAmount.value = String(state.pointAmount || "");
-    elements.availablePoints.textContent = `보유 포인트 ${money.format(availablePoints)}P`;
+    elements.availablePoints.textContent = limit < available
+      ? `보유 포인트 ${money.format(available)}P · 이 주문 최대 ${money.format(limit)}P`
+      : `보유 포인트 ${money.format(available)}P`;
   }
 
   function renderPayments() {
@@ -274,8 +354,12 @@
   }
 
   function renderSummary() {
-    const { itemTotal, shippingFee, couponDiscount, pointsUsed, finalAmount } = summary();
-    elements.itemTotal.textContent = formatMoney(itemTotal);
+    renderCouponScope();
+    const { originalTotal, productDiscount, shippingFee, couponDiscount, pointsUsed, finalAmount } = summary();
+    // '상품 금액' 은 할인 전 금액을 보여주고, 깎인 만큼을 바로 아래 줄에 따로 세운다.
+    elements.itemTotal.textContent = formatMoney(originalTotal);
+    elements.productDiscountRow.hidden = productDiscount <= 0;
+    elements.productDiscount.textContent = formatDiscount(productDiscount);
     elements.shippingFee.textContent = formatMoney(shippingFee);
     elements.couponDiscount.textContent = formatDiscount(couponDiscount);
     elements.pointsUsed.textContent = formatDiscount(pointsUsed);
@@ -284,8 +368,16 @@
 
   function updatePayButton() {
     const hasItems = state.cartItems.length > 0;
-    const enabled = state.ready && hasItems && state.selectedAddressId && state.selectedPaymentType && !state.paying;
+    // draftConsumed 를 여기서 함께 본다. 배송지·결제수단을 다시 고르면 이 함수가 또 불리는데,
+    // 그때 버튼이 되살아나면 이미 소멸한 초안으로 결제를 다시 시도하게 된다.
+    const enabled = state.ready && hasItems && state.selectedAddressId && state.selectedPaymentType
+      && !state.paying && !state.draftConsumed;
     elements.payButton.disabled = !enabled;
+    if (state.draftConsumed && !state.paying) {
+      elements.payButton.textContent = "결제하기";
+      elements.payHelp.textContent = "이 주문서는 사용이 끝났습니다. 상품을 다시 선택해 주세요.";
+      return;
+    }
     if (state.paying) {
       elements.payButton.textContent = "결제를 진행하고 있습니다";
       elements.payHelp.textContent = "결제창을 여는 중입니다. 창을 닫지 마세요.";
@@ -308,16 +400,34 @@
   function validatePointAmount() {
     const raw = elements.pointAmount.value.trim();
     const value = raw === "" ? 0 : Number(raw);
-    const available = Number(state.defaults && state.defaults.availablePoint) || 0;
+    const available = availablePoints();
     if (!Number.isInteger(value) || value < 0) throw new Error("포인트는 0 이상의 정수로 입력해 주세요.");
     if (value > available) throw new Error(`사용 포인트는 보유 포인트(${money.format(available)}P)를 초과할 수 없습니다.`);
-    return value;
+    // 결제 금액을 넘는 만큼은 서버가 받지 않는다. 막지 말고 상한까지만 받아 준다.
+    return Math.min(value, pointLimit());
+  }
+
+  /** 쿠폰이 바뀌면 결제 금액이 줄어 포인트 상한도 내려간다. 넘친 만큼을 깎고 깎였는지 알려 준다. */
+  function clampPointToLimit() {
+    const limit = pointLimit();
+    if (state.pointAmount <= limit) return false;
+    state.pointAmount = limit;
+    renderPointInput();
+    return true;
   }
 
   function applyPoints() {
     try {
+      const raw = elements.pointAmount.value.trim();
+      const requested = raw === "" ? 0 : Number(raw);
       state.pointAmount = validatePointAmount();
-      setNotice("");
+      renderPointInput();
+      setNotice(
+        requested > state.pointAmount
+          ? `결제 금액보다 많은 포인트는 사용할 수 없어 ${money.format(state.pointAmount)}P 로 맞췄습니다.`
+          : "",
+        "info"
+      );
       renderSummary();
       updatePayButton();
     } catch (error) {
@@ -326,48 +436,38 @@
     }
   }
 
-  async function loadCartItems() {
-    const selectedIds = getSelectedCartItemIds();
-    if (!selectedIds.length) {
-      state.cartItems = [];
-      return;
+  /**
+   * [1-3 조치] 서버가 확정해 둔 주문 초안을 화면 표시용으로 가져온다.
+   * 금액은 서버가 잡은 unitPrice/lineAmount 를 그대로 쓴다. 화면이 다시 계산하면
+   * 결제 금액과 어긋날 수 있으므로 여기서는 받은 값을 옮겨 담기만 한다.
+   * originalPrice/sellerId 는 초안이 내려주면 쓰고, 없으면 각각 할인 0·전체 주문 기준으로 폴백한다.
+   */
+  async function loadDraft() {
+    const draft = await apiFetch(`/orders/draft/${encodeURIComponent(DRAFT_ID)}`);
+    const items = Array.isArray(draft?.items) ? draft.items : [];
+    if (!items.length) {
+      throw new Error("주문 정보를 확인할 수 없습니다. 상품을 다시 선택해 주세요.");
     }
-    const allItems = await apiFetch("/carts");
-    state.cartItems = (Array.isArray(allItems) ? allItems : [])
-      .filter((item) => selectedIds.includes(String(item.cartItemId)));
+    state.cartItems = items.map((item) => {
+      const unitPrice = Number(item.unitPrice) || 0;
+      const quantity = Number(item.quantity) || 0;
+      return {
+        cartItemId: item.cartItemId ?? null,
+        productId: item.productId,
+        sellerId: item.sellerId ?? null,
+        sellerName: item.sellerName || null,
+        optionId: item.optionId,
+        productName: item.productName,
+        optionName: item.optionName || "옵션 없음",
+        price: unitPrice,
+        originalPrice: Number(item.originalUnitPrice ?? unitPrice) || 0,
+        quantity: quantity,
+        totalPrice: Number(item.lineAmount ?? unitPrice * quantity) || 0,
+        thumbnailUrl: item.thumbnailUrl || null,
+      };
+    });
   }
 
-  async function loadDirectItem(requestedItem) {
-    const product = await apiFetch(`/products/${encodeURIComponent(requestedItem.productId)}`);
-    const options = Array.isArray(product?.options) ? product.options : [];
-    const option = requestedItem.optionId == null
-      ? null
-      : options.find((candidate) => Number(candidate.optionId) === requestedItem.optionId);
-
-    if (!option && (options.length > 0 || requestedItem.optionId !== null)) {
-      throw new Error("선택한 상품 옵션을 확인할 수 없습니다. 상품 상세에서 다시 선택해 주세요.");
-    }
-    if (option && (option.soldOut || Number(option.stockQuantity) < requestedItem.quantity)) {
-      throw new Error("선택한 상품의 재고가 부족합니다. 수량을 다시 선택해 주세요.");
-    }
-
-    // 주문 API가 계산하는 금액(product.price + option.additionalPrice)과 동일하게 표시한다.
-    const unitPrice = Number(product.price || 0) + Number(option?.additionalPrice || 0);
-    state.cartItems = [{
-      cartItemId: null,
-      productId: requestedItem.productId,
-      optionId: requestedItem.optionId,
-      productName: product.name,
-      optionName: option?.optionName || "옵션 없음",
-      price: unitPrice,
-      quantity: requestedItem.quantity,
-      totalPrice: unitPrice * requestedItem.quantity,
-      // 장바구니 경유(GET /carts)와 필드명을 맞춘다. renderItems()가 이 값 하나만 본다.
-      thumbnailUrl: product.thumbnailUrl || null,
-    }];
-  }
-
-  // 토스 결제창에 그대로 노출되는 주문명. 토스 제한은 100자다.
   function buildOrderName() {
     const first = state.cartItems[0];
     const name = String(first?.productName || "주문 상품");
@@ -376,12 +476,6 @@
     return label.length > 100 ? `${label.slice(0, 99)}…` : label;
   }
 
-  /*
-   * 결제가 성사되지 않은 주문을 되돌린다.
-   *
-   * 주문을 만드는 시점에 재고·쿠폰·포인트가 이미 빠져나가기 때문에, 결제창을 닫으면
-   * 그냥 두는 것만으로 그 자원이 잠긴다. 되돌리기에 실패해도 결제 흐름을 막지는 않는다.
-   */
   async function cancelPendingOrder(orderId, reason) {
     try {
       await apiFetch(`/orders/${encodeURIComponent(orderId)}/cancel`, {
@@ -423,25 +517,20 @@
 
     let createdOrder = null;
     try {
-      // 결제 설정을 주문 생성보다 먼저 받는다. 여기서 실패했는데 주문을 이미 만들었다면
-      // 결제창도 못 띄운 채 재고만 잠긴 주문이 남는다.
       const config = await apiFetch("/payments/config");
       if (!config?.clientKey || !config?.successUrl || !config?.failUrl) {
         throw new Error("결제 설정이 준비되지 않았습니다. 잠시 후 다시 시도해 주세요.");
       }
 
-      const coupon = getSelectedCoupon();
+      const coupon = getUsableSelectedCoupon();
 
       const order = await apiFetch("/orders", {
         method: "POST",
         body: JSON.stringify({
-          items: state.cartItems.map((item) => ({
-            productId: item.productId,
-            optionId: item.optionId,
-            quantity: item.quantity,
-          })),
+          // [1-3 조치] 상품·수량은 보내지 않는다. 서버가 draftId 로 확정해 둔 내용만 사용한다.
+          draftId: DRAFT_ID,
           couponId: coupon ? coupon.couponId : null,
-          usePoint: state.pointAmount,
+          usePoint: summary().pointsUsed,
           receiverName: address.recipientName,
           receiverPhone: address.recipientPhone,
           zipCode: address.zipCode,
@@ -452,6 +541,9 @@
       });
 
       createdOrder = order;
+      // 주문이 만들어진 시점에 서버는 이 초안을 소멸시킨다. 결제가 실패해도 같은 draftId 로
+      // 다시 주문할 수 없으므로, 이 뒤로는 화면을 재사용하지 못하게 잠근다.
+      state.draftConsumed = true;
       try {
         sessionStorage.setItem(PENDING_ORDER_KEY, JSON.stringify({
           orderId: order.orderId,
@@ -459,28 +551,10 @@
         }));
       } catch (_) { /* 스토리지가 막혀 있어도 결제 자체는 진행한다 */ }
 
-      /*
-       * 토스 결제창 호출. 여기서 페이지를 떠나고, 결제 승인은 successUrl 로 돌아온
-       * payment-success.js 가 POST /payments/confirm 으로 마무리한다.
-       *
-       * 그래서 여기서는 sessionStorage 를 지우지 않는다 — 결제에 실패해 주문서로
-       * 돌아왔을 때 장바구니 선택이 남아 있어야 한다. 정리는 승인이 확정된 뒤
-       * payment-success.js 가 한다.
-       *
-       * amount 와 orderId 는 반드시 서버가 준 값을 쓴다.
-       *  - amount  : POST /orders 응답의 finalPaymentAmount. 프론트 계산값을 쓰면
-       *              승인 단계에서 금액 불일치로 전부 거절된다.
-       *  - orderId : order.orderNumber. DB PK(order.orderId)는 1~2자라 토스의
-       *              6~64자 제약에 걸린다.
-       */
       const toss = window.TossPayments(config.clientKey);
-      // 카드 단건 결제라 회원 식별이 필요 없다(백엔드도 customerKey 를 쓰지 않는다).
-      // 간편결제·빌링키를 붙일 때 회원 키로 교체해야 한다.
       const payment = toss.payment({ customerKey: window.TossPayments.ANONYMOUS });
 
       await payment.requestPayment({
-        // 결제수단 라디오는 CARD 외 전부 disabled 다. DOM 을 고쳐 다른 값을 넣어도
-        // 연동돼 있지 않으므로 여기서 CARD 로 고정한다.
         method: "CARD",
         amount: { currency: "KRW", value: Number(order.finalPaymentAmount) },
         orderId: order.orderNumber,
@@ -490,16 +564,19 @@
         card: { useEscrow: false, flowMode: "DEFAULT", useCardPoint: false, useAppCardOnly: false },
       });
     } catch (error) {
-      // 주문만 만들어지고 결제가 시작되지 못했으면(결제창을 닫은 경우 포함) 주문을 되돌린다.
-      // 주문 생성 전에 실패했다면 되돌릴 것이 없다.
       const canceled = createdOrder
         ? await cancelPendingOrder(
             createdOrder.orderId,
             error?.code === "USER_CANCEL" ? "결제창에서 결제 취소" : "결제 시작 실패"
           )
         : false;
-      setNotice(paymentErrorMessage(error, canceled));
       state.paying = false;
+      setNotice(
+        state.draftConsumed
+          ? `${paymentErrorMessage(error, canceled)} 상품을 다시 선택해 주세요.`
+          : paymentErrorMessage(error, canceled),
+        state.draftConsumed ? "info" : "error"
+      );
       updatePayButton();
     }
   }
@@ -507,21 +584,12 @@
   async function initialize() {
     if (!window.CatchAuth || !window.CatchAuth.requireLogin()) return;
 
-    const directItem = getDirectCheckoutItem();
-    const selectedCartItemIds = getSelectedCartItemIds();
-    const hasCheckoutItems = DIRECT_CHECKOUT_MODE
-      ? Boolean(directItem)
-      : selectedCartItemIds.length > 0;
-    if (!hasCheckoutItems) {
+    // [1-3 조치] draftId 없이는 주문서를 열 수 없다. 주소로 직접 들어와도 살 것이 없다.
+    if (!DRAFT_ID) {
       elements.loading.hidden = true;
       elements.content.hidden = false;
       renderAll();
-      setNotice(
-        DIRECT_CHECKOUT_MODE
-          ? "바로구매 상품 정보가 없습니다. 상품 상세에서 다시 선택해 주세요."
-          : "장바구니에서 주문할 상품을 선택해 주세요.",
-        "info"
-      );
+      setNotice("주문 정보가 없습니다. 장바구니나 상품 상세에서 다시 선택해 주세요.", "info");
       return;
     }
 
@@ -530,7 +598,7 @@
         apiFetch("/orders/checkout"),
         apiFetch("/users/me/addresses"),
         apiFetch("/users/me/coupons?size=100"),
-        DIRECT_CHECKOUT_MODE ? loadDirectItem(directItem) : loadCartItems(),
+        loadDraft(),
       ]);
       state.defaults = defaults;
       state.addresses = Array.isArray(addresses) ? addresses : [];
@@ -558,6 +626,12 @@
   });
   elements.couponSelect.addEventListener("change", () => {
     state.selectedCouponId = elements.couponSelect.value;
+
+    // 할인이 늘면 결제 금액이 줄어 이미 넣어 둔 포인트가 상한을 넘길 수 있다.
+    if (clampPointToLimit()) {
+      setNotice(`쿠폰 할인이 적용되어 사용 포인트를 ${money.format(state.pointAmount)}P 로 맞췄습니다.`, "info");
+    }
+
     renderSummary();
   });
   elements.applyPoints.addEventListener("click", applyPoints);

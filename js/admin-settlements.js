@@ -1,5 +1,3 @@
-/* 관리자 - 플랫폼 정산 (GET /admin/settlements, GET /admin/settlements/sellers)
-   PATCH /admin/settlements/sellers/{sellerId}/complete - 판매자 단위 일괄 지급완료 처리 */
 (function () {
   "use strict";
 
@@ -36,7 +34,7 @@
     }
     rowsEl.innerHTML = list.map((s) => `
       <tr data-id="${s.id}">
-        <td class="strong">${s.company}</td>
+        <td class="strong">${esc(s.company)}</td>
         <td class="num">${AdminUI.won(s.sale)}</td>
         <td class="num">${AdminUI.won(s.fee)}</td>
         <td class="num">${AdminUI.won(s.pending)}</td>
@@ -107,7 +105,7 @@
 
       applyFilter();
     } catch (err) {
-      rowsEl.innerHTML = `<tr class="empty-row"><td colspan="7">${err.message || "정산 데이터를 불러오지 못했습니다."}</td></tr>`;
+      rowsEl.innerHTML = `<tr class="empty-row"><td colspan="7">${esc(err.message || "정산 데이터를 불러오지 못했습니다.")}</td></tr>`;
       countEl.textContent = 0;
     }
   }

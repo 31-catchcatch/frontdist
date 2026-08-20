@@ -170,16 +170,16 @@
 
 .notification-summary {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 16px;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 12px;
   margin-bottom: 26px;
 }
 
 .notification-summary-card {
-  min-height: 120px;
-  padding: 24px 26px;
+  min-height: 96px;
+  padding: 18px 20px;
   border: 1px solid #e5e5e5;
-  border-radius: 18px;
+  border-radius: 16px;
   background: #fff;
   text-align: left;
   cursor: pointer;
@@ -196,14 +196,19 @@
 .notification-summary-card span {
   display: block;
   color: #8b8b8b;
-  font-size: 14px;
-  margin-bottom: 15px;
+  font-size: 13px;
+  line-height: 1.35;
+  margin-bottom: 10px;
+  white-space: nowrap;          /* "읽지 않은 알림"이 카드 안에서 두 줄로 접히지 않게 */
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .notification-summary-card strong {
   color: #111;
-  font-size: 28px;
+  font-size: 24px;
   line-height: 1;
+  font-variant-numeric: tabular-nums;
 }
 
 .notification-toolbar {
@@ -343,7 +348,12 @@
   background: #fff0ef;
 }
 
-.notification-badge.pending,
+/* 승인 대기 — 심사 중이라는 게 한눈에 보이도록 일반 알림(회색)과 구분한다 */
+.notification-badge.pending {
+  color: #8a6d00;
+  background: #fbf6e6;
+}
+
 .notification-badge.general {
   color: #666;
   background: #f2f2f2;
@@ -464,7 +474,7 @@
   }
 
   .notification-summary {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
   .notification-item {

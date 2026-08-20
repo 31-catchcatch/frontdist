@@ -1,6 +1,20 @@
-/* 관리자 인증 상태는 일반 사용자 인증과 분리해서 세션 단위로만 보관한다. */
 (function (global) {
   "use strict";
+
+  function esc(s) {
+    return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+    });
+  }
+
+global.esc = esc;
+
+  function safeUrl(v) {
+    try {
+      const u = new URL(v, location.href);
+      return ["http:", "https:", "data:", "blob:"].includes(u.protocol) ? u.href : "#";
+    } catch (_) { return "#"; }
+  }
 
   const KEY_TOKEN = "catchcatch.adminToken";
   const KEY_FLAG = "catchcatch.adminLoggedIn";
@@ -33,14 +47,25 @@
     },
 
     requireLogin() {
-      if (!this.isLoggedIn()) {
-        location.replace(LOGIN_PAGE + "?redirect=" + encodeURIComponent(currentPage()));
-        return false;
-      }
+      if (!this.isLoggedIn()) { location.replace(LOGIN_PAGE + "?redirect=" + encodeURIComponent(currentPage())); return false; }
+      fetch((window.CATCHCATCH_API_BASE_URL || "/api/v1") + "/admin/users?page=0&size=1",
+            { headers: this.authorizationHeader() })
+        .then((r) => { if (r.status === 401 || r.status === 403) { this.clearSession(); location.replace(LOGIN_PAGE); } })
+        .catch(() => {});
       return true;
     },
 
-    logout() {
+    /** [4-2 조치] 서버에 로그아웃을 알려 발급된 토큰을 무효화한 뒤 로컬 상태를 정리한다. */
+    async logout() {
+      const token = this.getToken();
+      if (token) {
+        try {
+          await fetch((window.CATCHCATCH_API_BASE_URL || "/api/v1") + "/auth/user/logout", {
+            method: "POST",
+            headers: { Authorization: "Bearer " + token },
+          });
+        } catch (_) { /* 통신 실패해도 로컬 정리는 진행 */ }
+      }
       this.clearSession();
       location.replace(LOGIN_PAGE);
     },
