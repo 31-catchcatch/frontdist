@@ -18,6 +18,7 @@ Write-Output "=== Clean ==="
 Remove-Item -Path "$htmlDir\.gitignore" -ErrorAction SilentlyContinue
 Remove-Item -Path "$htmlDir\README.md" -ErrorAction SilentlyContinue
 Remove-Item -Path "$htmlDir\_template.html" -ErrorAction SilentlyContinue
+Remove-Item -Path "$htmlDir\tunnel.log" -ErrorAction SilentlyContinue
 
 Write-Output "=== Nginx Restart ==="
 Restart-Service nginx
