@@ -81,13 +81,7 @@
         throw new Error(message);
       }
 
-      const tokenData = (result && result.data) || {};
-      // [5-1][4-1 조치] 토큰 저장은 CatchAuth 한 곳에서만 처리한다 (refreshToken 미저장).
-      CatchAuth.saveTokens(tokenData);
-
-      // 로그인 성공 상태 저장
-      sessionStorage.setItem("catchcatch.loggedIn", "true");
-      sessionStorage.setItem("catchcatch.loginType", loginType.value);
+      CatchAuth.startSession(loginType.value);
       const requestedRedirect = new URLSearchParams(location.search).get("redirect");
       location.href = loginType.value === "seller"
         ? "seller-dashboard.html"

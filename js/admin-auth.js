@@ -9,70 +9,78 @@
 
 global.esc = esc;
 
-  function safeUrl(v) {
-    try {
-      const u = new URL(v, location.href);
-      return ["http:", "https:", "data:", "blob:"].includes(u.protocol) ? u.href : "#";
-    } catch (_) { return "#"; }
+
+  if (!global.CatchHttp) {
+    console.error("[admin-auth] 초기화 실패 (E-INIT-02)");
   }
 
-  const KEY_TOKEN = "catchcatch.adminToken";
   const KEY_FLAG = "catchcatch.adminLoggedIn";
+
+  const KEY_USER_FLAG = "catchcatch.loggedIn";
+  const KEY_USER_TYPE = "catchcatch.loginType";
+
+  const LEGACY_ADMIN_TOKEN = "catchcatch.adminToken";
+
   const LOGIN_PAGE = "admin-login.html";
+
+  function removeStored(key) {
+    try { localStorage.removeItem(key); } catch (_) {  }
+    try { sessionStorage.removeItem(key); } catch (_) {  }
+  }
+
+  removeStored(LEGACY_ADMIN_TOKEN);
 
   function currentPage() {
     return location.pathname.split("/").pop() + location.search;
   }
 
+  function apiBase() {
+    return global.CATCHCATCH_API_BASE_URL || "/api/v1";
+  }
+
   const AdminAuth = {
     isLoggedIn() {
-      return Boolean(sessionStorage.getItem(KEY_TOKEN));
+      try { return sessionStorage.getItem(KEY_FLAG) === "true"; } catch (_) { return false; }
     },
 
-    getToken() {
-      return sessionStorage.getItem(KEY_TOKEN);
-    },
-
-    setSession(token) {
-      if (typeof token !== "string" || !token.trim()) {
-        throw new Error("관리자 인증 토큰이 없습니다.");
-      }
-      sessionStorage.setItem(KEY_TOKEN, token);
-      sessionStorage.setItem(KEY_FLAG, "true");
+    startSession() {
+      try { sessionStorage.setItem(KEY_FLAG, "true"); } catch (_) {  }
+      try {
+        localStorage.setItem(KEY_USER_FLAG, "true");
+        localStorage.setItem(KEY_USER_TYPE, "user");
+      } catch (_) {  }
     },
 
     clearSession() {
-      sessionStorage.removeItem(KEY_TOKEN);
-      sessionStorage.removeItem(KEY_FLAG);
+      removeStored(KEY_FLAG);
+      removeStored(KEY_USER_FLAG);
+      removeStored(KEY_USER_TYPE);
+      removeStored(LEGACY_ADMIN_TOKEN);
     },
 
     requireLogin() {
       if (!this.isLoggedIn()) { location.replace(LOGIN_PAGE + "?redirect=" + encodeURIComponent(currentPage())); return false; }
-      fetch((window.CATCHCATCH_API_BASE_URL || "/api/v1") + "/admin/users?page=0&size=1",
-            { headers: this.authorizationHeader() })
+      fetch(apiBase() + "/admin/users?page=0&size=1")
         .then((r) => { if (r.status === 401 || r.status === 403) { this.clearSession(); location.replace(LOGIN_PAGE); } })
         .catch(() => {});
       return true;
     },
 
-    /** [4-2 조치] 서버에 로그아웃을 알려 발급된 토큰을 무효화한 뒤 로컬 상태를 정리한다. */
     async logout() {
-      const token = this.getToken();
-      if (token) {
+      if (this.isLoggedIn()) {
         try {
-          await fetch((window.CATCHCATCH_API_BASE_URL || "/api/v1") + "/auth/user/logout", {
+          await fetch(apiBase() + "/auth/user/logout", {
             method: "POST",
-            headers: { Authorization: "Bearer " + token },
+            skipAuthRetry: true,
           });
-        } catch (_) { /* 통신 실패해도 로컬 정리는 진행 */ }
+        } catch (_) {  }
       }
       this.clearSession();
       location.replace(LOGIN_PAGE);
     },
 
     authorizationHeader() {
-      const token = this.getToken();
-      return token ? { Authorization: "Bearer " + token } : {};
+      return {};
     },
   };
 

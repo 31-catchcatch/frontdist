@@ -1,17 +1,10 @@
-/* admin-inquiries.css — 1:1 문의 관리 전용
-
-   "내용 보기"를 누르면 그 행 아래에 상세 패널이 펼쳐진다. 답변/삭제는 그 안에서만 한다.
-   패널 껍데기(.detail-row / .detail-panel / .detail-meta / .detail-body / .detail-actions)와
-   관리 열 폭(.act-slim)은 admin.css 의 공용 컴포넌트를 쓴다 — Q&A 화면과 공유한다.
-   이 파일에는 이 페이지에만 있는 "답변 입력" 부분만 둔다. */
-
 .detail-panel .inq-answer textarea {
   display: block; width: 100%; box-sizing: border-box;
   min-height: 92px; resize: vertical;
   padding: 11px 13px;
   font: inherit; font-size: 13px; line-height: 1.7; color: var(--ink);
   border: 1px solid var(--hairline-strong);
-  border-radius: 9px;                 /* toolbar 의 input/select 와 동일 */
+  border-radius: 9px;
   background: var(--surface);
 }
 .detail-panel .inq-answer textarea::placeholder { color: var(--faint); }

@@ -27,7 +27,6 @@
   };
 
   function isLoggedIn() {
-    // [5-1 조치] 토큰 저장 키를 직접 읽지 않고 공용 인증 모듈에 위임한다.
     return Boolean(window.CatchAuth && CatchAuth.isLoggedIn());
   }
 
@@ -38,7 +37,7 @@
   }
 
   function clearLoginState() {
-    // [5-1 조치] 저장 키 직접 접근 제거. 화면 이동은 기존처럼 각 호출부가 담당한다.
+
     if (window.CatchAuth) CatchAuth.clearSession();
   }
 
@@ -103,7 +102,7 @@
     username.value = profile.username;
     nameInput.value = profile.name;
     email.value = profile.email;
-    // 저장된 번호에 하이픈이 없을 수 있으므로 로드 시에도 전화번호 양식을 적용한다.
+
     phone.value = formatPhoneNumber(profile.phone);
   }
 

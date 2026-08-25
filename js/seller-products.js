@@ -4,9 +4,9 @@
 
   const API_BASE = (window.CATCHCATCH_API_BASE_URL || "/api/v1").replace(/\/$/, "");
   const API_URL = `${API_BASE}/seller/products`;
-  const PAGE_SIZE = 10;   // 화면에 한 번에 보여줄 개수 (페이징은 클라이언트에서)
+  const PAGE_SIZE = 10;
   const API_PAGE_SIZE = 100;
-  const MAX_API_PAGES = 50; // 한 번의 화면 로드에서 최대 5,000개까지 조회
+  const MAX_API_PAGES = 50;
   const FILE_PREVIEW_MODE = location.protocol === "file:";
 
   const STATUS_META = Object.freeze({
@@ -54,20 +54,15 @@
   let totalPages = 1;
   let loadRequestId = 0;
   let selectedProduct = null;
-  let allProducts = [];      // 현재 선택한 서버 상태 필터의 전체 결과
-  let filteredProducts = []; // 상태와 검색어로 거른 결과
+  let allProducts = [];
+  let filteredProducts = [];
   const requestedStatus = new URLSearchParams(location.search).get("status");
   let activeStatus = STATUS_META[requestedStatus] && requestedStatus !== "unknown"
     ? requestedStatus
     : "all";
 
-  function getToken() {
-    // [5-1 조치] 저장 키를 직접 읽지 않는다.
-    return window.CatchAuth ? CatchAuth.getToken() : null;
-  }
-
   function isLoggedIn() {
-    return Boolean(getToken());
+    return Boolean(window.CatchAuth && CatchAuth.isLoggedIn());
   }
 
   function moveToSellerLogin() {
@@ -77,7 +72,7 @@
   }
 
   function clearLoginState() {
-    // [5-1 조치] 저장 키 직접 접근 제거. 화면 이동은 기존처럼 각 호출부가 담당한다.
+
     if (window.CatchAuth) CatchAuth.clearSession();
   }
 
@@ -323,7 +318,6 @@
     });
     const response = await fetch(`${API_URL}?${params.toString()}`, {
       method: "GET",
-      headers: { "Authorization": "Bearer " + getToken() }
     });
 
     if (handleUnauthorized(response)) return null;
@@ -448,7 +442,6 @@
         `${API_URL}/${encodeURIComponent(selectedProduct.productId)}`,
         {
           method: "DELETE",
-          headers: { "Authorization": "Bearer " + getToken() }
         }
       );
 
@@ -514,7 +507,7 @@
     applyFilter(0);
   });
 
-  // 검색어를 지우면 바로 전체로 되돌린다.
+
   keywordInput.addEventListener("search", () => applyFilter(0));
 
   renderActiveStatus();

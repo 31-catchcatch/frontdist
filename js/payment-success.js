@@ -21,7 +21,7 @@
     goOrders: document.getElementById("goOrders"),
   };
 
-  // 쿼리스트링 값은 사용자가 조작할 수 있으므로 innerHTML 로 넣지 않는다.
+
   function setText(node, value) {
     if (node) node.textContent = value;
   }
@@ -43,7 +43,7 @@
     setText(el.orderNumber, detail.orderNumber || "-");
     setText(el.amount, `${money.format(detail.amount || 0)}원`);
 
-    // 중복 승인(409)처럼 결제수단을 알 수 없는 경우에는 "-" 를 남기지 말고 줄 자체를 감춘다.
+
     if (el.method && el.method.parentElement) {
       const known = Boolean(detail.method);
       el.method.parentElement.hidden = !known;
@@ -64,13 +64,13 @@
     el.failActions.hidden = false;
   }
 
-  // 결제가 확정된 뒤에만 주문서로 넘겼던 선택 정보를 정리한다.
+
   function clearCheckoutSelection() {
     try {
       sessionStorage.removeItem(CART_CHECKOUT_IDS_KEY);
       sessionStorage.removeItem(DIRECT_CHECKOUT_KEY);
       sessionStorage.removeItem(PENDING_ORDER_KEY);
-    } catch (_) { /* 스토리지 접근이 막혀도 결제 결과에는 영향이 없다 */ }
+    } catch (_) {  }
   }
 
   async function confirmPayment(paymentKey, orderId, amount) {
@@ -78,8 +78,6 @@
       Accept: "application/json",
       "Content-Type": "application/json",
     });
-    const token = window.CatchAuth && window.CatchAuth.getToken();
-    if (token) headers.set("Authorization", `Bearer ${token}`);
 
     const response = await fetch(`${API_BASE}/payments/confirm`, {
       method: "POST",
@@ -91,7 +89,7 @@
     let payload = null;
     try {
       payload = text ? JSON.parse(text) : null;
-    } catch (_) { /* JSON 이 아닌 응답(프록시 오류 페이지 등) */ }
+    } catch (_) {  }
 
     return { status: response.status, ok: response.ok, payload };
   }
@@ -117,8 +115,8 @@
     try {
       result = await confirmPayment(paymentKey, orderId, amount);
     } catch (error) {
-      // 네트워크 자체가 실패한 경우. 승인 요청이 서버에 닿았는지 알 수 없으므로
-      // 재결제를 권하지 말고 주문 내역 확인을 안내한다.
+
+
       showFailure(
         "결제 결과를 확인하지 못했습니다",
         "네트워크 오류로 승인 결과를 받지 못했습니다.",
@@ -148,8 +146,20 @@
     }
 
     if (result.status === 401) {
-      const here = location.pathname.split("/").pop() + location.search;
-      location.href = `login.html?redirect=${encodeURIComponent(here)}`;
+
+
+      showFailure(
+        "결제 결과를 확인하지 못했습니다",
+        "로그인 정보가 만료되어 승인 결과를 받지 못했습니다.",
+        "결제가 처리되었을 수 있으니 주문 내역에서 상태를 먼저 확인해 주세요. 중복 결제를 막기 위해 바로 다시 결제하지 마세요."
+      );
+      if (el.failActions) {
+        const first = el.failActions.querySelector("a");
+        if (first) {
+          first.href = "orders.html";
+          first.textContent = "주문 내역 확인하기";
+        }
+      }
       return;
     }
 

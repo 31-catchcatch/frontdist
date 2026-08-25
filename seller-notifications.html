@@ -10,7 +10,7 @@
 </head>
 <body>
 
-<!-- ================= 공통 헤더 시작 (수정 금지) ================= -->
+
 <div class="utility">
   <div class="wrap">
     <a href="customercenter.html">고객센터</a>
@@ -26,7 +26,7 @@
   <div class="wrap head-row">
     <div class="head-left">
       <form class="search" action="search.html" method="get" role="search">
-        <svg class="icn" viewBox="0 0 24 24" style="width:15px;height:15px"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg>
+        <svg class="icn icn-sm" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg>
         <input type="text" name="q" placeholder="찾으시는 상품이 있나요?" aria-label="상품 검색">
       </form>
     </div>
@@ -55,7 +55,7 @@
     <a href="seller-dashboard.html" class="cat-seller" data-seller-only hidden>판매 관리</a>
   </div>
 </nav>
-<!-- ================= 공통 헤더 끝 ================= -->
+
 
 <main class="wrap">
   <section class="block seller-notification-page">
@@ -66,8 +66,7 @@
       </div>
     </div>
 
-    <!-- 판매자 공통 메뉴 : 6개 판매자 페이지에 동일하게 복사되어 있습니다.
-         고치려면 6곳 모두 (css/seller-nav.css 주석 참고) -->
+
     <nav class="seller-page-links" aria-label="판매자 관리 메뉴">
       <a href="seller-dashboard.html">대시보드</a>
       <a href="seller-products.html">상품 관리</a>
@@ -78,7 +77,7 @@
       <a class="active" aria-current="page" href="seller-notifications.html">쿠폰관리</a>
     </nav>
 
-    <!-- ===== 쿠폰 발행 요청 ===== -->
+
     <section class="coupon-panel" aria-labelledby="couponPanelTitle">
       <div class="coupon-panel-head">
         <h4 id="couponPanelTitle">쿠폰 발행 요청</h4>
@@ -143,7 +142,7 @@
       </form>
     </section>
 
-    <!-- ===== 발행 요청 결과 (알림) ===== -->
+
     <div class="coupon-result-head">
       <h4>발행 요청 결과</h4>
       <p>승인·반려 결과가 알림으로 도착하면 아래에 표시됩니다.</p>
@@ -193,7 +192,7 @@
   </section>
 </main>
 
-<!-- ================= 공통 푸터 시작 (수정 금지) ================= -->
+
 <footer>
   <div class="wrap">
     <div class="foot-top">
@@ -224,8 +223,9 @@
     </div>
   </div>
 </footer>
-<!-- ================= 공통 푸터 끝 ================= -->
 
+
+<script src="js/http.js"></script>
 <script src="js/auth.js"></script>
 <script src="js/seller-notifications.js"></script>
 <script src="js/navigation.js"></script>

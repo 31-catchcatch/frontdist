@@ -1,27 +1,24 @@
-// points.js — 포인트 페이지
-// 로그인 필요 페이지
-
 document.addEventListener("DOMContentLoaded", () => {
 
   const $ = (sel) => document.querySelector(sel);
   const won = (n) => n.toLocaleString("ko-KR");
 
-  // ===== 내역 표 그리기 =====
+
   function renderHistory(list) {
     if (list.length === 0) {
       $('[data-role="point-history"]').innerHTML =
-        `<tr><td colspan="5" style="text-align:center;padding:40px;color:#999;">포인트 내역이 없습니다.</td></tr>`;
+        `<tr><td colspan="5" class="state-empty">포인트 내역이 없습니다.</td></tr>`;
       return;
     }
 
     $('[data-role="point-history"]').innerHTML = list.map((h) => {
-      // 적립(양수)이면 초록+, 사용(음수)이면 빨강-
+
       const isPlus = h.amount >= 0;
       const cls = isPlus ? "plus" : "minus";
       const sign = isPlus ? "+" : "";
       const type = isPlus ? "적립" : "사용";
 
-      // 날짜에서 앞 10글자만 (2026-07-14T10:00 → 2026-07-14)
+
       const date = h.createdAt ? h.createdAt.substring(0, 10) : "";
 
       return `
@@ -36,12 +33,12 @@ document.addEventListener("DOMContentLoaded", () => {
     }).join("");
   }
 
-  // ===== 요약 표 그리기 =====
+
   function renderSummary(list) {
-    // 보유 포인트 = 가장 최근 내역의 잔액
+
     const balance = list.length > 0 ? list[0].balanceAfter : 0;
 
-    // 이번 달 적립/사용 계산
+
     const now = new Date();
     const thisMonth = now.getFullYear() + "-" + String(now.getMonth() + 1).padStart(2, "0");
 
@@ -62,17 +59,11 @@ document.addEventListener("DOMContentLoaded", () => {
     `;
   }
 
-  // ===== API에서 진짜 데이터 받아오기 =====
+
   async function loadPoints() {
     try {
-      // [5-1 조치] 저장 키를 직접 읽지 않는다.
-      const token = window.CatchAuth ? CatchAuth.getToken() : null;
-
       const res = await fetch("/api/v1/users/me/points", {
         method: "GET",
-        headers: {
-          "Authorization": "Bearer " + token,
-        },
       });
 
       if (!res.ok) {
@@ -89,11 +80,11 @@ document.addEventListener("DOMContentLoaded", () => {
     } catch (err) {
       console.error(err);
       $('[data-role="point-history"]').innerHTML =
-        `<tr><td colspan="5" style="text-align:center;padding:40px;color:#e02020;">포인트 정보를 불러오지 못했습니다.<br>${esc(err.message)}</td></tr>`;
+        `<tr><td colspan="5" class="state-error">포인트 정보를 불러오지 못했습니다.<br>${esc(err.message)}</td></tr>`;
     }
   }
 
-  // ===== 실행 =====
+
   loadPoints();
 
 });

@@ -57,8 +57,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     const title = String(item.title ?? "");
     const text = `${title} ${item.message ?? item.content ?? ""}`;
 
-    // 제목을 본문보다 먼저 본다. 반려 사유 본문에 "승인"이 섞일 수 있어서
-    // (예: "승인 기준 미달") 본문 전체로 먼저 판정하면 반려가 승인으로 뒤집힌다.
+
     if (raw.includes("REJECT") || raw.includes("DENY") || title.includes("반려")) {
       return "rejected";
     }

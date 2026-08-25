@@ -79,13 +79,9 @@
   ];
 
   function isSellerLoggedIn() {
-    // [5-1 조치] 토큰 보유 여부는 공용 모듈에 위임한다 (판매자 여부 판단은 기존 유지).
     const loggedIn = Boolean(window.CatchAuth && CatchAuth.isLoggedIn());
 
-    return (
-      loggedIn &&
-      sessionStorage.getItem("catchcatch.loginType") === "seller"
-    );
+    return loggedIn && CatchAuth.loginType() === "seller";
   }
 
   function moveToSellerLogin() {
@@ -100,7 +96,7 @@
   }
 
   function clearLoginState() {
-    // [5-1 조치] 저장 키 직접 접근 제거. 화면 이동은 기존처럼 각 호출부가 담당한다.
+
     if (window.CatchAuth) CatchAuth.clearSession();
   }
 
@@ -312,10 +308,7 @@
     return status.code === "SHIPPING";
   }
 
-  // 현재 배송 상태에 맞는 액션 버튼 하나를 그린다.
-  //   결제완료/배송준비 → 배송(운송장) 등록
-  //   배송중            → 배송 완료
-  //   그 외(완료/취소/반품 등) → 처리할 배송 액션 없음
+
   function renderActionButton(order, mobile) {
     const id = order.orderDetailId;
     if (canUpdateDelivery(order.status)) {

@@ -9,7 +9,7 @@ document.addEventListener("DOMContentLoaded", () => {
     return;
   }
 
-  // 비로그인 상태이면 로그인 페이지로 이동 후 실행 중단
+
   if (!CatchAuth.requireLogin()) {
     return;
   }
@@ -20,7 +20,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function blockIfSeller() {
     if (!CatchAuth.isLoggedIn()) return false;
-    if (sessionStorage.getItem("catchcatch.loginType") !== "seller") return false;
+    if (CatchAuth.loginType() !== "seller") return false;
     alert("판매자는 해당 기능을 사용할 수 없습니다.");
     return true;
   }

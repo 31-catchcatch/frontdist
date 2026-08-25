@@ -1,4 +1,3 @@
-// navigation.js — 공통 카테고리 메뉴의 현재 선택 상태를 URL에 맞춰 표시
 document.addEventListener("DOMContentLoaded", () => {
   const nav = document.querySelector("nav.cats");
   if (!nav) return;

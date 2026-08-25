@@ -22,15 +22,14 @@
       detailUrl:
         "product-detail.html?id=" +
         productId +
-        (raw.brandName ? "&brand=" + encodeURIComponent(raw.brandName) : "") +
-        (raw.thumbnailUrl ? "&thumb=" + encodeURIComponent(raw.thumbnailUrl) : ""),
+        (raw.brandName ? "&brand=" + encodeURIComponent(raw.brandName) : ""),
     };
   }
 
   const CatchProduct = {
     normalize,
 
-    // 상품 목록 조회 (정규화 + 페이징 정보)
+
     async fetchList({ categoryId, brandId, keyword, page = 0, size = 12, sort = "createdAt,desc" } = {}) {
       const result = await CatchApi.page("/products", {
         categoryId,
@@ -50,12 +49,12 @@
       };
     },
 
-    // 상품 상세 (원본 그대로 반환 — 상세는 필드가 많아 페이지가 직접 다룸)
+
     fetchDetail(productId) {
       return CatchApi.get("/products/" + productId);
     },
 
-    // 상품별 리뷰 요약 { count, avg }. 실패 시 { count:0, avg:0 }.
+
     async fetchReviewMeta(productId) {
       try {
         const result = await CatchApi.page("/products/" + productId + "/reviews", {
@@ -75,7 +74,7 @@
       }
     },
 
-    // 로그인 상태면 위시리스트를 한 번 받아 Set<productId>. 비로그인/실패 시 빈 Set.
+
     async loadLikedIds() {
       if (!global.CatchAuth || !CatchAuth.isLoggedIn()) return new Set();
       try {
@@ -86,7 +85,7 @@
       }
     },
 
-    // 찜 토글. 로그인 안 됐으면 로그인 페이지로 보내고 null 반환.
+
     async toggleLike(productId) {
       if (!global.CatchAuth || !CatchAuth.isLoggedIn()) {
         CatchAuth.requireLogin();
@@ -96,7 +95,6 @@
       return data && typeof data.liked === "boolean" ? data.liked : null;
     },
 
-    // ----- 최근 본 상품 (localStorage) -----
     pushRecentlyViewed(product) {
       if (!product || product.productId == null) return;
       let list = this.getRecentlyViewed();
@@ -113,7 +111,7 @@
       try {
         localStorage.setItem(RECENT_KEY, JSON.stringify(list));
       } catch (_) {
-        /* 용량 초과 등은 무시 */
+
       }
     },
 
@@ -130,7 +128,7 @@
       try {
         localStorage.removeItem(RECENT_KEY);
       } catch (_) {
-        /* noop */
+
       }
     },
   };

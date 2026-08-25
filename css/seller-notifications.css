@@ -3,21 +3,12 @@
   padding-bottom: 110px;
 }
 
-/* margin-bottom 은 22px 고정 — 판매자 6개 페이지의 nav 세로 위치를 맞추기 위함
-   (css/seller-nav.css 참고) */
+
 .seller-notification-page .sec-head {
   align-items: flex-end;
   margin-bottom: 22px;
 }
 
-/* .seller-page-links 규칙은 css/seller-nav.css 에 있습니다.
-   (여기 있던 정의는 이 페이지가 쓰지도 않는 중복이라 삭제했습니다.) */
-
-
-/* ===========================
-   쿠폰 발행 요청
-   (seller-dashboard 에서 이관. 이 페이지의 카드 관례에 맞춰 다시 씀)
-=========================== */
 
 .coupon-panel {
   padding: 26px;
@@ -62,7 +53,7 @@
   min-width: 0;
 }
 
-/* 쿠폰명은 값이 길어 한 줄을 다 쓴다 */
+
 .form-group-wide {
   grid-column: 1 / -1;
 }
@@ -116,8 +107,7 @@
   line-height: 1.5;
 }
 
-/* 성공 메시지 — seller-dashboard 에는 이 규칙이 없어서
-   JS 가 success 클래스를 붙여도 빨간 글씨 그대로였다. */
+
 .coupon-message.success {
   color: #1c7c4a;
 }
@@ -141,16 +131,12 @@
   background: #333;
 }
 
-/* 전송 중에는 JS 가 disabled 로 만든다 */
+
 .btn-primary:disabled {
   background: #bbb;
   cursor: default;
 }
 
-
-/* ===========================
-   발행 요청 결과 (알림) 머리말
-=========================== */
 
 .coupon-result-head {
   margin: 0 0 18px;
@@ -199,7 +185,7 @@
   font-size: 13px;
   line-height: 1.35;
   margin-bottom: 10px;
-  white-space: nowrap;          /* "읽지 않은 알림"이 카드 안에서 두 줄로 접히지 않게 */
+  white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
@@ -348,7 +334,7 @@
   background: #fff0ef;
 }
 
-/* 승인 대기 — 심사 중이라는 게 한눈에 보이도록 일반 알림(회색)과 구분한다 */
+
 .notification-badge.pending {
   color: #8a6d00;
   background: #fbf6e6;

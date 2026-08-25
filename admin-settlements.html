@@ -7,8 +7,9 @@
   <title>플랫폼 정산 · 캐치캐치 관리자</title>
   <link rel="stylesheet" href="css/common.css">
   <link rel="stylesheet" href="css/admin.css">
+  <script src="js/http.js"></script>
   <script src="js/admin-auth.js"></script>
-  <script>AdminAuth.requireLogin();</script>
+  <script src="js/admin-guard.js"></script>
 </head>
 <body>
   <header class="admin-bar">
@@ -42,7 +43,7 @@
       <span class="preview-badge">실시간 데이터 · GET /api/v1/admin/settlements</span>
     </div>
 
-    <!-- 요약 통계 -->
+
     <div class="stat-grid">
       <div class="stat alert">
         <p class="label">이달 총 거래액</p>
@@ -68,7 +69,7 @@
 
     <div class="toolbar">
       <label class="search-box">
-        <svg class="icn" viewBox="0 0 24 24" style="width:15px;height:15px"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg>
+        <svg class="icn icn-sm" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg>
         <input type="text" id="q" placeholder="업체명 검색">
       </label>
       <select id="statusFilter">
@@ -104,7 +105,7 @@
   </main>
 
   <script src="js/admin-ui.js"></script>
-  
+
   <script src="js/admin-api.js"></script>
   <script src="js/admin-settlements.js"></script>
 </body>

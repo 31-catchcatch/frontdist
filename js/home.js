@@ -45,7 +45,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     const garment = garments[index % garments.length];
     return (
-      `<div class="art" style="background:${tiles[index % tiles.length]}"></div>` +
+      `<div class="art art--t${index % tiles.length}"></div>` +
       `<svg class="garment" viewBox="0 0 130 110" aria-hidden="true"><use href="#${garment}"/></svg>`
     );
   }

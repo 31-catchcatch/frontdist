@@ -1,4 +1,3 @@
-  /* ---------- Auto advertising slider ---------- */
   .hero { margin-top: 4px; }
   .ad-slider {
     position: relative;
@@ -109,7 +108,6 @@
     cursor: pointer;
   }
   .slider-dot.on { background: #fff; transform: scale(1.2); }
-
 
 
   @media (max-width: 760px) {

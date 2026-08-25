@@ -1,45 +1,41 @@
-// product-detail.js — 상품상세 (U-PROD-001~007)  URL: ?id=상품번호 [&brand=브랜드명]
-
 document.addEventListener("DOMContentLoaded", () => {
   const DIRECT_CHECKOUT_KEY = "catchcatch.directCheckoutItem";
   const CART_CHECKOUT_IDS_KEY = "catchcatch.checkoutCartItemIds";
   const params = new URLSearchParams(location.search);
   const productId = Number(params.get("id"));
-  const brandFromQuery = params.get("brand"); // 목록에서 넘어온 브랜드명(폴백용)
-  const thumbFromQuery = params.get("thumb"); // 목록에서 넘어온 썸네일(상세 이미지 없을 때 폴백)
 
   const $ = (sel) => document.querySelector(sel);
   const won = (n) => CatchApi.won(n);
 
   function blockIfSeller() {
     if (!CatchAuth.isLoggedIn()) return false;
-    if (sessionStorage.getItem("catchcatch.loginType") !== "seller") return false;
+    if (CatchAuth.loginType() !== "seller") return false;
     alert("판매자는 해당 기능을 사용할 수 없습니다.");
     return true;
   }
 
-  let product = null; // fetchDetail 결과
-  let selectedOption = null; // { optionId, additionalPrice }
+  let product = null;
+  let selectedOption = null;
   let qty = 1;
   let liked = false;
-  let galleryImages = []; // 렌더된 갤러리 이미지 URL 목록
-  let currentImageIndex = 0; // 큰 이미지에 보이는 썸네일 위치
+  let galleryImages = [];
+  let currentImageIndex = 0;
 
   const mainEl = document.querySelector("main");
 
   function showError(message) {
     if (mainEl) {
       mainEl.innerHTML =
-        '<div class="wrap" style="padding:80px 0;text-align:center;color:#666">' +
-        '<p style="font-size:18px;margin-bottom:16px">' +
+        '<div class="wrap state-error-page">' +
+        '<p class="state-error-msg">' +
         message +
         "</p>" +
-        '<a href="product-list.html" class="btn-outline" style="display:inline-block;padding:12px 28px">상품 목록으로</a>' +
+        '<a href="product-list.html" class="btn-outline btn-cta">상품 목록으로</a>' +
         "</div>";
     }
   }
 
-  // ===== 가격/합계 =====
+
   function unitPrice() {
     const add = selectedOption ? selectedOption.additionalPrice : 0;
     return product.finalPrice + add;
@@ -51,15 +47,15 @@ document.addEventListener("DOMContentLoaded", () => {
     if (totalEl) totalEl.textContent = won(unitPrice() * qty);
   }
 
-  // ===== 렌더 =====
+
   function renderProduct() {
     const price = product.price;
     const discountRate = product.discountRate || 0;
     const finalPrice = product.finalPrice != null ? product.finalPrice : price;
     product.finalPrice = finalPrice;
 
-    // 브랜드 라벨: 목록에서 넘어온 brand 우선, 없으면 판매자명
-    $('[data-role="brand"]').textContent = brandFromQuery || product.sellerName || "";
+
+    $('[data-role="brand"]').textContent = product.brandName || product.sellerName || "";
     $('[data-role="seller"]').textContent = product.sellerName || "정보 없음";
     $('[data-role="name"]').textContent = product.name;
     $('[data-role="description"]').textContent = product.description || "";
@@ -80,13 +76,12 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     }
 
-    // 이미지 갤러리
-    //  (판매자 등록 상품처럼 상세 이미지가 없어도 목록 썸네일로 대표 이미지를 채운다)
+
     let images;
     if (Array.isArray(product.imageUrls) && product.imageUrls.length) {
       images = product.imageUrls;
-    } else if (thumbFromQuery) {
-      images = [SafeUrl(thumbFromQuery)];
+    } else if (product.thumbnailUrl) {
+      images = [SafeUrl(product.thumbnailUrl)];
     } else {
       images = [CatchApi.PLACEHOLDER];
     }
@@ -108,7 +103,7 @@ document.addEventListener("DOMContentLoaded", () => {
     currentImageIndex = 0;
     syncDownloadButton();
 
-    // 옵션 → 사이즈 칩 (품절 disabled)
+
     const sizeChips = $('[data-role="size-chips"]');
     const options = Array.isArray(product.options) ? product.options : [];
     if (options.length === 0) {
@@ -125,7 +120,7 @@ document.addEventListener("DOMContentLoaded", () => {
         })
         .join("");
 
-      // 옵션이 1개뿐이면 굳이 클릭 안 해도 되게 자동 선택한다.
+
       if (options.length === 1 && !options[0].soldOut && options[0].stockQuantity !== 0) {
         const onlyOption = options[0];
         selectedOption = {
@@ -213,8 +208,7 @@ document.addEventListener("DOMContentLoaded", () => {
       .join("");
   }
 
-  // ===== 이미지 다운로드 =====
-  // 플레이스홀더(인라인 SVG)는 내려받을 실물이 없으므로 그때만 버튼을 감춘다.
+
   function syncDownloadButton() {
     const wrap = $('[data-role="download-wrap"]');
     if (!wrap) return;
@@ -222,18 +216,18 @@ document.addEventListener("DOMContentLoaded", () => {
     wrap.hidden = !src || src === CatchApi.PLACEHOLDER;
   }
 
-  // 저장 파일명: URL 마지막 경로를 쓰고, 확장자가 없으면 응답 MIME 으로 보완한다.
+
   function imageFileName(src, index, mimeType) {
     let name = "";
     try {
       name = decodeURIComponent(new URL(src, location.href).pathname.split("/").pop() || "");
     } catch (_) {
-      /* URL 파싱 실패 → 아래 기본 이름 사용 */
+
     }
     name = name.replace(/[\\/:*?"<>|]/g, "_").trim();
     if (!/\.[a-z0-9]{2,5}$/i.test(name)) {
-      // 확장자 보완은 image/* 응답일 때만. 확장자 없는 파일은 서버가
-      // application/octet-stream 으로 내려주는데 그걸 그대로 붙이면 이상한 이름이 된다.
+
+
       const sub = /^image\/[a-z0-9.+-]+$/i.test(mimeType || "") ? mimeType.split("/")[1].split("+")[0] : "";
       const ext = /^[a-z0-9]{2,5}$/i.test(sub) ? sub : "jpg";
       name = `catchcatch-${productId}-${index + 1}.${ext}`;
@@ -249,7 +243,7 @@ document.addEventListener("DOMContentLoaded", () => {
     document.body.appendChild(link);
     link.click();
     link.remove();
-    // 클릭 직후 해제하면 저장이 취소되는 브라우저가 있어 한 박자 뒤에 해제한다.
+
     setTimeout(() => URL.revokeObjectURL(url), 1000);
   }
 
@@ -267,7 +261,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const blob = await response.blob();
       saveBlob(blob, imageFileName(src, index, blob.type));
     } catch (_) {
-      const safe = SafeUrl(src);                       // auth.js:12 전역 헬퍼
+      const safe = SafeUrl(src);
       if (safe !== "#" && new URL(safe, location.href).origin === location.origin) {
         window.open(safe, "_blank", "noopener");
       } else {
@@ -280,9 +274,9 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // ===== 이벤트 바인딩 (product 로드 후) =====
+
   function bindInteractions() {
-    // 썸네일 전환
+
     const thumbs = $('[data-role="thumbs"]');
     const mainImg = $('[data-role="main-image"]');
     thumbs.addEventListener("click", (e) => {
@@ -295,13 +289,13 @@ document.addEventListener("DOMContentLoaded", () => {
       syncDownloadButton();
     });
 
-    // 현재 보고 있는 이미지 저장
+
     const downloadBtn = $('[data-action="download-image"]');
     if (downloadBtn) {
       downloadBtn.addEventListener("click", () => downloadCurrentImage(downloadBtn));
     }
 
-    // 옵션 선택
+
     const sizeChips = $('[data-role="size-chips"]');
     sizeChips.addEventListener("click", (e) => {
       const btn = e.target.closest("button[data-option-id]");
@@ -315,7 +309,7 @@ document.addEventListener("DOMContentLoaded", () => {
       updateTotal();
     });
 
-    // 수량
+
     $('[data-action="qty-minus"]').addEventListener("click", () => {
       if (qty > 1) {
         qty--;
@@ -331,16 +325,16 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
 
-    // 찜
+
     const likeBtn = $('[data-action="like"]');
     likeBtn.addEventListener("click", async () => {
-      const result = await CatchProduct.toggleLike(productId); // 비로그인 시 로그인 이동 + null
+      const result = await CatchProduct.toggleLike(productId);
       if (result === null) return;
       liked = result;
       likeBtn.classList.toggle("is-liked", liked);
     });
 
-    // 장바구니 담기
+
     $('[data-action="add-cart"]').addEventListener("click", async () => {
       if (blockIfSeller()) return;
       if (!requireOption()) return;
@@ -359,9 +353,6 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
 
-    // 바로구매 → [1-3 조치] 서버가 주문 대상·금액을 확정하고 초안(draft) 식별자를 돌려준다.
-    //   예전에는 sessionStorage 에만 담아 주문서로 넘겼다. 서버는 결제 요청 시점에야 "무엇을
-    //   사려는지" 를 처음 받았고, 그래서 productId/optionId/수량 변조를 대조할 기준이 없었다.
     $('[data-action="buy-now"]').addEventListener("click", async (event) => {
       if (blockIfSeller()) return;
       if (!requireOption()) return;
@@ -385,7 +376,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
 
-    // 탭 전환
+
     const tabBtns = document.querySelectorAll("[data-tab]");
     const tabPanels = document.querySelectorAll("[data-panel]");
     tabBtns.forEach((btn) => {
@@ -404,7 +395,7 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     }
 
-    // Q&A 등록 폼 (열기/닫기)
+
     const qnaForm = $('[data-role="qna-form"]');
     $('[data-action="open-qna"]').addEventListener("click", () => {
       if (!CatchAuth.requireLogin()) return;
@@ -444,7 +435,7 @@ document.addEventListener("DOMContentLoaded", () => {
     return true;
   }
 
-  // ===== 시작 =====
+
   (async function start() {
     if (!productId) {
       showError("잘못된 접근입니다. 상품을 찾을 수 없습니다.");
@@ -463,7 +454,7 @@ document.addEventListener("DOMContentLoaded", () => {
     renderProduct();
     bindInteractions();
 
-    // 찜 초기 상태 (로그인 시 위시리스트 대조)
+
     CatchProduct.loadLikedIds().then((set) => {
       if (set.has(productId)) {
         liked = true;
@@ -471,16 +462,16 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
 
-    // 최근 본 상품 기록 (latest-list.html 데이터 소스)
+
     CatchProduct.pushRecentlyViewed({
       productId: productId,
       name: product.name,
-      brandName: brandFromQuery || "",
+      brandName: product.brandName || "",
       finalPrice: product.finalPrice,
       thumbnailUrl:
         Array.isArray(product.imageUrls) && product.imageUrls.length
           ? product.imageUrls[0]
-          : (thumbFromQuery || ""),
+          : (product.thumbnailUrl || ""),
     });
 
     renderReviews();

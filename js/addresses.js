@@ -288,7 +288,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (!address) return;
 
-    // 현재 기본 배송지는 화면에서 단순 해제하지 못하게 한다.
+
     if (!checkbox.checked) {
       checkbox.checked = true;
       setMessage(

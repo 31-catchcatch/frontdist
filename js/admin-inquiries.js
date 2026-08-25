@@ -18,9 +18,9 @@
 
   let INQUIRIES = [];
 
-  // 펼쳐진 문의 (아코디언: 한 번에 하나만 연다)
+
   let openId = null;
-  // 작성 중인 답변. 필터 변경·재렌더로 입력이 날아가지 않게 따로 들고 있는다.
+
   const answerDrafts = new Map();
 
   function mapRow(i) {
@@ -64,8 +64,7 @@
     countEl.textContent = total;
   }
 
-  /* 목록 행 바로 아래에 붙는 상세 패널.
-     문의 원문 + 답변 입력 + 답변 등록/수정·삭제를 한 자리에서 처리한다. */
+
   function detailRow(item) {
     const key = String(item.id);
     const draft = answerDrafts.has(key) ? answerDrafts.get(key) : (item.answer || "");
@@ -124,7 +123,7 @@
   qEl.addEventListener("input", applyFilter);
   if (statusEl) statusEl.addEventListener("change", applyFilter);
 
-  // 입력 중인 답변을 보관한다. 재렌더(필터·페이지 이동) 후에도 그대로 복원된다.
+
   rowsEl.addEventListener("input", (e) => {
     const textarea = e.target.closest('[data-role="answer-input"]');
     if (!textarea) return;
@@ -136,7 +135,7 @@
     const btn = e.target.closest("button[data-act]");
     if (!btn) return;
 
-    // 목록 행은 data-id, 펼쳐진 상세 행은 data-detail-for 로 문의를 가리킨다.
+
     const row = btn.closest("tr");
     const id = row.dataset.id || row.dataset.detailFor;
     const item = INQUIRIES.find((x) => String(x.id) === String(id));
@@ -144,7 +143,7 @@
 
     if (btn.dataset.act === "view") {
       openId = String(openId) === String(item.id) ? null : item.id;
-      listController.refresh();          // 현재 페이지 유지 (applyFilter 는 1페이지로 되돌아간다)
+      listController.refresh();
       return;
     }
 
@@ -170,7 +169,7 @@
 
         await AdminApi.post(`/inquiries/${item.id}/answer`, { content });
 
-        // 로컬 상태 갱신 후 임시 저장분은 버린다 (서버 값이 정본이 됐으므로)
+
         item.status = "ok";
         item.answer = content;
         answerDrafts.delete(String(item.id));
@@ -195,9 +194,9 @@
       if (!confirmed) return;
       try {
         await AdminApi.del(`/inquiries/${item.id}`);
-        // 로컬 목록에서 제거 후 다시 렌더 (총 건수·빈 화면까지 반영)
+
         INQUIRIES = INQUIRIES.filter((x) => String(x.id) !== String(item.id));
-        if (String(openId) === String(item.id)) openId = null;   // 펼쳐둔 패널도 함께 닫는다
+        if (String(openId) === String(item.id)) openId = null;
         answerDrafts.delete(String(item.id));
         applyFilter();
         AdminUI.toast("문의가 삭제되었습니다.");

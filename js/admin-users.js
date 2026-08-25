@@ -122,7 +122,7 @@
   async function load() {
     try {
       const data = await AdminApi.list("/users?size=200");
-      // 관리자(ADMIN) 계정은 사용자 관리 목록에서 제외한다.
+
       USERS = data.filter((u) => u.role !== "ADMIN").map(mapUser);
       applyFilter();
     } catch (err) {

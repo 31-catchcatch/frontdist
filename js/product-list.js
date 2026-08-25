@@ -1,8 +1,5 @@
-// product-list.js — 상품목록/검색 결과 (product-list.html + search.html 공용)
-// URL 파라미터: ?cat=카테고리슬러그  ?q=검색어  ?brand=브랜드id  ?view=best
-
 document.addEventListener("DOMContentLoaded", () => {
-  // ===== DOM 참조 =====
+
   const grid = document.querySelector('[data-role="product-grid"]');
   const emptyMsg = document.querySelector('[data-role="empty"]');
   const errorMsg = document.querySelector('[data-role="error"]');
@@ -13,7 +10,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const PER_PAGE = 12;
 
-  //    타이브레이크로 id,desc 를 함께 보내 페이징 중복/누락 방지.
+
   const SORT_MAP = {
     new: "createdAt,desc",
     low: "price,asc",
@@ -21,25 +18,25 @@ document.addEventListener("DOMContentLoaded", () => {
   };
   function backendSort() {
     const base = SORT_MAP[sortSelect.value] || SORT_MAP.new;
-    return [base, "id,desc"]; // URLSearchParams 가 sort 를 두 번 붙이도록 배열로
+    return [base, "id,desc"];
   }
 
-  // ===== URL 파라미터 =====
+
   const params = new URLSearchParams(location.search);
-  const urlCat = params.get("cat"); // 슬러그
+  const urlCat = params.get("cat");
   const urlQuery = params.get("q");
-  const urlBrand = params.get("brand"); // 브랜드 id
+  const urlBrand = params.get("brand");
   const urlView = params.get("view");
 
   let state = {
-    page: 0, // 0-index (백엔드 기준)
+    page: 0,
     categoryId: null,
     brandId: urlBrand || null,
     keyword: urlQuery || null,
   };
   let likedIds = new Set();
 
-  // 페이지 제목 + 초기 카테고리 라디오 반영
+
   function initHeading() {
     if (urlQuery) {
       titleEl.textContent = `"${urlQuery}" 검색 결과`;
@@ -52,12 +49,12 @@ document.addEventListener("DOMContentLoaded", () => {
     } else {
       titleEl.textContent = "전체 상품";
     }
-    // 카테고리 라디오 선택 반영
+
     const radio = document.querySelector(`[data-filter="cat"][value="${urlCat || ""}"]`);
     if (radio) radio.checked = true;
   }
 
-  // ===== 카드 HTML =====
+
   function starHTML(avg) {
     const full = Math.round(avg);
     let s = "";
@@ -94,7 +91,7 @@ document.addEventListener("DOMContentLoaded", () => {
     `;
   }
 
-  // 별점·리뷰수를 카드별로 비동기 채우기 (페이지당 12회 병렬)
+
   function hydrateReviews(items) {
     items.forEach((p) => {
       CatchProduct.fetchReviewMeta(p.productId).then((meta) => {
@@ -106,9 +103,9 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // ===== 페이지네이션 (1-index 표기, 내부는 0-index) =====
+
   function renderPagination(totalPages, current0) {
-    const cur = current0 + 1; // 표기용 1-index
+    const cur = current0 + 1;
     let html = `<button data-page="${current0 - 1}" ${current0 === 0 ? "disabled" : ""}>‹</button>`;
     for (let i = 1; i <= totalPages; i++) {
       html += `<button data-page="${i - 1}" class="${i === cur ? "is-active" : ""}">${i}</button>`;
@@ -117,7 +114,7 @@ document.addEventListener("DOMContentLoaded", () => {
     pagination.innerHTML = html;
   }
 
-  // ===== 조회 + 렌더 =====
+
   async function load() {
     errorMsg.hidden = true;
     emptyMsg.hidden = true;
@@ -155,8 +152,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // ===== 이벤트 =====
-  // 카테고리 라디오 → categoryId 재계산 후 1페이지부터
+
   document.querySelectorAll('[data-filter="cat"]').forEach((radio) => {
     radio.addEventListener("change", async () => {
       const slug = radio.value;
@@ -166,13 +162,13 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
-  // 정렬 변경
+
   sortSelect.addEventListener("change", () => {
     state.page = 0;
     load();
   });
 
-  // 필터 초기화
+
   const resetBtn = document.querySelector('[data-action="reset-filter"]');
   if (resetBtn) {
     resetBtn.addEventListener("click", () => {
@@ -184,7 +180,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // 페이지 클릭 (이벤트 위임)
+
   pagination.addEventListener("click", (e) => {
     const btn = e.target.closest("button[data-page]");
     if (!btn || btn.disabled) return;
@@ -193,13 +189,13 @@ document.addEventListener("DOMContentLoaded", () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   });
 
-  // 찜 버튼 (이벤트 위임)
+
   grid.addEventListener("click", async (e) => {
     const btn = e.target.closest(".card-like");
     if (!btn) return;
     e.preventDefault();
     const id = Number(btn.dataset.likeId);
-    const liked = await CatchProduct.toggleLike(id); // 비로그인 시 로그인 이동 + null
+    const liked = await CatchProduct.toggleLike(id);
     if (liked === null) return;
     if (liked) {
       likedIds.add(id);
@@ -210,10 +206,10 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // ===== 시작 =====
+
   (async function start() {
     initHeading();
-    // 슬러그 → categoryId 선변환 (URL 로 진입한 경우)
+
     if (urlCat) state.categoryId = await CatchCatalog.idBySlug(urlCat);
     likedIds = await CatchProduct.loadLikedIds();
     load();

@@ -1,10 +1,3 @@
-/* 관리자 - 상품 Q&A 모니터링
-   GET /api/v1/admin/qna
-
-   [알아둘 것] 이 화면은 조회 전용이다. 관리자 Q&A API 는 위 GET 하나뿐이고,
-   답변 작성·수정은 판매자 몫(/api/v1/seller/qna)이라 관리자가 개입할 엔드포인트가 없다.
-   그래서 [내용 보기]는 1:1 문의 화면과 같은 인라인 패널을 쓰되, 답변은 읽기 전용으로만 보여준다.
-*/
 (function () {
   "use strict";
 
@@ -17,17 +10,11 @@
 
   let QNA = [];
 
-  // 펼쳐진 문의 (아코디언: 한 번에 하나만 연다)
+
   let openId = null;
 
-  /* ---------------------------------------------------------
-     작성자 표기
 
-     Q&A 응답은 userId(내부 숫자)만 준다. 계정 정보를 가진 건 GET /admin/users 뿐이라
-     한 번 받아 userId → 이름·아이디 표를 만들어 쓴다.
-     표기 형식은 1:1 문의 화면과 맞춘다 — "이름(아이디)".
-     --------------------------------------------------------- */
-  let usersById = null;   // userId → { username, name }
+  let usersById = null;
 
   async function loadUsers() {
     if (usersById) return;
@@ -40,14 +27,14 @@
         }
       });
     } catch (_) {
-      // 실패해도 목록 자체는 보여야 하므로 빈 표로 확정하고 폴백 표기를 쓴다
+
     }
     usersById = map;
   }
 
   function authorLabel(userId) {
     const info = usersById && usersById.get(String(userId));
-    if (!info || !info.username) return `사용자#${userId}`;   // 조회 실패 시 기존 표기로 폴백
+    if (!info || !info.username) return `사용자#${userId}`;
     return info.name ? `${info.name}(${info.username})` : info.username;
   }
 
@@ -62,7 +49,7 @@
       product: q.productName,
       status: q.answered ? "ok" : "wait",
       created: (q.createdAt || "").slice(0, 10),
-      // 답변은 객체로 온다 (QnaAnswerResponse). 미답변이면 null.
+
       answer: q.answer && q.answer.content ? String(q.answer.content) : "",
       answeredAt: (q.answer && (q.answer.answerUpdatedAt || q.answer.answeredAt)) || ""
     };
@@ -97,8 +84,7 @@
     countEl.textContent = total;
   }
 
-  /* 목록 행 바로 아래에 펼쳐지는 상세 패널.
-     껍데기 클래스(.detail-row/.detail-panel/...)는 admin.css 공용 컴포넌트다. */
+
   function detailRow(item) {
     const answered = item.status === "ok";
 
@@ -109,7 +95,7 @@
       item.secret ? "비밀글" : ""
     ].filter(Boolean);
 
-    // 상품 상세는 공개 페이지라 관리자도 그대로 열 수 있다. 새 탭으로 열어 목록 상태를 지킨다.
+
     const productLink = item.productId
       ? `<a class="product-link" href="product-detail.html?id=${encodeURIComponent(item.productId)}" target="_blank" rel="noopener">상품 페이지 열기</a>`
       : "";
@@ -165,7 +151,7 @@
     const btn = e.target.closest("button[data-act]");
     if (!btn) return;
 
-    // 목록 행은 data-id, 펼쳐진 상세 행은 data-detail-for 로 문의를 가리킨다.
+
     const row = btn.closest("tr");
     const id = row.dataset.id || row.dataset.detailFor;
 
@@ -177,12 +163,12 @@
       return;
     }
 
-    listController.refresh();   // 현재 페이지 유지 (applyFilter 는 1페이지로 되돌아간다)
+    listController.refresh();
   });
 
   async function load() {
     try {
-      // mapRow 가 authorLabel 을 쓰므로 매핑 전에 사용자 표가 준비돼 있어야 한다
+
       const [data] = await Promise.all([
         AdminApi.list("/qna?size=200"),
         loadUsers()

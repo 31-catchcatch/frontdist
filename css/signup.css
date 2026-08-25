@@ -1,9 +1,7 @@
-/* signup.css — 회원가입 페이지 전용 스타일 */
-
 .signup-block,
 .signup-type-select { max-width: 520px; margin: 0 auto; }
 
-/* ===== 유형 선택 버튼 ===== */
+
 .signup-type-buttons { display: flex; gap: 16px; margin-top: 8px; }
 .btn-type {
   flex: 1;
@@ -16,7 +14,7 @@
 .btn-type strong { font-size: 16px; font-weight: 700; color: var(--ink, #222); }
 .btn-type span { font-size: 13px; color: var(--mid, #888); }
 
-/* ===== 스텝 표시 ===== */
+
 .signup-steps {
   display: flex; gap: 8px; list-style: none;
   margin: 0 0 32px; padding: 0; font-size: 13px; color: #999;
@@ -24,7 +22,7 @@
 .signup-steps li { flex: 1; text-align: center; padding-bottom: 8px; border-bottom: 2px solid #eee; }
 .signup-steps li.is-active { color: var(--point, #222); border-color: var(--point, #222); font-weight: 600; }
 
-/* ===== 폼 ===== */
+
 .signup-form { display: flex; flex-direction: column; }
 .step-panel { display: flex; flex-direction: column; gap: 28px; }
 
@@ -64,13 +62,13 @@
 
 .timer { font-size: 13px; color: var(--point, #e02020); min-width: 44px; }
 
-/* ===== 약관 동의 ===== */
+
 .agree-all { display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 700; }
 .agree-divider { border: none; border-top: 1px solid #eee; margin: 8px 0; }
 .agree-item { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #444; }
 .agree-view { margin-left: auto; font-size: 12px; text-decoration: underline; color: #888; }
 
-/* ===== 버튼 ===== */
+
 .btn-submit {
   height: 52px; border: none; border-radius: 4px;
   background: var(--point, #222); color: #fff;
@@ -81,7 +79,7 @@
 .step-nav { display: flex; gap: 12px; }
 .step-nav .btn-outline, .step-nav .btn-submit { flex: 1; height: 52px; }
 
-/* ===== 가입 완료 ===== */
+
 .signup-complete { text-align: center; padding: 60px 0; }
 .signup-complete h4 { font-size: 20px; margin-bottom: 12px; }
 .signup-complete p { color: var(--mid, #888); margin-bottom: 32px; }
@@ -93,16 +91,16 @@
 
 [hidden] { display: none !important; }
 
-/* ===== 파일 첨부 커스텀 (파일명 표시) ===== */
+
 .file-field { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
 
-/* 네이티브 파일 input 숨기기 (접근성 유지) */
+
 .file-field input[type="file"] {
   position: absolute; width: 1px; height: 1px;
   padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); border: 0;
 }
 
-/* '파일 선택' 버튼 (label) */
+
 .file-field .file-btn {
   display: inline-flex; align-items: center; height: 40px; padding: 0 16px;
   border: 1px solid #ccc; border-radius: 8px; background: #fff;
@@ -111,6 +109,14 @@
 }
 .file-field .file-btn:hover { border-color: var(--point, #222); }
 
-/* 선택한 파일명 */
+
 .file-field .file-name { font-size: 13px; color: #888; word-break: break-all; }
 .file-field .file-name.has-file { color: var(--ink, #222); font-weight: 600; }
+
+
+.btn-submit.btn-submit--link {
+  display: inline-block;
+  text-decoration: none;
+  line-height: 52px;
+  padding: 0 40px;
+}

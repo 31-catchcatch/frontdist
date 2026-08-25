@@ -3,7 +3,7 @@
 
   const STATUS = { wait: "대기", ok: "승인", stop: "반려" };
   const TO_ENUM = { wait: "PENDING", ok: "APPROVED", stop: "REJECTED", "": "PENDING" };
-  // 백엔드 status → 화면 코드
+
   const FROM_ENUM = { PENDING: "wait", APPROVED: "ok", REJECTED: "stop", CANCELED: "stop" };
 
   const rowsEl = document.getElementById("rows");

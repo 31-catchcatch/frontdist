@@ -1,7 +1,5 @@
-// my-inquiries.js — 나의 1:1 문의 내역
-
 document.addEventListener("DOMContentLoaded", () => {
-  // 로그인 필요 페이지
+
   if (!window.CatchAuth || !CatchAuth.requireLogin()) return;
 
   const listEl = document.querySelector('[data-role="inquiry-list"]');
@@ -20,7 +18,7 @@ document.addEventListener("DOMContentLoaded", () => {
     return `my-inquiry-detail.html?${detailParams.toString()}`;
   }
 
-  // 문의 유형 코드 → 한글 (customercenter.js 의 유형과 정합)
+
   const CATEGORY = {
     ORDER: "주문",
     DELIVERY: "배송",
@@ -46,11 +44,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const statusBadge = answered
       ? '<span class="inq-status answered">답변완료</span>'
       : '<span class="inq-status waiting">접수</span>';
-    // 문의 내용·주문번호·관리자 답변은 목록에 노출하지 않고
-    // 상세 페이지(my-inquiry-detail)에서만 보여준다.
-    // 목록에는 유형·상태 배지·작성일과 제목까지만 표시한다.
-    // 항목 전체가 상세 페이지로 가는 링크다.
-    // 삭제 버튼은 링크(<a>) 바깥에 두어야 클릭 시 상세로 이동하지 않는다.
+
+
     return `
       <li class="inquiry-item" data-inquiry-id="${inq.id}">
         <a class="inq-link" href="${detailUrl(inq.id)}">
@@ -76,7 +71,7 @@ document.addEventListener("DOMContentLoaded", () => {
     buttonEl.textContent = "삭제 중…";
     try {
       await CatchApi.del("/customer-center/inquiries/" + encodeURIComponent(inquiryId));
-      // 목록을 다시 불러와 총 건수·빈 화면 처리까지 한 번에 반영한다.
+
       await load();
     } catch (err) {
       alert(err.message || "문의 삭제에 실패했습니다. 잠시 후 다시 시도해 주세요.");
@@ -85,10 +80,10 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // 삭제 버튼은 목록을 다시 그려도 유지되도록 컨테이너에 위임한다.
+
   listEl.addEventListener("click", (e) => {
     const btn = e.target.closest('[data-action="delete"]');
-    if (!btn || btn.disabled) return; // 답변완료 문의는 버튼이 disabled 라 여기서도 무시
+    if (!btn || btn.disabled) return;
     deleteInquiry(btn.dataset.id, btn);
   });
 

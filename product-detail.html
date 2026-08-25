@@ -9,7 +9,7 @@
 </head>
 <body>
 
-<!-- ================= 공통 헤더 시작 (수정 금지) ================= -->
+
 <div class="utility">
   <div class="wrap">
     <a href="customercenter.html">고객센터</a>
@@ -25,7 +25,7 @@
   <div class="wrap head-row">
     <div class="head-left">
       <form class="search" action="product-list.html" method="get" role="search">
-        <svg class="icn" viewBox="0 0 24 24" style="width:15px;height:15px"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg>
+        <svg class="icn icn-sm" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg>
         <input type="text" name="q" placeholder="찾으시는 상품이 있나요?" aria-label="상품 검색">
       </form>
     </div>
@@ -54,25 +54,14 @@
     <a href="seller-dashboard.html" class="cat-seller" data-seller-only hidden>판매 관리</a>
   </div>
 </nav>
-<!-- ================= 공통 헤더 끝 ================= -->
+
 
 <main class="wrap pdetail-page">
 
-<!-- ▼▼▼ 상품상세 =====================================
-     기능정의서 매핑
-     - U-PROD-001 상품 상세·옵션 조회 → GET /api/v1/products/{productId}
-     - U-PROD-002 장바구니 담기       → POST /api/v1/carts
-     - U-PROD-003 즉시구매            → GET /api/v1/orders/checkout
-     - U-PROD-004 상품 좋아요         → POST /api/v1/products/{productId}/like
-     - U-PROD-005 리뷰 조회           → GET /api/v1/products/{productId}/reviews
-     - U-PROD-006 Q&A 조회            → GET /api/v1/products/{productId}/qna
-     - U-PROD-007 Q&A 등록            → POST /api/v1/products/{productId}/qna
-     받는 파라미터: ?id=상품번호
-================================================================ -->
 
   <div class="pdetail-top">
 
-    <!-- 왼쪽: 사진 -->
+
     <div class="pdetail-gallery">
       <div class="gallery-main">
         <img data-role="main-image" src="" alt="상품 이미지">
@@ -86,7 +75,7 @@
       </div>
     </div>
 
-    <!-- 오른쪽: 구매 정보 -->
+
     <div class="pdetail-info">
       <p class="pd-brand" data-role="brand">브랜드</p>
       <h3 class="pd-name" data-role="name">상품명</h3>
@@ -138,7 +127,7 @@
     </div>
   </div>
 
-  <!-- ===== 탭 ===== -->
+
   <div class="pdetail-tabs">
     <nav class="tab-nav">
       <button type="button" class="is-active" data-tab="detail">상품정보</button>
@@ -182,11 +171,10 @@
     </section>
   </div>
 
-<!-- ▲▲▲ 여기까지 ▲▲▲ -->
 
 </main>
 
-<!-- ================= 공통 푸터 시작 (수정 금지) ================= -->
+
 <footer>
   <div class="wrap">
     <div class="foot-top">
@@ -217,8 +205,9 @@
     </div>
   </div>
 </footer>
-<!-- ================= 공통 푸터 끝 ================= -->
 
+
+<script src="js/http.js"></script>
 <script src="js/auth.js"></script>
 <script src="js/api.js"></script>
 <script src="js/product.js"></script>

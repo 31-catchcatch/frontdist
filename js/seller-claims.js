@@ -5,7 +5,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     window.CATCHCATCH_API_BASE_URL || "/api/v1"
   ).replace(/\/$/, "");
 
-  // ===== 영어 ↔ 한글 변환표 =====
+
   const STATUS_KO = {
     REQUESTED: "신청",
     ACCEPTED: "접수",
@@ -25,7 +25,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     "완료": "COMPLETED",
   };
 
-  // 각 상태 전이 버튼의 친화적 라벨/스타일
+
   const ACTION_LABEL = {
     ACCEPTED: "요청 승인",
     REJECTED: "요청 반려",
@@ -48,7 +48,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       case "PROCESSING":
         return claim.claimType === "EXCHANGE" ? ["COMPLETED"] : [];
       default:
-        return []; // 반려·완료는 종료 상태
+        return [];
     }
   }
 
@@ -59,7 +59,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   const $ = (id) => document.getElementById(id);
   const won = (n) => (n == null ? "-" : n.toLocaleString("ko-KR") + "원");
 
-  // 구매일시/요청일시 표기 (연-월-일 시:분)
+
   function fmtDateTime(value) {
     if (!value) return "-";
     const date = new Date(value);
@@ -79,10 +79,10 @@ document.addEventListener("DOMContentLoaded", async () => {
   const actionButtons = $("claimActionButtons");
   const refundNote = $("claimRefundNote");
 
-  let claims = [];         // 전체 클레임
-  let selected = null;     // 지금 선택된 클레임
+  let claims = [];
+  let selected = null;
 
-  // ===== 화면 전환 (목록 ↔ 상세) =====
+
   function showList() {
     selected = null;
     listView.hidden = false;
@@ -93,27 +93,18 @@ document.addEventListener("DOMContentLoaded", async () => {
   function showDetail() {
     listView.hidden = true;
     detailView.hidden = false;
-    filterBox.hidden = true;   // 조회 필터는 목록 전용
+    filterBox.hidden = true;
     window.scrollTo({ top: 0 });
   }
 
-  // 상태 enum → 배지 색 클래스
+
   const statusBadgeClass = (en) => "badge-" + String(en || "").toLowerCase();
 
-  // ===== 토큰 꺼내기 =====
-  function getToken() {
-    // [5-1 조치] 저장 키를 직접 읽지 않는다.
-    return window.CatchAuth ? CatchAuth.getToken() : null;
-  }
-
   function authHeaders(withBody) {
-    return {
-      ...(withBody ? { "Content-Type": "application/json" } : {}),
-      "Authorization": "Bearer " + getToken(),
-    };
+    return withBody ? { "Content-Type": "application/json" } : {};
   }
 
-  // ===== 목록 조회 (GET) =====
+
   async function loadClaims(statusEn) {
     try {
       const url = statusEn
@@ -141,12 +132,12 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
   }
 
-  // ===== 목록 표 그리기 =====
+
   function renderList() {
     const tbody = $("claimListBody");
 
     if (claims.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;padding:30px;color:#999;">조회된 클레임이 없습니다.</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="4" class="state-empty">조회된 클레임이 없습니다.</td></tr>`;
       return;
     }
 
@@ -164,7 +155,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       `;
     }).join("");
 
-    // 행 클릭 이벤트
+
     tbody.querySelectorAll(".claim-item").forEach((row) => {
       row.addEventListener("click", () => {
         selectClaim(Number(row.dataset.id));
@@ -172,12 +163,12 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
   }
 
-  // ===== 클레임 선택 → 상세 표시 =====
+
   function selectClaim(claimId) {
     selected = claims.find((c) => c.claimId === claimId);
     if (!selected) return;
 
-    // 목록에서 active 표시
+
     document.querySelectorAll(".claim-item").forEach((row) => {
       row.classList.toggle("active", Number(row.dataset.id) === claimId);
     });
@@ -185,7 +176,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     const statusKo = STATUS_KO[selected.status] || selected.status;
     const typeKo = TYPE_KO[selected.claimType] || selected.claimType;
 
-    // 요약: 유형 배지 + 상품 + 상태 배지
+
     const typeBadge = $("claimTypeBadge");
     typeBadge.textContent = typeKo;
     typeBadge.className =
@@ -198,18 +189,18 @@ document.addEventListener("DOMContentLoaded", async () => {
     statusBadge.className =
       "claim-status-badge " + statusBadgeClass(selected.status);
 
-    // 고객 · 주문 정보 (환불 요청 고객 아이디 / 구매 시점)
+
     $("claimBuyer").textContent = selected.buyerUsername || "-";
     $("claimOrderedAt").textContent = fmtDateTime(selected.orderedAt);
     $("claimId").textContent = selected.claimId;
     $("claimRequestedAt").textContent = fmtDateTime(selected.requestedAt);
 
-    // 요청 내용
+
     $("claimType").textContent = typeKo;
     $("claimAmount").textContent = won(selected.claimAmount);
     $("claimReason").textContent = selected.reason || "-";
 
-    // 판매자 처리 사유는 있을 때만 노출
+
     const processReasonCell = $("processReasonCell");
     if (selected.processReason) {
       $("claimProcessReason").textContent = selected.processReason;
@@ -222,14 +213,14 @@ document.addEventListener("DOMContentLoaded", async () => {
     showDetail();
   }
 
-  // ===== 현재 상태에서 실제로 가능한 처리만 버튼으로 노출 =====
+
   function renderActions(claim) {
     const next = nextStatuses(claim);
     const refundable = canRefund(claim);
 
     actionButtons.innerHTML = "";
 
-    // 상태 전이 버튼
+
     next.forEach((en) => {
       const btn = document.createElement("button");
       btn.type = "button";
@@ -239,7 +230,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       actionButtons.appendChild(btn);
     });
 
-    // 환불 승인(최종 완료) 버튼
+
     if (refundable) {
       const btn = document.createElement("button");
       btn.type = "button";
@@ -251,7 +242,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     refundNote.hidden = !refundable;
 
-    // 안내 문구
+
     if (next.length === 0 && !refundable) {
       actionHint.textContent =
         `이미 ${STATUS_KO[claim.status] || claim.status}된 클레임이라 추가로 진행할 처리가 없습니다.`;
@@ -265,14 +256,14 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
   }
 
-  // ===== 상태 변경 (PUT) =====
+
   async function doStatusChange(statusEn) {
     if (!selected) return;
 
     const statusKo = STATUS_KO[statusEn] || statusEn;
 
     const reason = prompt(`처리 사유를 입력해 주세요. (${statusKo})`, "판매자 처리");
-    if (reason === null) return; // 취소
+    if (reason === null) return;
 
     try {
       const res = await fetch(`${API}/seller/claims/${selected.claimId}/status`, {
@@ -298,7 +289,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
   }
 
-  // ===== 환불(RETURN) 승인·완료 처리 =====
+
   async function doRefund() {
     if (!selected) return;
 
@@ -312,7 +303,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
 
     const memo = prompt("환불 처리 메모를 입력해 주세요. (선택)", "");
-    if (memo === null) return; // 취소
+    if (memo === null) return;
 
     if (!confirm(`${selected.claimId}번 클레임을 환불 승인 · 완료할까요?\n환불 금액: ${won(selected.claimAmount)}`)) {
       return;
@@ -342,7 +333,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
   }
 
-  // ===== 필터 (조회 버튼) =====
+
   async function searchClaims() {
     const statusKo = statusFilter.value;
     const statusEn = statusKo === "all" ? "" : STATUS_EN[statusKo] || "";
@@ -353,11 +344,11 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
   }
 
-  // ===== 버튼 연결 =====
+
   $("claimSearchButton").addEventListener("click", searchClaims);
   $("claimBackButton").addEventListener("click", showList);
 
-  // ===== 시작 =====
+
   loadClaims();
 
 });

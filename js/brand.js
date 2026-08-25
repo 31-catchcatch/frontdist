@@ -7,13 +7,11 @@ document.addEventListener("DOMContentLoaded", () => {
   let brands = [];
   let currentFilter = "all";
 
-  // 로고 없을 때 이니셜 2글자 뱃지로 폴백
+
   function logoFallback(name) {
     const text = (name || "").slice(0, 2);
     return (
-      '<div class="brand-logo-fallback" aria-hidden="true" ' +
-      'style="width:100%;aspect-ratio:1;display:flex;align-items:center;justify-content:center;' +
-      'background:#f0f0f0;color:#999;font-weight:700;font-size:20px">' +
+      '<div class="brand-logo-fallback" aria-hidden="true">' +
       text +
       "</div>"
     );
@@ -48,7 +46,7 @@ document.addEventListener("DOMContentLoaded", () => {
     gridEl.innerHTML = list.map(cardHTML).join("");
   }
 
-  // 초성 필터 클릭
+
   $('[data-role="filter"]').addEventListener("click", (e) => {
     const btn = e.target.closest("button[data-initial]");
     if (!btn) return;
@@ -59,7 +57,7 @@ document.addEventListener("DOMContentLoaded", () => {
     render();
   });
 
-  // ===== 시작 =====
+
   (async function start() {
     const raw = await CatchCatalog.brands();
     brands = raw.map((b) => ({

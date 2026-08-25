@@ -47,7 +47,7 @@ document.addEventListener("DOMContentLoaded", () => {
     grid.innerHTML = items.map(itemHTML).join("");
   }
 
-  // 카드 클릭 → 상세 이동
+
   grid.addEventListener("click", (e) => {
     const item = e.target.closest(".product-item[data-href]");
     if (item) location.href = item.dataset.href;
