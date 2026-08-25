@@ -9,7 +9,7 @@
 </head>
 <body>
 
-<!-- ================= 공통 헤더 시작 (수정 금지) ================= -->
+
 <div class="utility">
   <div class="wrap">
     <a href="customercenter.html">고객센터</a>
@@ -25,7 +25,7 @@
   <div class="wrap head-row">
     <div class="head-left">
       <form class="search" action="search.html" method="get" role="search">
-        <svg class="icn" viewBox="0 0 24 24" style="width:15px;height:15px"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg>
+        <svg class="icn icn-sm" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg>
         <input type="text" name="q" placeholder="찾으시는 상품이 있나요?" aria-label="상품 검색">
       </form>
     </div>
@@ -54,11 +54,11 @@
     <a href="seller-dashboard.html" class="cat-seller" data-seller-only hidden>판매 관리</a>
   </div>
 </nav>
-<!-- ================= 공통 헤더 끝 ================= -->
+
 
 <main class="wrap signup-page">
 
-<!-- ===== 유형 선택 ===== -->
+
 <section class="block signup-type-select" id="signupTypeSelect">
   <div class="sec-head">
     <div>
@@ -78,7 +78,7 @@
   </div>
 </section>
 
-<!-- ===== 회원가입 폼 ===== -->
+
 <section class="block signup-block" id="signupFormBlock" hidden>
   <div class="sec-head">
     <div>
@@ -95,7 +95,7 @@
 
   <form id="signupForm" class="signup-form" novalidate>
 
-    <!-- ===== STEP 1 ===== -->
+
     <div class="step-panel" data-step-panel="1">
 
       <fieldset class="form-section">
@@ -177,7 +177,7 @@
       <button type="button" class="btn-submit" data-action="go-step2">다음</button>
     </div>
 
-    <!-- ===== STEP 2 ===== -->
+
     <div class="step-panel" data-step-panel="2" hidden>
       <fieldset class="form-section">
         <legend>본인인증</legend>
@@ -218,12 +218,12 @@
       </div>
     </div>
 
-    <!-- ===== STEP 3 ===== -->
+
     <div class="step-panel" data-step-panel="3" hidden>
       <div class="signup-complete">
         <h4>가입이 완료되었습니다!</h4>
         <p>캐치캐치의 회원이 되신 것을 환영합니다.</p>
-        <a href="index.html" class="btn-submit" style="display:inline-block;text-decoration:none;line-height:52px;padding:0 40px;">홈으로 가기</a>
+        <a href="index.html" class="btn-submit btn-submit--link">홈으로 가기</a>
       </div>
     </div>
 
@@ -232,7 +232,7 @@
 
 </main>
 
-<!-- ================= 공통 푸터 시작 (수정 금지) ================= -->
+
 <footer>
   <div class="wrap">
     <div class="foot-top">
@@ -264,11 +264,9 @@
     </div>
   </div>
 </footer>
-<!-- ================= 공통 푸터 끝 ================= -->
 
-<!-- 페이지 전용 스크립트: 팀 공통 common.js가 생기면 그쪽 data-attribute
-     패턴에 맞춰 아래 로직을 이관/치환해 주세요. 지금은 common.js가 없어
-     최소 동작만 넣은 임시(mock) 스크립트입니다. -->
+
+<script src="js/http.js"></script>
 <script src="js/auth.js"></script>
 <script src="js/signup.js"></script>
 <script src="js/navigation.js"></script>

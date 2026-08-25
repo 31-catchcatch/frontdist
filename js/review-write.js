@@ -9,7 +9,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const isEdit = params.get("edit") === "true";
   const reviewId = params.get("reviewId");
   const orderDetailId = params.get("orderDetailId");
-  let productId = params.get("productId"); // 수정 모드에선 프리필 데이터에서 채운다
+  let productId = params.get("productId");
 
   const $ = (sel) => document.querySelector(sel);
   const won = (n) => Number(n || 0).toLocaleString("ko-KR") + "원";
@@ -17,7 +17,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const form = $("#reviewForm");
   const submitButton = $(".btn-submit");
 
-  // ===== 모드별 진입 검증 =====
+
   if (isEdit) {
     if (!reviewId) {
       alert("수정할 리뷰 정보를 찾을 수 없습니다.");
@@ -44,19 +44,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
   let rating = 0;
   let photo = null;
-  let existingImageUrl = null; // 수정 모드에서 이미 등록돼 있던 이미지 URL
-
-  function getAccessToken() {
-    // [5-1 조치] 저장 키를 직접 읽지 않는다.
-    return window.CatchAuth ? CatchAuth.getToken() : null;
-  }
+  let existingImageUrl = null;
 
   async function apiFetch(path, options = {}) {
     const headers = new Headers(options.headers || {});
     if (!(options.body instanceof FormData)) headers.set("Accept", "application/json");
     if (options.body && !(options.body instanceof FormData)) headers.set("Content-Type", "application/json");
-    const token = getAccessToken();
-    if (token) headers.set("Authorization", `Bearer ${token}`);
 
     const response = await fetch(`${API_BASE}${path}`, { ...options, headers });
     const text = await response.text();
@@ -67,7 +60,7 @@ document.addEventListener("DOMContentLoaded", () => {
     return payload?.data ?? payload;
   }
 
-  // ===== 대상 상품 정보 조회 (작성/수정 공통) =====
+
   async function loadProduct() {
     if (!productId) return;
     try {
@@ -81,11 +74,11 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // ===== 별점 =====
+
   const starBox = $('[data-role="star-rating"]');
   const starText = $('[data-role="star-text"]');
 
-  // 클릭/프리필 공통 — 별 하이라이트 + 안내문
+
   function setRating(n) {
     rating = n;
     starBox.querySelectorAll("button").forEach((b) => {
@@ -103,7 +96,7 @@ document.addEventListener("DOMContentLoaded", () => {
     setRating(Number(btn.dataset.star));
   });
 
-  // ===== 글자수 카운트 =====
+
   const bodyInput = $("#reviewBody");
   const charNow = $('[data-role="char-now"]');
 
@@ -115,7 +108,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const photoList = $('[data-role="photo-list"]');
   const photoAdd = $('[data-role="photo-add"]');
 
-  // 화면에 보여줄 현재 사진 URL: 새로 고른 게 우선, 없으면 기존 이미지
+
   function currentPhotoUrl() {
     return photo ? photo.url : existingImageUrl;
   }
@@ -127,7 +120,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (photo) URL.revokeObjectURL(photo.url);
     photo = { file, url: URL.createObjectURL(file) };
-    existingImageUrl = null; // 새 사진으로 교체
+    existingImageUrl = null;
     renderPhotos();
   });
 
@@ -147,14 +140,14 @@ document.addEventListener("DOMContentLoaded", () => {
     renderPhotos();
   });
 
-  // ===== 취소 =====
+
   $('[data-action="cancel"]').addEventListener("click", () => {
     if (confirm("작성 중인 내용이 사라집니다. 취소할까요?")) {
       location.href = isEdit ? "my-reviews.html" : "orders.html";
     }
   });
 
-  // ===== 등록 / 수정 =====
+
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
 
@@ -174,7 +167,7 @@ document.addEventListener("DOMContentLoaded", () => {
     submitButton.textContent = isEdit ? "수정 중..." : "등록 중...";
 
     try {
-      // 이미지: 새로 첨부한 파일이 있으면 업로드, 없으면 기존 URL 유지(수정) 또는 null(작성)
+
       let imageUrl = existingImageUrl;
       if (photo) {
         const formData = new FormData();
@@ -211,9 +204,8 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // ===== 수정 모드 프리필 =====
+
   async function loadReviewForEdit() {
-    // 1) my-reviews 에서 넘겨준 sessionStorage 우선
     let review = null;
     try {
       const raw = sessionStorage.getItem("catchcatch.editReview");
@@ -221,15 +213,15 @@ document.addEventListener("DOMContentLoaded", () => {
         const parsed = JSON.parse(raw);
         if (parsed && String(parsed.reviewId) === String(reviewId)) review = parsed;
       }
-    } catch (_) { /* 무시하고 폴백 */ }
+    } catch (_) {  }
 
-    // 2) 없으면(새로고침·직접 진입 등) 내 리뷰 목록에서 찾는다
+
     if (!review) {
       try {
         const data = await apiFetch(`/users/me/reviews?page=0&size=200`);
         const list = (data && data.content) || [];
         review = list.find((r) => String(r.reviewId) === String(reviewId)) || null;
-      } catch (_) { /* 아래에서 처리 */ }
+      } catch (_) {  }
     }
 
     if (!review) {
@@ -240,7 +232,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     productId = review.productId;
 
-    // 폼 프리필
+
     setRating(Number(review.rating) || 0);
     bodyInput.value = review.content || "";
     charNow.textContent = bodyInput.value.length;
@@ -250,7 +242,7 @@ document.addEventListener("DOMContentLoaded", () => {
     await loadProduct();
   }
 
-  // ===== 시작 =====
+
   if (isEdit) {
     document.title = "리뷰 수정 — 캐치캐치";
     const heading = document.querySelector(".review-head h3");

@@ -1,19 +1,6 @@
 <!doctype html>
 <html lang="ko">
-<!-- ============================================================
-     캐치캐치 페이지 템플릿 (_template.html)
-     ------------------------------------------------------------
-     ★ 새 페이지 만드는 법 ★
-     1. 이 파일을 복사해서 담당 파일명으로 저장하세요.
-        (파일명 규칙표는 README.md 참고: login.html, cart.html, ...)
-     2. <title>과 <main> 안의 내용만 작성하면 됩니다.
-     3. 헤더/푸터는 절대 수정하지 마세요! (전 페이지 공통)
-        수정 필요하면 리더에게 요청.
-     4. 페이지 전용 CSS가 필요하면 css/페이지명.css 를 만들어
-        아래 <link> 자리처럼 추가하세요. css/common.css 는 수정 금지!
-     ※ 메인 페이지는 index.html 입니다.
-     ※ 관리자 페이지는 _admin-template.html 을 쓰세요.
-     ============================================================ -->
+
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -24,10 +11,7 @@
 </head>
 <body>
 
-<!-- 상품 카드를 쓰는 페이지라면 index.html 상단의
-     SVG 실루엣 <defs> 블록을 여기에 복사하세요. -->
 
-<!-- ================= 공통 헤더 시작 (수정 금지) ================= -->
 <div class="utility">
   <div class="wrap">
     <a href="customercenter.html">고객센터</a>
@@ -43,7 +27,7 @@
   <div class="wrap head-row">
     <div class="head-left">
       <form class="search" action="search.html" method="get" role="search">
-        <svg class="icn" viewBox="0 0 24 24" style="width:15px;height:15px"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg>
+        <svg class="icn icn-sm" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg>
         <input type="text" name="q" placeholder="찾으시는 상품이 있나요?" aria-label="상품 검색">
       </form>
     </div>
@@ -72,11 +56,10 @@
     <a href="seller-dashboard.html" class="cat-seller" data-seller-only hidden>판매 관리</a>
   </div>
 </nav>
-<!-- ================= 공통 헤더 끝 ================= -->
+
 
 <main class="wrap">
 
-  <!-- ▼▼▼ 여기부터 페이지 내용을 작성하세요 ▼▼▼ -->
 
   <section class="block sales-page">
 
@@ -87,8 +70,7 @@
       </div>
     </div>
 
-    <!-- 판매자 공통 메뉴 : 6개 판매자 페이지에 동일하게 복사되어 있습니다.
-         고치려면 6곳 모두 (css/seller-nav.css 주석 참고) -->
+
     <nav class="seller-page-links" aria-label="판매자 관리 메뉴">
       <a href="seller-dashboard.html">대시보드</a>
       <a href="seller-products.html">상품 관리</a>
@@ -99,7 +81,7 @@
       <a href="seller-notifications.html">쿠폰관리</a>
     </nav>
 
-    <!-- 탭 -->
+
     <div class="tab-menu">
       <button type="button" class="tab-btn active" data-tab="sales">
         매출 통계 조회
@@ -109,9 +91,6 @@
       </button>
     </div>
 
-    <!-- ======================= -->
-    <!-- 매출 통계 -->
-    <!-- ======================= -->
 
     <div class="tab-content active" id="sales">
 
@@ -188,9 +167,6 @@
 
     </div>
 
-    <!-- ======================= -->
-    <!-- 정산 -->
-    <!-- ======================= -->
 
     <div class="tab-content" id="settlement">
 
@@ -267,11 +243,10 @@
 
   </section>
 
-  <!-- ▲▲▲ 여기까지 ▲▲▲ -->
 
 </main>
 
-<!-- ================= 공통 푸터 시작 (수정 금지) ================= -->
+
 <footer>
   <div class="wrap">
     <div class="foot-top">
@@ -302,9 +277,9 @@
     </div>
   </div>
 </footer>
-<!-- ================= 공통 푸터 끝 ================= -->
 
-<!-- 페이지 전용 스크립트가 있으면 여기에 추가 -->
+
+<script src="js/http.js"></script>
 <script src="js/auth.js"></script>
 <script src="js/seller-sales.js"></script>
 <script src="js/navigation.js"></script>

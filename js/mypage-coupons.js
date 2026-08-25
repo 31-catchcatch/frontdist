@@ -1,8 +1,8 @@
 (() => {
   "use strict";
 
-  const CLAIMABLE_API = "/api/v1/coupons";        // 받을 수 있는(아직 안 받은) 쿠폰 목록
-  const MINE_API = "/api/v1/users/me/coupons";    // 내가 보유한 쿠폰 목록
+  const CLAIMABLE_API = "/api/v1/coupons";
+  const MINE_API = "/api/v1/users/me/coupons";
   const FILE_PREVIEW_MODE = location.protocol === "file:";
 
   const couponList = document.getElementById("couponList");
@@ -14,9 +14,9 @@
   const panelDesc = document.getElementById("couponPanelDesc");
 
   let coupons = [];
-  let claimableCount = 0;   // 탭 배지·빈 화면 안내에 쓴다
-  let currentTab = "mine"; // 'mine'(보유) | 'claimable'(받을 수 있는)
-  let mineCount = 0;       // 상단 '사용 가능 쿠폰' 개수 = 보유 쿠폰 수 (탭 무관)
+  let claimableCount = 0;
+  let currentTab = "mine";
+  let mineCount = 0;
 
   const previewCoupons = [
     {
@@ -55,7 +55,6 @@
   ];
 
   function isLoggedIn() {
-    // [5-1 조치] 토큰 저장 키를 직접 읽지 않고 공용 인증 모듈에 위임한다.
     return Boolean(window.CatchAuth && CatchAuth.isLoggedIn());
   }
 
@@ -66,7 +65,7 @@
   }
 
   function clearLoginState() {
-    // [5-1 조치] 저장 키 직접 접근 제거. 화면 이동은 기존처럼 각 호출부가 담당한다.
+
     if (window.CatchAuth) CatchAuth.clearSession();
   }
 
@@ -171,8 +170,8 @@
         coupon.applicableProducts ??
         coupon.conditionDescription ??
         "",
-      // 쿠폰이 어느 판매자 것인지. 관리자가 발행한 플랫폼 쿠폰은 둘 다 null 이라
-      // 사용 범위가 주문 전체다.
+
+
       sellerId: coupon.sellerId ?? null,
       sellerName: coupon.sellerName ?? null
     };
@@ -192,7 +191,7 @@
       : [];
   }
 
-  /* 이 쿠폰을 어디에 쓸 수 있는지. 쿠폰은 발행한 판매자의 상품에만 적용된다. */
+
   function getScopeText(coupon) {
     return coupon.sellerName || "해당 판매자 상품";
   }
@@ -277,8 +276,7 @@
     });
   }
 
-  /* 받기 탭에 개수 배지를 붙인다.
-     기본 탭이 '보유 쿠폰'이라, 새로 발행된 쿠폰이 있어도 탭을 눌러보기 전엔 알 수가 없었다. */
+
   function updateClaimableBadge() {
     const tab = [...couponTabs].find((t) => t.dataset.tab === "claimable");
     if (!tab) return;
@@ -290,13 +288,13 @@
   function renderCoupons() {
     const sortedCoupons = getSortedCoupons();
 
-    // 상단 '사용 가능 쿠폰' = 보유 쿠폰 개수(항상). 받기 탭 목록 길이가 아니라 보유 수를 표시한다.
+
     couponCount.textContent =
       mineCount.toLocaleString("ko-KR");
 
     if (!sortedCoupons.length) {
-      // 보유 쿠폰이 없어도 받을 게 있으면 그쪽으로 안내한다 (그냥 "없습니다"로 끝내면
-      // 발행된 쿠폰이 있는 줄도 모르고 나가게 된다)
+
+
       const hasClaimable = currentTab !== "claimable" && claimableCount > 0;
       couponList.innerHTML = `
         <p class="coupon-state">
@@ -439,10 +437,10 @@
       }
 
       coupons = extractCoupons(data);
-      // 보유 탭을 로드할 때만 '사용 가능 쿠폰(보유)' 개수를 실제 목록으로 동기화한다.
+
       if (!isClaimable) mineCount = coupons.length;
       else {
-        claimableCount = coupons.length;   // 받기 탭을 보고 있으면 그 결과가 곧 최신 개수
+        claimableCount = coupons.length;
         updateClaimableBadge();
       }
       renderCoupons();
@@ -461,7 +459,7 @@
     }
   }
 
-  // '쿠폰 받기' 버튼 → 발급(claim) → 목록에서 제거(받기 목록 갱신)
+
   async function claimCoupon(couponId, buttonEl) {
     clearMessage();
     if (buttonEl) {
@@ -483,13 +481,13 @@
       } catch (_) {}
 
       if (!response.ok) {
-        // 이미 받았거나(409) 소진 등 → 메시지 노출 후 목록 갱신
+
         throw new Error(data.message || "쿠폰을 받지 못했습니다.");
       }
 
-      mineCount += 1; // 받았으니 보유 쿠폰이 하나 늘어남 → 상단 '사용 가능 쿠폰' 증가
+      mineCount += 1;
       showMessage("쿠폰을 받았습니다. '보유 쿠폰' 탭에서 확인할 수 있습니다.");
-      loadCoupons(); // 받기 목록 재조회 → 방금 받은 쿠폰은 제외되어 사라짐
+      loadCoupons();
     } catch (error) {
       showMessage(
         error instanceof TypeError
@@ -503,7 +501,7 @@
     }
   }
 
-  // 탭 전환
+
   couponTabs.forEach((tab) => {
     tab.addEventListener("click", () => {
       const next = tab.dataset.tab;
@@ -520,7 +518,7 @@
     });
   });
 
-  // 받기 버튼 이벤트 위임
+
   couponList.addEventListener("click", (event) => {
     const btn = event.target.closest(".coupon-claim-btn");
     if (!btn) return;
@@ -529,7 +527,7 @@
 
   couponSort.addEventListener("change", renderCoupons);
 
-  // 빈 화면에서 '받을 수 있는 쿠폰 보기'를 누르면 탭을 옮긴다
+
   couponList.addEventListener("click", (event) => {
     if (!event.target.closest('[data-action="go-claimable"]')) return;
     const tab = [...couponTabs].find((t) => t.dataset.tab === "claimable");

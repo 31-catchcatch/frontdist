@@ -35,7 +35,7 @@
   .wrap { max-width: var(--w); margin: 0 auto; padding: 0 24px; }
   .tnum { font-variant-numeric: tabular-nums; }
 
-  /* ---------- Top utility bar ---------- */
+
   .utility {
     border-bottom: 1px solid var(--hairline);
     font-size: 11px;
@@ -48,7 +48,7 @@
   }
   .utility a:hover { color: var(--ink); }
 
-  /* ---------- Header ---------- */
+
   header.site {
     position: sticky; top: 0; z-index: 40;
     background: color-mix(in srgb, var(--paper) 88%, transparent);
@@ -70,6 +70,7 @@
   .head-left { display: flex; gap: 22px; align-items: center; }
   .head-right { display: flex; gap: 20px; align-items: center; justify-content: flex-end; }
   .icn { width: 20px; height: 20px; stroke: var(--ink); stroke-width: 1.6; fill: none; }
+  .icn.icn-sm { width: 15px; height: 15px; }
   .search {
     display: flex; align-items: center; gap: 8px;
     border: 1px solid var(--hairline-strong);
@@ -80,7 +81,7 @@
     font-size: 12px;
   }
   .search:focus-within { border-color: var(--ink); color: var(--ink); }
-  /* ===== 헤더 검색창 input 스타일 ===== */
+
   .search input {
     flex: 1;
     min-width: 0;
@@ -96,7 +97,7 @@
   .head-left .txtlink { font-size: 12.5px; font-weight: 600; letter-spacing: .01em; }
   .head-left .txtlink:hover { color: var(--point); }
 
-  /* ---------- Category nav ---------- */
+
   nav.cats { border-bottom: 1px solid var(--hairline); background: var(--paper); }
   nav.cats .wrap {
     display: flex; gap: 26px; align-items: center;
@@ -113,12 +114,11 @@
     content: ""; position: absolute; left: 0; right: 0; bottom: -1px;
     height: 2px; background: var(--ink);
   }
-  /* 판매자 로그인 시 노출되는 '판매 관리' 버튼 (빨간 글자) */
+
   nav.cats a.cat-seller { color: var(--point); font-weight: 800; }
   nav.cats a.cat-seller:hover { color: var(--point); opacity: .8; }
 
 
-  /* ---------- Section ---------- */
   section.block { padding: 56px 0 8px; }
   .sec-head {
     display: flex; align-items: flex-end; justify-content: space-between;
@@ -135,7 +135,7 @@
   .sec-head .more { font-size: 12.5px; color: var(--mid); font-weight: 600; }
   .sec-head .more:hover { color: var(--ink); }
 
-  /* filter chips */
+
   .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 26px; }
   .chip {
     font-size: 12.5px; font-weight: 600; color: var(--ink-soft);
@@ -146,7 +146,7 @@
   .chip:hover { border-color: var(--ink); color: var(--ink); }
   .chip.on { background: var(--ink); color: var(--paper); border-color: var(--ink); }
 
-  /* ---------- Product grid ---------- */
+
   .grid {
     display: grid; grid-template-columns: repeat(4, 1fr); gap: 28px 22px;
   }
@@ -193,7 +193,7 @@
   .rate b { color: var(--ink); }
   .star { width: 12px; height: 12px; fill: var(--ink); }
 
-  /* ---------- Editorial strip ---------- */
+
   .strip {
     margin-top: 60px;
     display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px;
@@ -214,7 +214,7 @@
   }
   .strip .cell .lbl span { font-size: 20px; font-weight: 800; letter-spacing: -.01em; }
 
-  /* ---------- Footer ---------- */
+
   footer {
     margin-top: 76px; border-top: 1px solid var(--hairline);
     background: var(--paper);
@@ -253,3 +253,23 @@
     .utility .wrap { justify-content: space-between; }
   }
   @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+
+
+.svg-sprite { position: absolute; }
+
+
+.state-empty { text-align: center; padding: 40px; color: #999; }
+.state-error { text-align: center; padding: 60px; color: #e02020; }
+
+
+.state-error-page { padding: 80px 0; text-align: center; color: #666; }
+.state-error-msg  { font-size: 18px; margin-bottom: 16px; }
+
+
+.btn-outline.btn-cta { display: inline-block; padding: 12px 28px; }
+
+
+.art--t0 { background: var(--tile-1); }
+.art--t1 { background: var(--tile-2); }
+.art--t2 { background: var(--tile-3); }
+.art--t3 { background: var(--tile-4); }

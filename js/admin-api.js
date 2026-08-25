@@ -13,11 +13,17 @@
 
     const response = await fetch(BASE + path, options);
 
-    if (response.status === 401 || response.status === 403) {
-      if (AdminAuth.getToken()) {
-        AdminAuth.logout();
-      }
-      throw new Error("관리자 인증이 필요합니다. 다시 로그인해 주세요.");
+    if (response.status === 401) {
+      AdminAuth.clearSession();
+      location.replace("admin-login.html");
+      throw new Error("관리자 인증이 만료되었습니다. 다시 로그인해 주세요.");
+    }
+
+    if (response.status === 403) {
+      const denied = await response.text();
+      let deniedPayload = null;
+      try { deniedPayload = denied ? JSON.parse(denied) : null; } catch (_) {  }
+      throw new Error((deniedPayload && deniedPayload.message) || "이 작업을 수행할 권한이 없습니다.");
     }
 
     const text = await response.text();

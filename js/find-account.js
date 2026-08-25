@@ -172,7 +172,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const pw2Submit = $('[data-role="pw2-submit"]');
   const pwBackButton = $('[data-action="pw-back"]');
 
-  // 1단계에서 확인이 끝난 계정. 2단계 요청에 그대로 쓴다.
   let verifiedAccount = null;
 
   function showPwStep(step) {
@@ -210,7 +209,7 @@ document.addEventListener("DOMContentLoaded", () => {
     $("#pwUsername").focus();
   });
 
-  // --- 1단계 : 계정 확인 ---
+
   findPwForm.addEventListener("submit", async (event) => {
     event.preventDefault();
 
@@ -258,7 +257,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // --- 2단계 : 새 비밀번호 설정 ---
+
   resetPwForm.addEventListener("submit", async (event) => {
     event.preventDefault();
 
@@ -306,7 +305,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       if (!response.ok) {
-        // 확인 이후 계정이 사라진 경우 등. 1단계로 되돌려 다시 입력하게 한다.
+
         if (response.status === 404) {
           verifiedAccount = null;
           showPwStep("account");

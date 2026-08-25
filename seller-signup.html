@@ -9,7 +9,7 @@
 </head>
 <body>
 
-<!-- ================= 공통 헤더 시작 (수정 금지) ================= -->
+
 <div class="utility">
   <div class="wrap">
     <a href="customercenter.html">고객센터</a>
@@ -25,7 +25,7 @@
   <div class="wrap head-row">
     <div class="head-left">
       <form class="search" action="search.html" method="get" role="search">
-        <svg class="icn" viewBox="0 0 24 24" style="width:15px;height:15px"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg>
+        <svg class="icn icn-sm" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg>
         <input type="text" name="q" placeholder="찾으시는 상품이 있나요?" aria-label="상품 검색">
       </form>
     </div>
@@ -54,16 +54,10 @@
     <a href="seller-dashboard.html" class="cat-seller" data-seller-only hidden>판매 관리</a>
   </div>
 </nav>
-<!-- ================= 공통 헤더 끝 ================= -->
+
 
 <main class="wrap signup-page">
 
-<!-- ▼▼▼ 판매자 회원가입 =====================================
-     기능정의서 매핑
-     - S-AUTH-003 판매자 회원가입  → POST /api/v1/auth/seller/signup
-     - S-AUTH-004 판매자 본인인증  → POST /api/v1/auth/seller/verify
-     ※ 입점 서류 제출(S-ENTRY-001~002)은 seller-entry.html에서 처리
-================================================================ -->
 
 <section class="block signup-block" id="signupFormBlock">
   <div class="sec-head">
@@ -81,10 +75,10 @@
 
   <form id="signupForm" class="signup-form" novalidate>
 
-    <!-- ===== STEP 1 ===== -->
+
     <div class="step-panel" data-step-panel="1">
 
-      <!-- 계정 정보 -->
+
       <fieldset class="form-section">
         <legend>계정 정보</legend>
 
@@ -123,19 +117,19 @@
         </div>
       </fieldset>
 
-      <!-- 사업자 정보 (판매자 전용) -->
+
       <fieldset class="form-section">
         <legend>사업자 정보</legend>
 
         <div class="field">
           <label for="companyName">상호명 <span class="req">*</span></label>
           <input type="text" id="companyName" name="companyName" placeholder="사업자등록증상 상호명" required>
-        </div> 
+        </div>
 
         <div class="field">
           <label for="bizNumber">사업자등록번호 <span class="req">*</span></label>
           <input type="text" id="bizNumber" name="bizNumber" placeholder="숫자 10자리 (- 없이)" maxlength="10" required>
-        </div>        
+        </div>
 
         <div class="field">
           <label for="ceoName">대표자명 <span class="req">*</span></label>
@@ -160,11 +154,10 @@
             <span class="file-name" data-role="biz-file-name">선택된 파일 없음</span>
           </div>
         </div>
-        
+
       </fieldset>
 
 
-      <!-- 약관 동의 -->
       <fieldset class="form-section">
         <legend>이용약관 동의</legend>
 
@@ -202,7 +195,7 @@
       <button type="button" class="btn-submit" data-action="go-step2">다음</button>
     </div>
 
-    <!-- ===== STEP 2 : 본인인증 (S-AUTH-004) ===== -->
+
     <div class="step-panel" data-step-panel="2" hidden>
       <fieldset class="form-section">
         <legend>대표자 본인인증</legend>
@@ -243,7 +236,7 @@
       </div>
     </div>
 
-    <!-- ===== STEP 3 : 가입완료 ===== -->
+
     <div class="step-panel" data-step-panel="3" hidden>
       <div class="signup-complete">
         <h4>판매자 가입이 완료되었습니다!</h4>
@@ -256,11 +249,10 @@
   </form>
 </section>
 
-<!-- ▲▲▲ 여기까지 ▲▲▲ -->
 
 </main>
 
-<!-- ================= 공통 푸터 시작 (수정 금지) ================= -->
+
 <footer>
   <div class="wrap">
     <div class="foot-top">
@@ -291,8 +283,9 @@
     </div>
   </div>
 </footer>
-<!-- ================= 공통 푸터 끝 ================= -->
 
+
+<script src="js/http.js"></script>
 <script src="js/auth.js"></script>
 <script src="js/seller-signup.js"></script>
 <script src="js/navigation.js"></script>

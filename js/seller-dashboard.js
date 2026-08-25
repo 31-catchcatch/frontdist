@@ -39,11 +39,9 @@ document.addEventListener("DOMContentLoaded", async () => {
   });
 
   function isSellerLoggedIn() {
-    // [5-1 조치] 토큰 보유 여부는 공용 모듈에 위임한다 (판매자 여부 판단은 기존 유지).
     const loggedIn = Boolean(window.CatchAuth && CatchAuth.isLoggedIn());
 
-    const loginType =
-      sessionStorage.getItem("catchcatch.loginType");
+    const loginType = CatchAuth.loginType();
 
     return loggedIn && loginType === "seller";
   }
@@ -55,7 +53,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   function clearLoginState() {
-    // [5-1 조치] 저장 키 직접 접근 제거. 화면 이동은 기존처럼 각 호출부가 담당한다.
+
     if (window.CatchAuth) CatchAuth.clearSession();
   }
 

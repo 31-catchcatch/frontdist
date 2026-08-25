@@ -11,11 +11,6 @@
       : DEFAULT_DESTINATION;
   }
 
-  function tokenFrom(payload) {
-    const data = payload && typeof payload === "object" ? payload.data || payload : null;
-    return data && (data.accessToken || data.token || data.access_token);
-  }
-
   function errorText(response, payload) {
     if (payload && typeof payload === "object") {
       return payload.message || payload.error || "관리자 로그인에 실패했습니다.";
@@ -77,17 +72,16 @@
         const response = await fetch(LOGIN_API, {
           method: "POST",
           headers: { "Content-Type": "application/json", Accept: "application/json" },
-          credentials: "same-origin",
+          skipAuthRetry: true,
           body: JSON.stringify({ username: usernameValue, password: value }),
         });
         const payload = await response.json().catch(() => null);
-        const token = tokenFrom(payload);
 
-        if (!response.ok || !token) {
+        if (!response.ok || (payload && payload.success === false)) {
           throw new Error(errorText(response, payload));
         }
 
-        AdminAuth.setSession(token);
+        AdminAuth.startSession();
         password.value = "";
         location.replace(safeRedirect());
       } catch (error) {

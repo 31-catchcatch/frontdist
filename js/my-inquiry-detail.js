@@ -1,17 +1,15 @@
-// my-inquiry-detail.js — 나의 1:1 문의 상세  URL: ?id=문의번호
-
 document.addEventListener("DOMContentLoaded", () => {
-  // 로그인 필요 페이지 (비로그인은 login.html 로 보내고 여기서 끝낸다)
+
   if (!window.CatchAuth || !CatchAuth.requireLogin()) return;
 
   const PAGE_SIZE = 50;
-  const MAX_PAGES = 20; // 목록을 무한정 훑지 않도록 상한 (최대 1000건까지 탐색)
+  const MAX_PAGES = 20;
 
   const params = new URLSearchParams(location.search);
   const inquiryId = Number(params.get("id"));
   const redirectTarget = CatchAuth.safeRedirect("my-inquiries.html");
 
-  // 값은 전부 textContent 로 넣는다 (목록처럼 HTML 을 조립하지 않으므로 이스케이프 불필요)
+
   const $ = (sel) => document.querySelector(sel);
 
   const loadingEl = $('[data-role="loading"]');
@@ -26,7 +24,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
-  // 문의 유형 코드 → 한글 (my-inquiries.js·customercenter.js 와 동일 표기)
+
   const CATEGORY = {
     ORDER: "주문",
     DELIVERY: "배송",
@@ -42,7 +40,7 @@ document.addEventListener("DOMContentLoaded", () => {
     return CATEGORY[String(code).toUpperCase()] || code;
   }
 
-  // 목록은 날짜만 보여주지만 상세는 시각까지 보여준다 (2026.07.16 20:29)
+
   function fmtDateTime(iso) {
     if (!iso) return "";
     const text = String(iso);
@@ -77,7 +75,7 @@ document.addEventListener("DOMContentLoaded", () => {
       $('[data-role="order-row"]').hidden = false;
     }
 
-    // 답변이 달렸어도 본문이 비어있을 수 있어 상태만 믿지 않고 answer 도 함께 본다.
+
     if (answered && inquiry.answer) {
       $('[data-role="answer"]').textContent = inquiry.answer;
       $('[data-role="answered-at"]').textContent = fmtDateTime(inquiry.answeredAt);
@@ -86,7 +84,7 @@ document.addEventListener("DOMContentLoaded", () => {
       $('[data-role="waiting-block"]').hidden = false;
     }
 
-    // 제목을 탭에도 반영 (목록에서 여러 건을 열어봤을 때 구분용)
+
     if (inquiry.title) document.title = `${inquiry.title} — 캐치캐치`;
 
     loadingEl.hidden = true;

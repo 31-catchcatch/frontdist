@@ -1,15 +1,6 @@
-/* =========================================================
-   캐치캐치 admin.css — 관리자 목록/관리 페이지 공통 스타일
-   ---------------------------------------------------------
-   admin-users / products / seller-applications / sellers /
-   coupons / points / qna / settlements 페이지가 공유합니다.
-   상단바 룩은 admin-dashboard.css 와 동일하게 맞춤.
-   common.css 다음에 로드합니다.
-   ========================================================= */
-
 body { background: linear-gradient(135deg, #f8f8f9 0%, #f1f3f7 100%); }
 
-/* ---------- 관리자 상단바 (대시보드와 동일 룩) ---------- */
+
 .admin-bar {
   position: sticky; top: 0; z-index: 10;
   display: flex; align-items: center; min-height: 60px;
@@ -29,7 +20,7 @@ body { background: linear-gradient(135deg, #f8f8f9 0%, #f1f3f7 100%); }
 .admin-actions { display: flex; gap: 16px; margin-left: auto; color: #c4c4c4; font-size: 12px; white-space: nowrap; }
 .admin-actions a:hover { color: var(--paper); }
 
-/* ---------- 페이지 헤드 ---------- */
+
 .admin-page { padding-top: 48px; padding-bottom: 80px; }
 .page-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 20px; margin-bottom: 26px; }
 .page-head .kicker { margin: 0 0 9px; color: var(--point); font-size: 10px; font-weight: 800; letter-spacing: .2em; }
@@ -42,7 +33,7 @@ body { background: linear-gradient(135deg, #f8f8f9 0%, #f1f3f7 100%); }
 }
 .preview-badge::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--point); }
 
-/* ---------- 요약 통계 카드 (정산/대시보드용) ---------- */
+
 .stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 28px; }
 .stat { padding: 22px 22px 20px; border: 1px solid var(--hairline); background: var(--surface); }
 .stat.alert { border-top: 2px solid var(--point); }
@@ -50,7 +41,7 @@ body { background: linear-gradient(135deg, #f8f8f9 0%, #f1f3f7 100%); }
 .stat .value { display: block; margin: 18px 0 8px; font-size: 30px; font-weight: 700; line-height: .9; letter-spacing: -.04em; }
 .stat .sub { display: block; color: var(--mid); font-size: 11.5px; line-height: 1.4; }
 
-/* ---------- 툴바 (검색 + 필터) ---------- */
+
 .toolbar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 16px; padding: 10px; border: 1px solid rgba(27,39,94,.10); border-radius: 14px; background: rgba(255,255,255,.76); box-shadow: 0 6px 18px rgba(21,21,21,.035); }
 .search-box {
   display: flex; align-items: center; gap: 8px; min-width: 260px;
@@ -64,7 +55,7 @@ body { background: linear-gradient(135deg, #f8f8f9 0%, #f1f3f7 100%); }
 .toolbar .count { margin-left: auto; font-size: 12.5px; color: var(--mid); }
 .toolbar .count b { color: var(--ink); }
 
-/* ---------- 데이터 테이블 ---------- */
+
 .table-wrap { overflow-x: auto; border: 1px solid rgba(27,39,94,.10); border-radius: 16px; background: var(--surface); box-shadow: 0 10px 28px rgba(21,21,21,.045); }
 table.data { width: max-content; min-width: 100%; border-collapse: collapse; font-size: 13px; }
 table.data th, table.data td { padding: 14px; text-align: left; border-bottom: 1px solid var(--hairline); white-space: nowrap; }
@@ -79,33 +70,27 @@ table.data .chk { width: 40px; text-align: center; }
 table.data input[type="checkbox"] { width: 15px; height: 15px; cursor: pointer; }
 table.data .muted { color: var(--mid); }
 table.data .strong { font-weight: 700; }
-/* 표 안의 상품명 링크 — 기본 링크 색을 쓰지 않고 본문처럼 보이게 두고, 호버에서만 링크임을 드러낸다 */
+
 table.data a.product-link { color: inherit; text-decoration: none; }
 table.data a.product-link:hover,
 table.data a.product-link:focus-visible { color: var(--point); text-decoration: underline; }
 table.data a.product-link.is-unavailable { color: var(--mid); text-decoration: line-through; }
 table.data th:last-child, table.data td:last-child { min-width: 236px; }
-/* 남는 가로 공간을 흡수할 열. 지정하지 않으면 여유 폭이 모든 열에 조금씩 흩어져
-   열을 뺀 표가 헐거워 보인다. 가장 긴 텍스트 열(제목·상품명·쿠폰명)의 <th> 에 준다. */
+
 table.data th.grow { width: 100%; }
-/* 관리 열에 버튼이 하나뿐인 표. 위의 236px 는 버튼 2~3개 기준이라 빈 공간이 남는다.
-   <table class="data act-slim"> 로 쓴다. 96px 는 버튼 라벨이 바뀌어도 열이 안 흔들릴 최소폭. */
+
 table.data.act-slim th:last-child,
 table.data.act-slim td:last-child { min-width: 96px; }
 .empty-row td { text-align: center; color: var(--mid); padding: 40px 14px; }
 
-/* ---------- 행 펼침 상세 패널 (1:1 문의 · Q&A 공용) ----------
-   목록 행의 [내용 보기] 를 누르면 바로 아래에 <tr class="detail-row"> 가 끼어든다.
-   페이지별로 다른 건 패널 안쪽 내용뿐이라 껍데기는 여기서 공유한다. */
 
-/* 펼쳐진 행은 아래 패널과 한 덩어리로 보이도록 구분선을 지우고 배경을 맞춘다 */
 .data tbody tr.is-open > td { border-bottom: 0; background: var(--paper); }
 .data tbody tr.is-open:hover > td { background: var(--paper); }
 
 .data tr.detail-row > td {
-  padding: 0 14px 14px;               /* 좌우 14px = 표 셀 padding 과 같은 라인 */
+  padding: 0 14px 14px;
   background: var(--paper);
-  white-space: normal;                /* table.data 의 nowrap 해제 */
+  white-space: normal;
 }
 .data tbody tr.detail-row:hover > td { background: var(--paper); }
 
@@ -114,7 +99,7 @@ table.data.act-slim td:last-child { min-width: 96px; }
   gap: 16px;
   padding: 18px;
   border: 1px solid var(--hairline);
-  border-radius: 12px;                /* table-wrap 16px 와 버튼 8px 사이 */
+  border-radius: 12px;
   background: var(--surface);
   white-space: normal;
 }
@@ -135,7 +120,7 @@ table.data.act-slim td:last-child { min-width: 96px; }
   border: 1px solid var(--hairline);
   border-radius: 9px;
   background: var(--paper);
-  white-space: pre-wrap;              /* 줄바꿈 있는 본문 그대로 */
+  white-space: pre-wrap;
   word-break: break-word;
 }
 .detail-panel .detail-label {
@@ -157,7 +142,7 @@ table.data.act-slim td:last-child { min-width: 96px; }
   .detail-panel .detail-actions .danger { margin-left: 0; }
 }
 
-/* 상태 뱃지 */
+
 .tag { display: inline-block; font-size: 11px; font-weight: 700; padding: 3px 9px; border-radius: 999px; border: 1px solid var(--hairline-strong); color: var(--ink-soft); }
 .tag.ok   { color: #1f6b3a; border-color: #a9d8bd; background: #ecf7f0; }
 .tag.wait { color: #8a6d00; border-color: #e6d08a; background: #fbf6e6; }
@@ -165,7 +150,7 @@ table.data.act-slim td:last-child { min-width: 96px; }
 .tag.info { color: #244b8a; border-color: #a9c1e0; background: #eaf1fb; }
 .tag.role { color: #4a3b7a; border-color: #c3b8e0; background: #f0ecf9; }
 
-/* 액션 버튼 */
+
 .btn { font-family: inherit; font-size: 12.5px; font-weight: 700; cursor: pointer; padding: 7px 13px; border-radius: 8px; border: 1px solid var(--hairline-strong); background: var(--surface); color: var(--ink); transition: transform .15s, background .15s, border-color .15s, box-shadow .15s; }
 .btn:hover { border-color: var(--ink); box-shadow: 0 4px 10px rgba(21,21,21,.08); transform: translateY(-1px); }
 .btn.primary { background: var(--ink); color: var(--paper); border-color: var(--ink); }
@@ -179,7 +164,7 @@ table.data.act-slim td:last-child { min-width: 96px; }
 .row-actions { display: flex; align-items: center; gap: 6px; min-width: max-content; }
 .row-actions .btn { flex: 0 0 auto; white-space: nowrap; }
 
-/* ---------- 페이지네이션 ---------- */
+
 .pager { display: flex; justify-content: center; gap: 6px; margin-top: 24px; }
 .pager[hidden] { display: none; }
 .pager button { font-family: inherit; font-size: 13px; min-width: 34px; height: 34px; padding: 0 8px; border: 1px solid var(--hairline-strong); border-radius: 9px; background: var(--surface); color: var(--ink-soft); cursor: pointer; }
@@ -188,7 +173,7 @@ table.data.act-slim td:last-child { min-width: 96px; }
 .pager button:disabled { cursor: not-allowed; opacity: .42; }
 .pager button:disabled:hover { border-color: var(--hairline-strong); color: var(--ink-soft); }
 
-/* ---------- 모달 (확인/입력 공용) ---------- */
+
 .modal-backdrop { position: fixed; inset: 0; background: rgba(21,21,21,.42); display: none; place-items: center; z-index: 50; padding: 24px; }
 .modal-backdrop.open { display: grid; }
 .modal { width: 100%; max-width: 420px; background: var(--surface); border-radius: 10px; padding: 26px 26px 22px; }
@@ -204,7 +189,7 @@ table.data.act-slim td:last-child { min-width: 96px; }
 .modal .field textarea { resize: vertical; min-height: 80px; }
 .modal-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 6px; }
 
-/* ---------- 반응형 ---------- */
+
 @media (max-width: 980px) { .stat-grid { grid-template-columns: repeat(2, 1fr); } }
 @media (max-width: 680px) {
   .admin-bar { gap: 16px; padding: 0 16px; }
@@ -215,3 +200,11 @@ table.data.act-slim td:last-child { min-width: 96px; }
   .table-wrap { border-radius: 12px; }
   .stat-grid { grid-template-columns: 1fr 1fr; }
 }
+
+
+.detail-table { width: 100%; border-collapse: collapse; font-size: 13px; margin: 6px 0 14px; }
+.detail-table th {
+  text-align: left; padding: 6px 10px; color: #888;
+  font-weight: 600; white-space: nowrap; vertical-align: top;
+}
+.detail-table td { padding: 6px 10px; }

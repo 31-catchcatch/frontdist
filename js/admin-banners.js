@@ -23,9 +23,9 @@
   const reloadBtn = document.getElementById("reloadBtn");
 
   let BANNERS = [];
-  let CAN_WRITE = false;      // 관리자 배너 API 사용 가능 여부 (로드 시 1회 결정, 재탐지 안 함)
+  let CAN_WRITE = false;
   let PROBE_STATUS = 0;
-  let COLSPAN = 5;   // 읽기전용 기준. applyMode 에서 모드에 맞게 다시 잡는다
+  let COLSPAN = 5;
 
   const PLACEHOLDER = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(
     '<svg xmlns="http://www.w3.org/2000/svg" width="240" height="100" viewBox="0 0 240 100">' +
@@ -55,9 +55,7 @@
     }
   }
 
-  /* 이미지 로드 실패 폴백. error 이벤트는 버블하지 않지만 캡처는 되므로
-     리스너 하나로 innerHTML 재렌더를 넘어 계속 동작한다.
-     dataset.fallback 은 플레이스홀더까지 실패했을 때의 무한 루프를 막는다. */
+
   function attachImageFallback(root) {
     root.addEventListener("error", (event) => {
       const img = event.target;
@@ -88,9 +86,7 @@
     return String(value).replace("T", " ").slice(0, 10);
   }
 
-  /* 날짜만 보여준다. 분 단위까지 넣으면 노출기간 열이 250px 을 넘겨
-     표가 래퍼를 벗어나고 관리 버튼이 가로 스크롤 뒤로 밀린다.
-     정확한 시각이 필요하면 [수정] 모달에서 확인한다. */
+
   function periodText(banner) {
     const from = formatDate(banner.startAt);
     const to = formatDate(banner.endAt);
@@ -110,13 +106,13 @@
 
       if (!response.ok) return { write: false, status: response.status };
 
-      const payload = await response.json();              // JSON 이 아니면 catch 로 떨어진다
+      const payload = await response.json();
       const data = payload && payload.data;
       const items = Array.isArray(data)
         ? data
         : (data && Array.isArray(data.content) ? data.content : null);
 
-      // 200 이지만 형태가 다르면(프록시가 가로챈 HTML 등) 없는 것으로 본다
+
       if (!payload || payload.success === false || items === null) {
         return { write: false, status: response.status };
       }
@@ -135,7 +131,7 @@
         headers: { Accept: "application/json" }
       });
     } catch (_) {
-      // 네트워크 실패는 브라우저가 "Failed to fetch" 를 던진다. 그대로 두면 화면에 영문 원문이 뜬다.
+
       throw new Error("서버에 연결하지 못했습니다. 잠시 후 다시 시도해 주세요.");
     }
 
@@ -165,12 +161,10 @@
     };
   }
 
-  /* ---------------------------------------------------------
-     모드 적용
-     --------------------------------------------------------- */
+
   function applyMode() {
     tableEl.classList.toggle("mode-admin", CAN_WRITE);
-    // 읽기전용은 관리 열에 [상세] 하나뿐이라 기본 236px(버튼 2~3개용)이 과하다
+
     tableEl.classList.toggle("act-slim", !CAN_WRITE);
     COLSPAN = CAN_WRITE ? 7 : 5;
 
@@ -189,9 +183,7 @@
     createBtn.title = "지금은 배너를 조회만 할 수 있습니다.";
     badgeEl.textContent = "공개 API · GET /api/v1/banners";
 
-    /* 안내는 두 줄로 끝낸다. 관리자에게 필요한 건 "지금 뭘 할 수 있나"와
-       "이 목록이 전부가 아니다" 두 가지뿐이고, 원인별 한 줄만 상황에 따라 덧붙인다.
-       엔드포인트 경로 같은 내부 정보는 화면에 노출하지 않는다. */
+
     const cause =
       (PROBE_STATUS === 401 || PROBE_STATUS === 403)
         ? " 로그아웃 후 다시 로그인해 보세요."
@@ -203,21 +195,8 @@
     noticeEl.hidden = false;
   }
 
-  /* ---------------------------------------------------------
-     목록 렌더
-     --------------------------------------------------------- */
-  /* ---------------------------------------------------------
-     노출 순서 변경
 
-     정렬 기준은 sortOrder 오름차순 + 동순위는 id 오름차순 — 백엔드 쿼리와 같은 규칙이라
-     화면 순서가 쇼핑몰 슬라이더 순서와 항상 일치한다.
-
-     저장은 PATCH /admin/banners/order 하나로 "전체 목록"을 0..n-1 로 정규화해 보낸다.
-     - 개별 PUT 두 번으로 자리를 바꾸면 중간에 실패했을 때 두 배너가 같은 sortOrder 를
-       갖고 조용히 깨진다. 배치 엔드포인트는 한 트랜잭션이라 부분 반영이 없다.
-     - 전체를 다시 매기므로 기존에 중복돼 있던 sortOrder 도 함께 정리된다.
-     --------------------------------------------------------- */
-  let canReorder = false;   // 관리자 모드 + 필터 없음일 때만 true
+  let canReorder = false;
 
   function orderedBanners() {
     return [...BANNERS].sort((a, b) => (a.sortOrder - b.sortOrder) || (a.id - b.id));
@@ -236,10 +215,10 @@
     const moved = ordered.slice();
     [moved[from], moved[to]] = [moved[to], moved[from]];
 
-    const items = moved.map((b, index) => ({ id: b.id, sortOrder: index + 1 }));   // 순서는 1부터
+    const items = moved.map((b, index) => ({ id: b.id, sortOrder: index + 1 }));
 
     try {
-      // 서버가 갱신된 전체 목록을 돌려주므로 그것을 정본으로 삼는다
+
       const data = await AdminApi.patch("/banners/order", { items });
       BANNERS = (Array.isArray(data) ? data : []).map(mapRow);
       applyFilter();
@@ -262,11 +241,10 @@
       const imageHref = resolveHttpUrl(b.imageUrl);
       const linkHref = resolveHttpUrl(b.linkUrl);
 
-      // alt 는 비운다 — 바로 옆 배너명 셀이 접근성 이름 역할을 하므로 중복 낭독을 피한다
+
       const thumb = `<img class="bn-thumb" src="${esc(imageSrc)}" alt="" loading="lazy">`;
 
-      // 순서 변경은 "전체 순서" 기준이라, 검색·상태 필터가 걸려 있으면 화면에 보이는 위/아래 행이
-      // 실제 이웃이 아니다. 그때는 버튼을 숨겨 엉뚱한 배너와 자리를 바꾸는 일을 막는다.
+
       const pos = orderIndexOf(b.id);
       const reorder = canReorder
         ? `<span class="order-btns">
@@ -275,8 +253,7 @@
            </span>`
         : "";
 
-      // 노출 순번은 저장된 sort_order 값이 아니라 전체 정렬에서의 자리로 그린다.
-      // 과거 데이터에 0 이나 중복이 남아 있어도 화면에는 1..n 으로 보인다.
+
       const orderLabel = pos >= 0 ? String(pos + 1) : "-";
 
       return `
@@ -320,7 +297,7 @@
     const q = qEl.value.trim().toLowerCase();
     const status = CAN_WRITE && statusEl ? statusEl.value : "";
 
-    // 필터가 걸리면 화면의 위/아래 행이 전체 순서상의 이웃이 아니게 되므로 순서 버튼을 감춘다
+
     canReorder = CAN_WRITE && !q && !status;
 
     listController.setItems(BANNERS.filter((b) => {
@@ -334,16 +311,10 @@
   qEl.addEventListener("input", applyFilter);
   statusEl.addEventListener("change", applyFilter);
 
-  /* ---------------------------------------------------------
-     등록/수정 모달
 
-     AdminUI.form 은 new FormData(form) 을 평범한 객체로 옮겨 담아서 File 을 다룰 수 없고,
-     체크박스가 미체크면 키 자체가 사라지며, 필드별 검증 훅도 없다. 그래서 전용 모달을 쓴다.
-     (.modal-backdrop / .modal / .field / .modal-actions 는 admin.css 것을 그대로 재사용)
-     --------------------------------------------------------- */
   function openBannerModal(banner) {
     const isEdit = Boolean(banner);
-    // 신규 배너는 맨 뒤에 붙인다. 순서는 1부터이므로 배너가 없으면 1.
+
     const nextOrder = BANNERS.length
       ? Math.max(...BANNERS.map((b) => Number(b.sortOrder) || 0)) + 1
       : 1;
@@ -426,7 +397,7 @@
     const submitBtn = backdrop.querySelector("[data-submit]");
     const field = (name) => backdrop.querySelector(`#bn${name[0].toUpperCase()}${name.slice(1)}`);
 
-    let pendingFile = null;      // 저장할 때 업로드한다 (아래 주석 참고)
+    let pendingFile = null;
     let previewObjectUrl = null;
 
     function close() {
@@ -471,7 +442,7 @@
     });
 
     field("imageUrl").addEventListener("input", () => {
-      if (pendingFile) return;                    // 파일 선택이 우선이다
+      if (pendingFile) return;
       previewEl.dataset.fallback = "";
       previewEl.src = resolveAssetUrl(field("imageUrl").value.trim());
     });
@@ -576,7 +547,7 @@
 
     const response = await fetch(`${API_BASE}/files/upload`, {
       method: "POST",
-      headers: AdminAuth.authorizationHeader(), // Content-Type 을 직접 넣으면 boundary 가 빠져 서버가 빈 본문을 받는다
+      headers: AdminAuth.authorizationHeader(),
       body: formData
     });
 
@@ -594,9 +565,7 @@
     return String(fileUrl);
   }
 
-  /* ---------------------------------------------------------
-     행 액션
-     --------------------------------------------------------- */
+
   rowsEl.addEventListener("click", async (e) => {
     const btn = e.target.closest("button[data-act]");
     if (!btn) return;
@@ -606,13 +575,12 @@
     if (!banner) return;
 
     if (btn.dataset.act === "up" || btn.dataset.act === "down") {
-      btn.disabled = true;                                   // 연타로 두 번 보내지 않게
+      btn.disabled = true;
       await moveBanner(id, btn.dataset.act === "up" ? -1 : 1);
       return;
     }
 
-    // 폴백(읽기전용)에서만 그려지는 버튼이다. 노출 상태·기간은 넣지 않는다 —
-    // 공개 API 가 active/startAt/endAt 을 주지 않아 그 모드에서는 값을 알 수 없다.
+
     if (btn.dataset.act === "detail") {
       AdminUI.detail("배너 상세", [
         ["배너 ID", banner.id],
@@ -671,8 +639,8 @@
   }
 
   async function boot() {
-    // HTML 의 정적 페이저 버튼 3개는 첫 setItems 가 덮어쓴다.
-    // probe 가 실패로 빠져도 가짜 버튼이 남지 않도록 await 전에 한 번 초기화한다.
+
+
     listController.setItems([]);
 
     const probe = await probeAdminApi();
@@ -681,7 +649,7 @@
     applyMode();
 
     if (CAN_WRITE) {
-      // probe 응답을 그대로 목록으로 쓴다 (같은 요청을 두 번 보내지 않는다)
+
       BANNERS = probe.items.map(mapRow).sort((a, b) => a.sortOrder - b.sortOrder);
       applyFilter();
       return;

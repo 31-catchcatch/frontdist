@@ -1,5 +1,3 @@
-// orders.js — 주문 내역/배송추적/구매확정/교환환불 (U-ORDER-005~010)  URL: ?orderId=
-
 (function () {
   "use strict";
 
@@ -32,17 +30,10 @@
   const dialogContent = document.getElementById('dialogContent');
   const money = new Intl.NumberFormat('ko-KR');
 
-  function getAccessToken() {
-    // [5-1 조치] 저장 키를 직접 읽지 않는다.
-    return window.CatchAuth ? CatchAuth.getToken() : null;
-  }
-
   async function apiFetch(path, options = {}) {
     const headers = new Headers(options.headers || {});
     headers.set("Accept", "application/json");
     if (options.body) headers.set("Content-Type", "application/json");
-    const token = getAccessToken();
-    if (token) headers.set("Authorization", `Bearer ${token}`);
 
     const response = await fetch(`${API_BASE}${path}`, { ...options, headers });
     const text = await response.text();
@@ -73,7 +64,7 @@
           quantity: detail.quantity,
           totalPrice: detail.totalPrice,
           deliveryStatus: detail.deliveryStatus,
-          // 주문 단위 합계(배송비 포함) — 주문 마지막 상품 뒤 요약 줄에 쓴다.
+
           orderFinalAmount: order.finalPaymentAmount
         });
       });
@@ -92,7 +83,7 @@
     } else if (row.deliveryStatus === "CANCELED" || row.deliveryStatus === "REFUNDED") {
       action = "";
     }
-    // 썸네일이 없는 상품은 기존처럼 CSS로 그린 회색 박스를 유지한다.
+
     const thumb = row.thumbnailUrl
       ? `<img src="${esc(row.thumbnailUrl)}" alt="">`
       : `<span></span>`;
@@ -145,15 +136,14 @@
         dialogKicker.textContent = 'TRANSACTION STATEMENT'; dialogTitle.textContent = '거래명세서';
         const order = await apiFetch(`/orders/${row.orderId}/statement`);
 
-        // 최종 결제 금액은 전자 영수증(결제 승인액)을 기준으로 통일한다.
-        // 영수증 조회가 안 되면 주문의 최종 결제 금액으로 폴백.
+
         let finalAmount = order.finalPaymentAmount;
         try {
           const receipt = await apiFetch(`/orders/${row.orderId}/receipt`);
           if (receipt && receipt.amount != null) finalAmount = receipt.amount;
-        } catch (_) { /* 폴백 유지 */ }
+        } catch (_) {  }
 
-        // 품목은 주문 전체(모든 상품)를 나열한다 → 상품 금액 합계로 이어진다.
+
         const items = (order.orderDetails || [])
           .map((d) => `<div><dt>${esc(d.productName)}</dt><dd>${d.quantity}개 / ${money.format(d.totalPrice)}원</dd></div>`)
           .join("");
@@ -168,16 +158,15 @@
         dialogContent.innerHTML = `${summary}<form id="claimForm" class="claim-form"><label>신청 유형<select name="type" required><option value="EXCHANGE">교환</option><option value="RETURN">반품</option></select></label><label>상세 사유<textarea name="reason" required placeholder="상세 사유를 입력해 주세요."></textarea></label><p class="dialog-note">구매 확정 전 주문 상품에 한해 신청할 수 있습니다.</p><button type="submit" class="btn btn-dark full">신청하기</button></form>`;
       } else {
         dialogKicker.textContent = 'ORDER DETAIL'; dialogTitle.textContent = '주문 상세';
-        // 주문 전체를 불러와 상품별 금액과 배송비 포함 합계를 함께 보여준다.
+
         const order = await apiFetch(`/orders/${row.orderId}`);
 
-        // 최종 결제 금액은 거래명세서와 동일하게 전자 영수증(결제 승인액)을 기준으로 통일한다.
-        // 영수증 조회가 안 되면 주문의 최종 결제 금액으로 폴백.
+
         let finalAmount = order.finalPaymentAmount;
         try {
           const receipt = await apiFetch(`/orders/${row.orderId}/receipt`);
           if (receipt && receipt.amount != null) finalAmount = receipt.amount;
-        } catch (_) { /* 폴백 유지 */ }
+        } catch (_) {  }
 
         const items = (order.orderDetails || [])
           .map((d) => `<div><dt>${esc(d.productName)} · ${d.quantity}개 <em>(${STATUS_LABEL[d.deliveryStatus] || d.deliveryStatus})</em></dt><dd>${money.format(d.totalPrice)}원</dd></div>`)

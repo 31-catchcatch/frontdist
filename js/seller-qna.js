@@ -1,5 +1,3 @@
-// seller-qna.js — 판매자 상품 Q&A 목록 조회 및 답변 등록/수정
-
 document.addEventListener("DOMContentLoaded", async () => {
   if (!(await CatchAuth.requireRole("SELLER"))) return;
   const API_BASE = (
@@ -29,7 +27,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   let currentQnaList = [];
   let selectedQnaId = null;
 
-  // 판매자 로그인 확인
+
   if (
     window.CatchAuth &&
     typeof CatchAuth.requireLogin === "function" &&
@@ -50,9 +48,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     return;
   }
 
-  /**
-   * 백엔드 요청 공통 함수
-   */
+
   async function requestApi(url, options = {}) {
     const response = await fetch(url, {
       credentials: "include",
@@ -90,10 +86,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     return result;
   }
 
-  /**
-   * 날짜 표시
-   * 2026-07-16T12:30:00 → 2026.07.16
-   */
+
   function formatDate(value) {
     if (!value) return "-";
 
@@ -110,18 +103,14 @@ document.addEventListener("DOMContentLoaded", async () => {
     return `${year}.${month}.${day}`;
   }
 
-  /**
-   * 필터에 해당하는 answered 값
-   */
+
   function getAnsweredValue(filter) {
     if (filter === "wait") return false;
     if (filter === "complete") return true;
     return null;
   }
 
-  /**
-   * Q&A API 주소 생성
-   */
+
   function createListUrl({
     filter = "all",
     page = 0,
@@ -141,9 +130,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     return `${QNA_API}?${params.toString()}`;
   }
 
-  /**
-   * Q&A 페이지 데이터 요청
-   */
+
   async function fetchQnaPage({
     filter = "all",
     page = 0,
@@ -166,16 +153,14 @@ document.addEventListener("DOMContentLoaded", async () => {
     };
   }
 
-  /**
-   * 표에 Q&A 목록 출력
-   */
+
   function renderQnaList(items) {
     currentQnaList = items;
 
     if (items.length === 0) {
       tbody.innerHTML = `
         <tr>
-          <td colspan="6" style="text-align:center; padding:50px 20px;">
+          <td colspan="6" class="state-empty">
             등록된 문의가 없습니다.
           </td>
         </tr>
@@ -214,15 +199,6 @@ document.addEventListener("DOMContentLoaded", async () => {
                 type="button"
                 class="qna-item"
                 data-qna-id="${qna.qnaId}"
-                style="
-                  border:0;
-                  padding:0;
-                  background:none;
-                  font:inherit;
-                  color:inherit;
-                  cursor:pointer;
-                  text-align:left;
-                "
               >
                 ${esc(qna.questionTitle ||
                   qna.questionContent)}
@@ -248,9 +224,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       .join("");
   }
 
-  /**
-   * 상단 전체·대기·완료 개수 조회
-   */
+
   async function loadCounts() {
     const [allPage, waitPage, completePage] =
       await Promise.all([
@@ -275,15 +249,13 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
   }
 
-  /**
-   * 선택한 필터의 목록 조회
-   */
+
   async function loadQnaList(filter = currentFilter) {
     currentFilter = filter;
 
     tbody.innerHTML = `
       <tr>
-        <td colspan="6" style="text-align:center; padding:50px 20px;">
+        <td colspan="6" class="state-empty">
           문의 목록을 불러오는 중입니다.
         </td>
       </tr>
@@ -298,9 +270,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     renderQnaList(pageData.content);
   }
 
-  /**
-   * 필터 버튼 활성화
-   */
+
   function setActiveFilter(activeButton) {
     filterButtons.forEach((button) => {
       button.classList.toggle(
@@ -310,9 +280,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
   }
 
-  /**
-   * 문의 선택 → 답변 입력 영역 표시
-   */
+
   tbody.addEventListener("click", (event) => {
     const item = event.target.closest(".qna-item");
     if (!item) return;
@@ -333,9 +301,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     answerQuestion.textContent =
       `문의 : ${qna.questionTitle}\n${qna.questionContent}`;
 
-    /*
-     * 이미 답변이 있으면 수정할 수 있도록 기존 답변 표시
-     */
+
     answerText.value = qna.answer?.content ?? "";
 
     saveButton.textContent = qna.answered
@@ -352,9 +318,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     answerText.focus();
   });
 
-  /**
-   * 답변 등록 또는 수정
-   */
+
   async function saveAnswer(qnaId, content) {
     const result = await requestApi(
       `${QNA_API}/${qnaId}/answers`,
@@ -395,9 +359,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       answerText.value = "";
       selectedQnaId = null;
 
-      /*
-       * DB에 저장된 최신 상태를 다시 조회
-       */
+
       await Promise.all([
         loadCounts(),
         loadQnaList(currentFilter)
@@ -455,9 +417,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
   }
 
-  /**
-   * 필터 버튼
-   */
+
   filterButtons.forEach((button) => {
     button.addEventListener("click", async () => {
       const filter = button.dataset.filter || "all";
@@ -473,7 +433,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         tbody.innerHTML = `
           <tr>
-            <td colspan="6" style="text-align:center; padding:50px 20px;">
+            <td colspan="6" class="state-empty">
               문의 목록을 불러오지 못했습니다.
             </td>
           </tr>
@@ -486,9 +446,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
   });
 
-  /**
-   * 페이지 최초 실행
-   */
+
   async function initialize() {
     const requestedStatus =
       new URLSearchParams(location.search).get("status");
@@ -520,7 +478,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
       tbody.innerHTML = `
         <tr>
-          <td colspan="6" style="text-align:center; padding:50px 20px;">
+          <td colspan="6" class="state-empty">
             문의 목록을 불러오지 못했습니다.
           </td>
         </tr>

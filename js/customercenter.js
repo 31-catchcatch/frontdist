@@ -103,12 +103,11 @@
   });
 
   function isLoggedIn() {
-    // [5-1 조치] 토큰 저장 키를 직접 읽지 않고 공용 인증 모듈에 위임한다.
     return Boolean(window.CatchAuth && CatchAuth.isLoggedIn());
   }
 
   function clearLoginState() {
-    // [5-1 조치] 저장 키 직접 접근 제거. 화면 이동은 기존처럼 각 호출부가 담당한다.
+
     if (window.CatchAuth) CatchAuth.clearSession();
   }
 
@@ -299,7 +298,7 @@
             : null;
         if (latest && latest.id != null) newInquiryId = latest.id;
       } catch (_) {
-        /* 조회 실패 → 아래에서 목록으로 폴백 */
+
       }
 
       location.href = newInquiryId

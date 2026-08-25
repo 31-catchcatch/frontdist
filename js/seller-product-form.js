@@ -59,13 +59,9 @@
   let savedImageUrls = [];
 
   function isSellerLoggedIn() {
-    // [5-1 조치] 토큰 보유 여부는 공용 모듈에 위임한다 (판매자 여부 판단은 기존 유지).
     const loggedIn = Boolean(window.CatchAuth && CatchAuth.isLoggedIn());
 
-    return (
-      loggedIn &&
-      sessionStorage.getItem("catchcatch.loginType") === "seller"
-    );
+    return loggedIn && CatchAuth.loginType() === "seller";
   }
 
   function moveToSellerLogin() {
@@ -83,7 +79,7 @@
   }
 
   function clearLoginState() {
-    // [5-1 조치] 저장 키 직접 접근 제거. 화면 이동은 기존처럼 각 호출부가 담당한다.
+
     if (window.CatchAuth) CatchAuth.clearSession();
   }
 
@@ -210,7 +206,7 @@
     renderImagePreviews();
   });
 
-  // ----- 상품 옵션 (사이즈 등) -----
+
   function addOptionRow(data) {
     const row = document.createElement("div");
     row.className = "option-row";
@@ -625,8 +621,7 @@
     addOptionRow();
   }
 
-  // 카테고리/브랜드 select 옵션이 채워진 뒤에 상품 값을 채워야
-  // 수정 모드에서 select.value 지정이 실제로 선택되어 반영된다.
+
   Promise.all([
     loadCategories(),
     loadBrands()

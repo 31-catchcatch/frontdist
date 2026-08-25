@@ -1,4 +1,3 @@
-// mypage.js — 회원 유형에 맞는 회원정보 수정 페이지 연결 및 쇼핑 정보 요약 조회
 document.addEventListener("DOMContentLoaded", () => {
   const accountEditLink = document.querySelector('[data-role="account-edit-link"]');
   const summaryGrid = document.querySelector(".summary-grid");
@@ -9,7 +8,7 @@ document.addEventListener("DOMContentLoaded", () => {
     reviews: document.querySelector('[data-role="summary-reviews"]')
   };
 
-  const loginType = sessionStorage.getItem("catchcatch.loginType");
+  const loginType = CatchAuth.loginType();
   if (accountEditLink) {
     accountEditLink.href = loginType === "seller"
       ? "seller-mypage-edit.html"
@@ -86,7 +85,7 @@ document.addEventListener("DOMContentLoaded", () => {
     try {
       data = await response.json();
     } catch (_) {
-      // 오류 응답이 JSON이 아닌 경우에도 상태 코드로 처리한다.
+
     }
 
     if (!response.ok) throw new Error(data.message || "SUMMARY_LOAD_FAILED");

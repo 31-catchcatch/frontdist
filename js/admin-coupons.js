@@ -16,10 +16,7 @@
   const createBtn = document.getElementById("createBtn");
   const badgeEl = document.querySelector(".preview-badge");
 
-  /* 쿠폰이 만들어지는 경로가 둘이라 한 화면에서 목록을 나눠 본다.
-       requests : 판매자 발행 요청 심사 (GET /admin/coupons/requests)  — 승인/반려 대상
-       coupons  : 실제 발행된 쿠폰 전체 (GET /admin/coupons)          — 판매자분 + 관리자 직접발행분
-     두 응답은 형태가 완전히 달라 mapRow/render/헤더를 모드별로 분기한다. */
+
   const VIEWS = {
     requests: {
       head: ["판매자", "쿠폰명", "할인", "발행수량", "사용기간", "요청일", "상태", "인가"],
@@ -40,7 +37,7 @@
     return `${AdminUI.num(v)}원`;
   }
 
-  /** GET /admin/coupons 응답 → 화면 형태 */
+
   function mapCouponRow(c) {
     const soldOut = (c.issuedQuantity ?? 0) >= (c.totalQuantity ?? 0);
     return {
@@ -51,17 +48,17 @@
       qty: `${AdminUI.num(c.issuedQuantity ?? 0)} / ${AdminUI.num(c.totalQuantity ?? 0)}`,
       period: c.validUntil ? `~${String(c.validUntil).slice(0, 10)}` : "-",
       created: (c.createdAt || "").slice(0, 10),
-      // 발행된 쿠폰의 상태는 심사 상태가 아니라 노출 상태다
+
       status: !c.active ? "stop" : (soldOut ? "wait" : "ok"),
       statusLabel: !c.active ? "중지" : (soldOut ? "소진" : "발행중"),
     };
   }
 
-  /** GET /admin/coupons/requests 응답 → 화면 형태 */
+
   function mapRow(c) {
     return {
       id: c.requestId,
-      sellerId: c.sellerId,          // 알림 발송용 (아래 resolveUserId 참고)
+      sellerId: c.sellerId,
       seller: sellerLabel(c.sellerId),
       name: c.couponName,
       discount: formatDiscount(c.discountType, c.discountValue),
@@ -119,9 +116,9 @@
 
   const listController = AdminUI.createListController({ pager: document.querySelector(".pager"), render });
 
-  const sellerByApplication = new Map();   // applicationId → { userId, businessName }
+  const sellerByApplication = new Map();
   const loadedStatuses = new Set();
-  let usernameByUserId = null;             // userId → 로그인 아이디 (1회 조회)
+  let usernameByUserId = null;
 
   async function loadApplications(status) {
     if (loadedStatuses.has(status)) return;
@@ -129,7 +126,7 @@
     try {
       list = await AdminApi.list(`/sellers/applications?status=${status}`);
     } catch (_) {
-      return;                                    // 다음 조회 때 재시도할 수 있게 미표시로 남긴다
+      return;
     }
     loadedStatuses.add(status);
     list.forEach((a) => {
@@ -151,7 +148,7 @@
         if (u && u.userId != null && u.username) map.set(String(u.userId), u.username);
       });
     } catch (_) {
-      // 실패해도 상호명으로는 표시할 수 있게 빈 표로 확정한다
+
     }
     usernameByUserId = map;
   }
@@ -170,7 +167,7 @@
 
   function sellerLabel(applicationId) {
     const info = sellerByApplication.get(String(applicationId));
-    if (!info) return `판매자#${applicationId}`;          // 사전 조회 실패 시 기존 표기로 폴백
+    if (!info) return `판매자#${applicationId}`;
 
     const username = usernameByUserId && usernameByUserId.get(String(info.userId));
     if (username && info.businessName) return `${username} (${info.businessName})`;
@@ -222,7 +219,7 @@
 
   function applyFilter() {
     const q = qEl.value.trim().toLowerCase();
-    // 상태 필터는 심사 목록(대기/승인/반려) 전용이다. 발행된 쿠폰의 상태는 의미가 달라 적용하지 않는다.
+
     const status = view === "requests" && statusEl ? statusEl.value : "";
     listController.setItems(COUPONS.filter((c) =>
       (!status || c.status === status) &&
@@ -230,14 +227,14 @@
     ));
   }
 
-  /** 모드에 맞춰 표 헤더·툴바·뱃지를 바꾼다 */
+
   function applyView() {
     const conf = VIEWS[view];
     headRowEl.innerHTML = conf.head
       .map((h, i) => `<th${i === 1 ? ' class="grow"' : (i === 2 || i === 3 ? ' class="num"' : "")}>${h}</th>`)
       .join("");
     if (badgeEl) badgeEl.textContent = conf.badge;
-    statusEl.hidden = view !== "requests";      // 심사 상태 필터는 심사 목록에서만
+    statusEl.hidden = view !== "requests";
   }
   qEl.addEventListener("input", applyFilter);
   if (statusEl) statusEl.addEventListener("change", applyFilter);
@@ -260,7 +257,7 @@
       });
       if (!ok) return;
     } else {
-      // 반려 사유는 판매자 알림 본문에 그대로 실리므로 관리자가 직접 입력받는다.
+
       const input = await AdminUI.form({
         title: "쿠폰 발행 반려",
         message: `[${c.seller}] '${c.name}' 쿠폰 발행 요청을 반려합니다. 입력한 사유가 판매자 알림에 그대로 표시됩니다.`,
@@ -289,7 +286,7 @@
       return;
     }
 
-    // 심사는 이미 확정됐다. 알림 발송이 실패해도 심사 실패로 보이면 안 되므로 따로 처리한다.
+
     try {
       const userId = await resolveUserId(c.sellerId);
       if (userId == null) {
@@ -317,7 +314,7 @@
         COUPONS = data.map(mapCouponRow);
       } else {
         const data = await AdminApi.list("/coupons/requests?size=200");
-        // mapRow 가 sellerLabel 을 쓰므로 매핑 전에 사전이 채워져 있어야 한다.
+
         await loadSellerDirectory(data.map((c) => c.sellerId));
         COUPONS = data.map(mapRow);
       }
@@ -334,12 +331,7 @@
     load();
   });
 
-  /* 관리자 직접 발행. 판매자 요청 없이 바로 쿠폰을 만든다.
-     검증 규칙은 백엔드(AdminCouponService)와 같게 맞춰 두되, 실제 방어선은 서버다.
 
-     AdminUI.form 은 제출하는 순간 모달을 닫는다. 그대로 쓰면 검증에 걸릴 때마다
-     8개 필드를 처음부터 다시 입력해야 하므로, 입력값을 들고 다시 열어준다. */
-  /** 승인된 입점업체 목록을 발행 폼의 선택지로 만든다. */
   async function sellerOptions() {
     await Promise.all([loadApplications("APPROVED"), loadUsernames()]);
     return [...sellerByApplication.keys()]
@@ -369,7 +361,7 @@
     const ymd = (d) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
     const today = new Date();
 
-    // 쿠폰은 발행한 판매자의 상품에만 적용되므로 대상 업체를 먼저 고른다.
+
     const sellers = await sellerOptions();
     if (!sellers.length) {
       AdminUI.toast("승인된 입점업체가 없어 쿠폰을 발행할 수 없습니다.");
@@ -404,14 +396,14 @@
           { name: "validUntil", label: "사용 종료일", type: "date", value: draft.validUntil },
         ],
       });
-      if (!res) return;                 // 취소
-      Object.assign(draft, res);        // 입력값 보존 후 검증
+      if (!res) return;
+      Object.assign(draft, res);
 
       const message = validateCouponDraft(draft);
-      if (message) { AdminUI.toast(message); continue; }   // 값을 유지한 채 다시 연다
+      if (message) { AdminUI.toast(message); continue; }
 
       const isPercent = draft.discountType === "PERCENTAGE";
-      // 백엔드는 LocalDateTime 을 받는다. date 입력값에 시각을 붙인다(시작 00:00, 종료 23:59).
+
       const body = {
         sellerId: Number(draft.sellerId),
         couponName: draft.couponName.trim(),
@@ -427,7 +419,7 @@
       try {
         await AdminApi.post("/coupons", body);
         AdminUI.toast("쿠폰이 발행되었습니다.");
-        // 방금 만든 쿠폰을 바로 확인할 수 있게 발행 목록으로 전환한다
+
         view = "coupons";
         viewEl.value = "coupons";
         applyView();
@@ -435,7 +427,7 @@
         return;
       } catch (err) {
         AdminUI.toast(err.message || "쿠폰 발행에 실패했습니다.");
-        return;                        // 서버 거부는 값 문제일 수도 있으니 토스트로 알리고 종료
+        return;
       }
     }
   });

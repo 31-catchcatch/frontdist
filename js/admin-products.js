@@ -13,8 +13,8 @@
   const SELLER_UNKNOWN = "-";
   const SELLER_LOADING = "…";
 
-  const sellerNameById = new Map();   // productId → 판매자명 | "-"
-  const sellerInFlight = new Map();   // productId → Promise (중복 요청 방지)
+  const sellerNameById = new Map();
+  const sellerInFlight = new Map();
 
   const STATUS_BADGE = {
     ok: ["tag ok", "판매중"],
@@ -22,7 +22,7 @@
     unknown: ["tag", "확인 불가"]
   };
 
-  let onSaleIds = null;   // Set<productId> | null(판정 실패)
+  let onSaleIds = null;
 
   async function fetchOnSaleIds() {
     try {
@@ -92,15 +92,14 @@
     return pending;
   }
 
-  /* 화면에 그려진 행의 판매자 칸만 채운다.
-     행 단위로 textContent 만 갱신하므로 체크박스 선택 상태는 유지된다. */
+
   function fillSellerCells() {
     rowsEl.querySelectorAll("tr[data-id]").forEach((row) => {
       const cell = row.querySelector('[data-role="seller"]');
       if (!cell || cell.dataset.filled === "1") return;
 
       sellerNameOf(row.dataset.id).then((name) => {
-        // 채워지는 사이 페이지를 넘겼으면 그 행은 이미 DOM 에서 빠져 있다.
+
         if (!cell.isConnected) return;
         cell.textContent = name;
         cell.dataset.filled = "1";
@@ -108,9 +107,7 @@
     });
   }
 
-  /**
-   * 백엔드 상품 응답을 화면에서 사용하는 형태로 변환
-   */
+
   function mapRow(product) {
     return {
       id: product.productId ?? product.id,
@@ -145,9 +142,7 @@
     };
   }
 
-  /**
-   * 상품 목록 화면 출력
-   */
+
   function render(list, total = list.length) {
     if (!list.length) {
       rowsEl.innerHTML = `
@@ -231,17 +226,13 @@
     fillSellerCells();
   }
 
-  /**
-   * 관리자 공통 페이징 기능
-   */
+
   const listController = AdminUI.createListController({
     pager: document.querySelector(".pager"),
     render
   });
 
-  /**
-   * 검색 조건 적용
-   */
+
   function applyFilter() {
     const keyword = qEl.value.trim().toLowerCase();
     const status = statusEl ? statusEl.value : "";
@@ -273,9 +264,7 @@
     statusEl.addEventListener("change", applyFilter);
   }
 
-  /**
-   * 전체 체크박스
-   */
+
   if (checkAll) {
     checkAll.addEventListener("change", (event) => {
       rowsEl
@@ -286,9 +275,7 @@
     });
   }
 
-  /**
-   * 상품 상세 및 삭제 버튼 처리
-   */
+
   rowsEl.addEventListener("click", async (event) => {
     const button = event.target.closest("button[data-act]");
 
@@ -310,9 +297,7 @@
 
     const action = button.dataset.act;
 
-    /**
-     * 상품 상세
-     */
+
     if (action === "detail") {
       AdminUI.detail("상품 상세", [
         ["상품 ID", product.id],
@@ -327,9 +312,7 @@
       return;
     }
 
-    /**
-     * 상품 삭제
-     */
+
     if (action === "delete") {
       const confirmed = await AdminUI.confirm({
         title: "상품 강제 삭제",
@@ -348,16 +331,9 @@
         button.disabled = true;
         button.textContent = "삭제 중...";
 
-        console.log("삭제 요청 상품 ID:", product.id);
-
         await AdminApi.del(`/products/${product.id}`);
 
-        console.log("상품 삭제 API 성공:", product.id);
 
-        /*
-         * 삭제 성공 후 브라우저 배열만 수정하지 않고
-         * 백엔드에서 최신 목록을 다시 조회한다.
-         */
         await load();
 
         AdminUI.toast("상품이 삭제되었습니다.");
@@ -374,9 +350,7 @@
     }
   });
 
-  /**
-   * 백엔드 상품 목록 조회
-   */
+
   async function load() {
     try {
       rowsEl.innerHTML = `
@@ -387,10 +361,7 @@
         </tr>
       `;
 
-      /*
-       * 삭제 직후 이전 GET 응답이 캐시되는 것을 막기 위해
-       * 현재 시간을 쿼리 파라미터로 추가한다.
-       */
+
       const cacheKey = Date.now();
 
       const [data, onSale] = await Promise.all([
@@ -415,11 +386,6 @@
 
       applyFilter();
 
-      console.log(
-        "관리자 상품 목록 조회 완료:",
-        PRODUCTS
-      );
-
       return PRODUCTS;
     } catch (error) {
       console.error(
@@ -442,10 +408,8 @@
     }
   }
 
-  /**
-   * 페이지 최초 실행
-   */
+
   load().catch(() => {
-    // 오류 화면은 load() 내부에서 출력
+
   });
 })();

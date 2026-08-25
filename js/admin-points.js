@@ -10,11 +10,11 @@
   function mapRow(u) {
     return {
       id: u.userId,
-      username: u.username || `#${u.userId}`,   // username 이 비면 내부 ID 로 대체
+      username: u.username || `#${u.userId}`,
       name: u.name || "-",
       balance: u.point,
-      // 이 목록은 구매자 대상이다(백엔드 findPointHolders). 판매자/관리자가 섞여 나온다면
-      // 포인트가 남아 있어 예외적으로 포함된 계정이므로, 왜 보이는지 뱃지로 알려준다.
+
+
       role: u.role || "USER",
     };
   }
@@ -60,7 +60,7 @@
     if (!p) return;
 
     const res = await AdminUI.form({
-      // 이름이 비어 있는 계정이 많아 조정 모달도 로그인 아이디 기준으로 표시한다
+
       title: `${p.username} 포인트 강제 조정`,
       message: `현재 보유 ${AdminUI.num(p.balance)} P. 더할 값은 양수, 뺄 값은 음수로 입력하세요.`,
       okText: "조정 적용",

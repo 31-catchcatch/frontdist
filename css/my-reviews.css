@@ -1,8 +1,6 @@
-/* my-reviews.css — 내 리뷰 목록 전용 스타일 */
-
 .myreview-page { max-width: 760px; margin: 0 auto; }
 
-/* ===== 제목 ===== */
+
 .myreview-head {
   display: flex;
   align-items: flex-end;
@@ -15,7 +13,7 @@
 .total-count { font-size: 13px; color: var(--mid, #888); }
 .total-count b { color: var(--point, #e02020); }
 
-/* ===== 리뷰 목록 ===== */
+
 .review-list { list-style: none; padding: 0; margin: 0; }
 
 .review-item {
@@ -26,7 +24,7 @@
   border-bottom: 1px solid #f0f0f0;
 }
 
-/* 상품 썸네일 */
+
 .ri-thumb {
   aspect-ratio: 3/4;
   border-radius: 4px; overflow: hidden;
@@ -34,7 +32,7 @@
 }
 .ri-thumb img { width: 100%; height: 100%; object-fit: cover; }
 
-/* 리뷰 본문 */
+
 .ri-body { min-width: 0; }
 
 .ri-product {
@@ -61,7 +59,7 @@
   margin: 0 0 14px;
 }
 
-/* 리뷰 사진 */
+
 .ri-photos { display: flex; gap: 8px; margin-bottom: 16px; }
 .ri-photos img {
   width: 72px; height: 72px;
@@ -69,7 +67,7 @@
   background: #f0f0f0;
 }
 
-/* 수정/삭제 버튼 */
+
 .ri-actions { display: flex; gap: 8px; }
 .ri-actions button {
   height: 34px; padding: 0 16px;
@@ -82,7 +80,7 @@
   color: var(--point, #e02020);
 }
 
-/* ===== 빈 화면 ===== */
+
 .review-empty { padding: 100px 0; text-align: center; }
 .review-empty p { color: var(--mid, #888); margin-bottom: 28px; }
 
@@ -98,7 +96,7 @@
 
 [hidden] { display: none !important; }
 
-/* ===== 반응형 ===== */
+
 @media (max-width: 600px) {
   .review-item { grid-template-columns: 70px 1fr; gap: 14px; }
 }

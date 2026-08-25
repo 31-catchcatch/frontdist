@@ -1,15 +1,6 @@
 <!doctype html>
 <html lang="ko">
-<!-- ============================================================
-     캐치캐치 판매자 상품 등록/수정 페이지
-     기능 ID: S-PROD-002 ~ S-PROD-004
 
-     등록 모드:
-       seller-product-form.html
-
-     수정 모드:
-       seller-product-form.html?id=상품번호
-     ============================================================ -->
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -19,7 +10,7 @@
 </head>
 <body>
 
-<!-- ================= 공통 헤더 시작 (수정 금지) ================= -->
+
 <div class="utility">
   <div class="wrap">
     <a href="customercenter.html">고객센터</a>
@@ -35,7 +26,7 @@
   <div class="wrap head-row">
     <div class="head-left">
       <form class="search" action="search.html" method="get" role="search">
-        <svg class="icn" viewBox="0 0 24 24" style="width:15px;height:15px"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg>
+        <svg class="icn icn-sm" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg>
         <input type="text" name="q" placeholder="찾으시는 상품이 있나요?" aria-label="상품 검색">
       </form>
     </div>
@@ -64,7 +55,7 @@
     <a href="seller-dashboard.html" class="cat-seller" data-seller-only hidden>판매 관리</a>
   </div>
 </nav>
-<!-- ================= 공통 헤더 끝 ================= -->
+
 
 <main class="wrap">
   <section class="product-form-page">
@@ -215,7 +206,7 @@
   </section>
 </main>
 
-<!-- ================= 공통 푸터 시작 (수정 금지) ================= -->
+
 <footer>
   <div class="wrap">
     <div class="foot-top">
@@ -246,8 +237,9 @@
     </div>
   </div>
 </footer>
-<!-- ================= 공통 푸터 끝 ================= -->
 
+
+<script src="js/http.js"></script>
 <script src="js/auth.js"></script>
 <script src="js/seller-product-form.js"></script>
 <script src="js/navigation.js"></script>

@@ -1,35 +1,32 @@
-// my-reviews.js — 내 리뷰 목록
-// 로그인 필요 페이지
-
 document.addEventListener("DOMContentLoaded", () => {
 
-  // 로그인 안 했으면 로그인 페이지로
+
   if (!CatchAuth.requireLogin()) return;
 
   const $ = (sel) => document.querySelector(sel);
-  // rating 이 null/범위밖이어도 repeat() RangeError 로 렌더가 깨지지 않도록 0~5 로 클램프
+
   const stars = (n) => {
     const v = Math.max(0, Math.min(5, Number(n) || 0));
     return "★".repeat(v) + "☆".repeat(5 - v);
   };
 
   let myReviews = [];
-  let totalElements = 0;              // 서버 전체 리뷰 수 (총계 표기용)
-  const state = { page: 0 };          // 현재 페이지 (0-index, 서버와 동일)
-  const PER_PAGE = 10;                // 한 페이지에 보여줄 리뷰 수
+  let totalElements = 0;
+  const state = { page: 0 };
+  const PER_PAGE = 10;
   const pagination = $('[data-role="pagination"]');
 
-  // ===== 리뷰 하나 HTML =====
+
   function itemHTML(r) {
-    // 리뷰에 첨부한 사진 (있을 때만)
+
     const photoHTML = r.imageUrl
       ? `<div class="ri-photos"><img src="${esc(r.imageUrl)}" alt="리뷰 사진"></div>`
       : "";
 
-    // 상품 썸네일 (없으면 회색 박스)
+
     const thumb = r.productThumbnailUrl || "https://placehold.co/300x400/f5f5f5/999?text=IMG";
 
-    // 날짜 (2026-07-14T10:00 → 2026-07-14)
+
     const date = r.createdAt ? r.createdAt.substring(0, 10) : "";
 
     return `
@@ -59,9 +56,9 @@ document.addEventListener("DOMContentLoaded", () => {
     `;
   }
 
-  // ===== 화면 그리기 =====
+
   function render() {
-    $('[data-role="total"]').textContent = totalElements; // 현재 페이지 수가 아닌 전체 건수
+    $('[data-role="total"]').textContent = totalElements;
 
     if (myReviews.length === 0) {
       $('[data-role="review-list"]').innerHTML = "";
@@ -74,11 +71,11 @@ document.addEventListener("DOMContentLoaded", () => {
     $('[data-role="review-list"]').innerHTML = myReviews.map(itemHTML).join("");
   }
 
-  // ===== 페이지네이션 (표기는 1-index, 내부는 0-index) — product-list.js 와 동일 규약 =====
+
   function renderPagination(totalPages, current0) {
     if (!pagination) return;
     if (!totalPages || totalPages <= 1) {
-      pagination.innerHTML = ""; // 페이지가 하나뿐이면 숨김
+      pagination.innerHTML = "";
       return;
     }
     const cur = current0 + 1;
@@ -90,7 +87,7 @@ document.addEventListener("DOMContentLoaded", () => {
     pagination.innerHTML = html;
   }
 
-  // ===== API에서 진짜 데이터 받아오기 =====
+
   async function loadMyReviews() {
     try {
       const result = await CatchApi.page("/users/me/reviews", { page: state.page, size: PER_PAGE });
@@ -98,7 +95,7 @@ document.addEventListener("DOMContentLoaded", () => {
       myReviews = result.content;
       totalElements = result.totalElements;
 
-      // 마지막 페이지의 마지막 리뷰를 지워 현재 페이지가 비면 한 페이지 앞으로 보정 후 재조회
+
       if (myReviews.length === 0 && state.page > 0) {
         state.page -= 1;
         return loadMyReviews();
@@ -109,12 +106,12 @@ document.addEventListener("DOMContentLoaded", () => {
     } catch (err) {
       console.error(err);
       $('[data-role="review-list"]').innerHTML =
-        `<li style="text-align:center;padding:60px;color:#e02020;">리뷰를 불러오지 못했습니다.<br>${esc(err.message)}</li>`;
+        `<li class="state-error">리뷰를 불러오지 못했습니다.<br>${esc(err.message)}</li>`;
       if (pagination) pagination.innerHTML = "";
     }
   }
 
-  // ===== 수정 / 삭제 (이벤트 위임) =====
+
   $('[data-role="review-list"]').addEventListener("click", async (e) => {
     const li = e.target.closest(".review-item");
     if (!li) return;
@@ -122,13 +119,13 @@ document.addEventListener("DOMContentLoaded", () => {
     const id = Number(li.dataset.id);
     const action = e.target.dataset.action;
 
-    // 수정 → 리뷰 작성 페이지(작성/수정 겸용)로
+
     if (action === "edit") {
       const review = myReviews.find((r) => Number(r.reviewId) === id);
       if (review) {
         try {
           sessionStorage.setItem("catchcatch.editReview", JSON.stringify(review));
-        } catch (_) { /* 저장 실패해도 review-write 가 목록에서 폴백 조회 */ }
+        } catch (_) {  }
       }
       location.href = `review-write.html?reviewId=${id}&edit=true`;
       return;
@@ -138,23 +135,22 @@ document.addEventListener("DOMContentLoaded", () => {
       if (!confirm("이 리뷰를 삭제할까요?")) return;
 
       const btn = e.target;
-      btn.disabled = true; // 중복 클릭 방지
+      btn.disabled = true;
 
       try {
         await CatchApi.del(`/reviews/${id}`);
 
-        // 삭제 후엔 총 건수·페이지 수·항목 위치가 바뀌므로 현재 페이지를 서버에서 다시 로드한다.
-        // (현재 페이지가 비면 loadMyReviews 가 한 페이지 앞으로 보정)
+
         await loadMyReviews();
       } catch (err) {
         console.error(err);
         alert(err.message || "리뷰 삭제에 실패했습니다.");
-        btn.disabled = false; // 실패 시 재시도 가능하도록 복구
+        btn.disabled = false;
       }
     }
   });
 
-  // ===== 페이지 클릭 (이벤트 위임) =====
+
   if (pagination) {
     pagination.addEventListener("click", (e) => {
       const btn = e.target.closest("button[data-page]");
@@ -165,7 +161,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // ===== 시작 =====
+
   loadMyReviews();
 
 });

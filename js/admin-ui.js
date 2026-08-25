@@ -1,12 +1,3 @@
-/* =========================================================
-   캐치캐치 admin-ui.js — 관리자 페이지 공용 UI 헬퍼
-   ---------------------------------------------------------
-   - AdminUI.num(n) / won(n)   : 숫자 · 금액 포맷
-   - AdminUI.confirm({...})    : 확인 모달 → Promise<boolean>
-   - AdminUI.form({...})       : 입력 모달 → Promise<객체|null>
-   - AdminUI.toast(msg)        : 하단 알림
-   - AdminUI.detail(title, rows): 읽기 전용 상세 모달
-   ========================================================= */
 (function (global) {
   "use strict";
 
@@ -80,17 +71,17 @@
     num: (n) => Number(n).toLocaleString("ko-KR"),
     won: (n) => Number(n).toLocaleString("ko-KR") + "원",
 
-    // 읽기 전용 상세 모달. rows = [["라벨","값"], ...]
+
     detail(title, rows) {
       const bd = document.createElement("div");
       bd.className = "modal-backdrop open";
       bd.innerHTML = `<div class="modal">
         <h3>${esc(title)}</h3>
-        <table style="width:100%;border-collapse:collapse;font-size:13px;margin:6px 0 14px">
+        <table class="detail-table">
           ${(rows || []).map(([k, v]) => `
             <tr>
-              <th style="text-align:left;padding:6px 10px;color:#888;font-weight:600;white-space:nowrap;vertical-align:top">${k}</th>
-              <td style="padding:6px 10px">${esc(v)}</td>
+              <th>${k}</th>
+              <td>${esc(v)}</td>
             </tr>`).join("")}
         </table>
         <div class="modal-actions"><button type="button" class="btn primary" data-close>닫기</button></div>
@@ -101,7 +92,7 @@
       bd.addEventListener("click", (e) => { if (e.target === bd) close(); });
     },
 
-    // 확인 모달 → Promise<boolean>
+
     confirm(opts = {}) {
       return new Promise((resolve) => {
         const bd = document.createElement("div");
@@ -122,7 +113,7 @@
       });
     },
 
-    // 입력 모달 → Promise<객체|null>  (fields: [{name,label,type,value,options,placeholder}])
+
     form(opts = {}) {
       return new Promise((resolve) => {
         const bd = document.createElement("div");
@@ -152,7 +143,7 @@
       });
     },
 
-    // 하단 토스트 알림
+
     toast(msg) {
       const t = document.createElement("div");
       t.textContent = msg;

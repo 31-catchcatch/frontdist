@@ -4,7 +4,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const form = document.getElementById("signupForm");
 
-  // ===== STEP 전환 =====
+
   const stepPanels = form.querySelectorAll("[data-step-panel]");
   const stepTabs = document.querySelectorAll("[data-step-tab]");
 
@@ -34,7 +34,7 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    // 본인인증용 번호는 STEP1에서 입력한 대표자 전화번호를 그대로 쓴다 (중복 입력 방지).
+
     const ceoPhoneEl = document.getElementById("ceoPhone");
     const authPhoneEl = document.getElementById("authPhone");
     if (ceoPhoneEl && authPhoneEl) authPhoneEl.value = ceoPhoneEl.value;
@@ -43,8 +43,8 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   form.querySelector('[data-action="go-step1"]').addEventListener("click", () => showStep(1));
-  
-  // ===== 사업자등록증 파일명 표시 =====
+
+
   const bizFileInput = document.getElementById("bizFile");
   const bizFileName = document.querySelector('[data-role="biz-file-name"]');
   if (bizFileInput && bizFileName) {
@@ -55,7 +55,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // ===== 전체 동의 =====
+
   const agreeAll = form.querySelector('[data-action="agree-all"]');
   const agreeItems = form.querySelectorAll(".agree-item input[type=checkbox]");
   agreeAll.addEventListener("change", () => {
@@ -67,7 +67,7 @@ document.addEventListener("DOMContentLoaded", () => {
     })
   );
 
-  // ===== 아이디 중복확인 (실제 API) =====
+
   const checkUsernameBtn = form.querySelector('[data-action="check-username"]');
   checkUsernameBtn.addEventListener("click", async () => {
     const val = document.getElementById("userId").value.trim();
@@ -107,7 +107,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // ===== 인증코드 공통 로직 =====
+
   function setupCodeVerification(cfg) {
     const sendBtn = form.querySelector(cfg.sendBtn);
     const group = form.querySelector(cfg.group);
@@ -127,8 +127,7 @@ document.addEventListener("DOMContentLoaded", () => {
         timerEl.textContent = `${m}:${s}`;
       };
 
-      // 재발송 시 이전 만료 메시지를 지우고 즉시 03:00으로 리셋해 표시한다.
-      // (setInterval 첫 tick은 1초 뒤라, 즉시 render 하지 않으면 옛 값이 1초간 남는다)
+
       msgEl.textContent = "";
       msgEl.className = "field-msg";
       render();
@@ -175,7 +174,7 @@ document.addEventListener("DOMContentLoaded", () => {
     msg: '[data-role="auth-msg"]',
   });
 
-  // ===== 대표자 전화번호 입력 중 하이픈 자동 포맷 (표시용 — 전송 시엔 숫자만 보냄) =====
+
   const ceoPhoneInput = document.getElementById("ceoPhone");
   if (ceoPhoneInput) {
     ceoPhoneInput.addEventListener("input", () => {
@@ -226,7 +225,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const data = await res.json().catch(() => null);
       if (!res.ok || !data?.success) { alert(data?.message || "가입/입점신청에 실패했습니다."); return; }
 
-      showStep(3); // 완료 (가입 + 입점신청 접수, 승인 대기중)
+      showStep(3);
     } catch (err) {
       alert("서버에 연결할 수 없습니다.");
     }

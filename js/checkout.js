@@ -6,9 +6,8 @@
   const FALLBACK_FREE_SHIPPING_THRESHOLD = 50000;
   const FALLBACK_SHIPPING_FEE = 3000;
   const PENDING_ORDER_KEY = "catchcatch.pendingOrder";
-  // [1-3 조치] 주문 대상은 서버가 확정한 초안(draft)으로만 다룬다.
-  //   장바구니/상품상세에서 POST /orders/prepare 로 초안을 만들고 그 식별자만 넘겨받는다.
-  //   화면이 상품·수량을 직접 들고 있지 않으므로 변조할 대상 자체가 없다.
+
+
   const DRAFT_ID = new URLSearchParams(location.search).get("draft");
 
   const PAYMENT_TYPES = [
@@ -60,14 +59,9 @@
     pointAmount: 0,
     selectedPaymentType: "CARD",
     paying: false,
-    // 초안은 주문 생성 시 서버에서 소멸한다. 한 번 소진되면 이 화면으로는 다시 결제할 수 없다.
+
     draftConsumed: false,
   };
-
-  function getAccessToken() {
-    // [5-1 조치] 저장 키를 직접 읽지 않는다.
-    return window.CatchAuth ? CatchAuth.getToken() : null;
-  }
 
   function unwrapData(payload) {
     return payload && typeof payload === "object" && "data" in payload ? payload.data : payload;
@@ -97,8 +91,6 @@
     const headers = new Headers(options.headers || {});
     headers.set("Accept", "application/json");
     if (options.body) headers.set("Content-Type", "application/json");
-    const token = getAccessToken();
-    if (token) headers.set("Authorization", `Bearer ${token}`);
 
     const response = await fetch(`${API_BASE}${path}`, { ...options, headers });
     if (response.status === 401) {
@@ -124,7 +116,7 @@
     return state.cartItems.reduce((sum, item) => sum + (Number(item.totalPrice) || 0), 0);
   }
 
-  /** 상품 할인 전 금액. originalPrice 를 안 내려주는 응답에서는 판매가와 같아져 할인 0으로 보인다. */
+
   function itemsOriginalTotal() {
     return state.cartItems.reduce((sum, item) => {
       const unit = Number(item.originalPrice ?? item.price) || 0;
@@ -132,10 +124,7 @@
     }, 0);
   }
 
-  /**
-   * 주문 상품을 판매자별 금액으로 모은다.
-   * 판매자를 알 수 없는 상품이 하나라도 있으면 범위를 가릴 수 없으므로 null 을 돌려준다.
-   */
+
   function sellerAmounts() {
     const amounts = new Map();
     for (const item of state.cartItems) {
@@ -150,15 +139,11 @@
     return state.coupons.find((coupon) => String(coupon.userCouponId) === String(state.selectedCouponId)) || null;
   }
 
-  /**
-   * 쿠폰이 적용되는 범위와 그 금액. 쿠폰은 발행한 판매자의 상품 금액에만 적용된다.
-   * 서버 OrderService.placeOrder 와 같은 규칙이라 화면 금액과 서버가 확정하는 금액이 어긋나지 않는다.
-   * 최소 주문금액도 전체가 아닌 "적용 대상 금액" 으로 판정한다.
-   */
+
   function couponScope(coupon) {
     if (!coupon) return null;
     const amounts = sellerAmounts();
-    // 판매자 정보를 못 받은 응답에서는 예전처럼 전체 금액 기준으로 둔다.
+
     const wholeOrder = coupon.sellerId == null || amounts === null;
     const amount = wholeOrder ? itemsTotal() : (amounts.get(String(coupon.sellerId)) || 0);
     const minimum = Number(coupon.minimumOrderAmount) || 0;
@@ -185,7 +170,7 @@
     return Math.min(discount, applicableAmount);
   }
 
-  /** 실제로 적용 가능한 쿠폰만 돌려준다. 결제 요청도 이걸 기준으로 보낸다. */
+
   function getUsableSelectedCoupon() {
     const coupon = getSelectedCoupon();
     const scope = couponScope(coupon);
@@ -196,7 +181,7 @@
     return Math.max(0, Number(state.defaults && state.defaults.availablePoint) || 0);
   }
 
-  /** 이 주문에서 실제로 쓸 수 있는 포인트 상한 (보유 포인트와 결제 금액 중 작은 쪽). */
+
   function pointLimit() {
     return summary().pointLimit;
   }
@@ -217,7 +202,7 @@
     const coupon = getSelectedCoupon();
     const scope = couponScope(coupon);
     const couponDiscount = scope && scope.usable ? computeCouponDiscount(coupon, scope.amount) : 0;
-    // 결제 금액을 넘는 포인트는 서버 placeOrder 가 INVALID_INPUT 으로 거부하므로 상한을 함께 잡는다.
+
     const usablePoint = Math.max(0, Math.min(availablePoints(), itemTotal + shippingFee - couponDiscount));
     const pointsUsed = Math.max(0, Math.min(state.pointAmount, usablePoint));
     const finalAmount = itemTotal + shippingFee - couponDiscount - pointsUsed;
@@ -237,7 +222,7 @@
     elements.emptyCart.hidden = items.length !== 0;
     elements.orderItems.innerHTML = items.map((item) => {
       const name = item.productName || "상품명 없음";
-      // 썸네일이 없는 상품은 기존처럼 상품명 첫 글자를 그린다.
+
       const thumb = item.thumbnailUrl
         ? `<img src="${esc(item.thumbnailUrl)}" alt="">`
         : `<span aria-hidden="true">${name.charAt(0) || "C"}</span>`;
@@ -281,7 +266,7 @@
       ? `${money.format(Number(coupon.discountValue) || 0)}원 할인`
       : `${Number(coupon.discountValue) || 0}% 할인`;
     const label = `${coupon.couponName || "쿠폰"} · ${discountLabel}`;
-    // 못 쓰는 쿠폰은 사유를 붙여 왜 선택이 안 되는지 알 수 있게 한다.
+
     return esc(scope.usable ? label : `${label} — ${scope.reason}`);
   }
 
@@ -289,7 +274,7 @@
     return coupon.sellerName ? `${coupon.sellerName} 상품` : "해당 판매자 상품";
   }
 
-  /** 선택한 쿠폰이 어디에 적용되는지 - 여러 판매자가 섞인 장바구니에서 특히 중요하다. */
+
   function renderCouponScope() {
     const coupon = getSelectedCoupon();
     const scope = couponScope(coupon);
@@ -356,7 +341,7 @@
   function renderSummary() {
     renderCouponScope();
     const { originalTotal, productDiscount, shippingFee, couponDiscount, pointsUsed, finalAmount } = summary();
-    // '상품 금액' 은 할인 전 금액을 보여주고, 깎인 만큼을 바로 아래 줄에 따로 세운다.
+
     elements.itemTotal.textContent = formatMoney(originalTotal);
     elements.productDiscountRow.hidden = productDiscount <= 0;
     elements.productDiscount.textContent = formatDiscount(productDiscount);
@@ -368,8 +353,8 @@
 
   function updatePayButton() {
     const hasItems = state.cartItems.length > 0;
-    // draftConsumed 를 여기서 함께 본다. 배송지·결제수단을 다시 고르면 이 함수가 또 불리는데,
-    // 그때 버튼이 되살아나면 이미 소멸한 초안으로 결제를 다시 시도하게 된다.
+
+
     const enabled = state.ready && hasItems && state.selectedAddressId && state.selectedPaymentType
       && !state.paying && !state.draftConsumed;
     elements.payButton.disabled = !enabled;
@@ -403,11 +388,11 @@
     const available = availablePoints();
     if (!Number.isInteger(value) || value < 0) throw new Error("포인트는 0 이상의 정수로 입력해 주세요.");
     if (value > available) throw new Error(`사용 포인트는 보유 포인트(${money.format(available)}P)를 초과할 수 없습니다.`);
-    // 결제 금액을 넘는 만큼은 서버가 받지 않는다. 막지 말고 상한까지만 받아 준다.
+
     return Math.min(value, pointLimit());
   }
 
-  /** 쿠폰이 바뀌면 결제 금액이 줄어 포인트 상한도 내려간다. 넘친 만큼을 깎고 깎였는지 알려 준다. */
+
   function clampPointToLimit() {
     const limit = pointLimit();
     if (state.pointAmount <= limit) return false;
@@ -436,12 +421,7 @@
     }
   }
 
-  /**
-   * [1-3 조치] 서버가 확정해 둔 주문 초안을 화면 표시용으로 가져온다.
-   * 금액은 서버가 잡은 unitPrice/lineAmount 를 그대로 쓴다. 화면이 다시 계산하면
-   * 결제 금액과 어긋날 수 있으므로 여기서는 받은 값을 옮겨 담기만 한다.
-   * originalPrice/sellerId 는 초안이 내려주면 쓰고, 없으면 각각 할인 0·전체 주문 기준으로 폴백한다.
-   */
+
   async function loadDraft() {
     const draft = await apiFetch(`/orders/draft/${encodeURIComponent(DRAFT_ID)}`);
     const items = Array.isArray(draft?.items) ? draft.items : [];
@@ -527,7 +507,7 @@
       const order = await apiFetch("/orders", {
         method: "POST",
         body: JSON.stringify({
-          // [1-3 조치] 상품·수량은 보내지 않는다. 서버가 draftId 로 확정해 둔 내용만 사용한다.
+
           draftId: DRAFT_ID,
           couponId: coupon ? coupon.couponId : null,
           usePoint: summary().pointsUsed,
@@ -541,15 +521,15 @@
       });
 
       createdOrder = order;
-      // 주문이 만들어진 시점에 서버는 이 초안을 소멸시킨다. 결제가 실패해도 같은 draftId 로
-      // 다시 주문할 수 없으므로, 이 뒤로는 화면을 재사용하지 못하게 잠근다.
+
+
       state.draftConsumed = true;
       try {
         sessionStorage.setItem(PENDING_ORDER_KEY, JSON.stringify({
           orderId: order.orderId,
           orderNumber: order.orderNumber,
         }));
-      } catch (_) { /* 스토리지가 막혀 있어도 결제 자체는 진행한다 */ }
+      } catch (_) {  }
 
       const toss = window.TossPayments(config.clientKey);
       const payment = toss.payment({ customerKey: window.TossPayments.ANONYMOUS });
@@ -584,7 +564,7 @@
   async function initialize() {
     if (!window.CatchAuth || !window.CatchAuth.requireLogin()) return;
 
-    // [1-3 조치] draftId 없이는 주문서를 열 수 없다. 주소로 직접 들어와도 살 것이 없다.
+
     if (!DRAFT_ID) {
       elements.loading.hidden = true;
       elements.content.hidden = false;
@@ -627,7 +607,7 @@
   elements.couponSelect.addEventListener("change", () => {
     state.selectedCouponId = elements.couponSelect.value;
 
-    // 할인이 늘면 결제 금액이 줄어 이미 넣어 둔 포인트가 상한을 넘길 수 있다.
+
     if (clampPointToLimit()) {
       setNotice(`쿠폰 할인이 적용되어 사용 포인트를 ${money.format(state.pointAmount)}P 로 맞췄습니다.`, "info");
     }

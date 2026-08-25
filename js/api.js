@@ -3,7 +3,7 @@
 
   const BASE = global.CATCHCATCH_API_BASE_URL || "/api/v1";
 
-  // 이미지 없을 때 쓰는 인라인 SVG 플레이스홀더 (외부 요청 0)
+
   const PLACEHOLDER =
     "data:image/svg+xml;charset=utf-8," +
     encodeURIComponent(
@@ -23,8 +23,7 @@
     }
   }
 
-  // 쿼리 객체 → "?a=1&b=2" (null/undefined/"" 는 스킵)
-  // 값이 배열이면 같은 key 를 여러 번 붙인다 (예: sort=a,desc&sort=id,desc)
+
   function toQuery(query) {
     if (!query) return "";
     const params = new URLSearchParams();
@@ -63,7 +62,7 @@
     try {
       payload = await response.json();
     } catch (_) {
-      /* 본문이 비어있을 수 있음 (예: 204) */
+
     }
 
     if (!response.ok || (payload && payload.success === false)) {
@@ -107,13 +106,13 @@
       };
     },
 
-    // 원화 표기 "12,000원"
+
     won(n) {
       const num = Number(n);
       return Number.isFinite(num) ? num.toLocaleString("ko-KR") + "원" : "-";
     },
 
-    // 이미지 URL → 비어있으면 플레이스홀더
+
     thumb(url) {
       return url ? url : PLACEHOLDER;
     },

@@ -8,8 +8,9 @@
   <link rel="stylesheet" href="css/common.css">
   <link rel="stylesheet" href="css/admin.css">
   <link rel="stylesheet" href="css/admin-banners.css">
+  <script src="js/http.js"></script>
   <script src="js/admin-auth.js"></script>
-  <script>AdminAuth.requireLogin();</script>
+  <script src="js/admin-guard.js"></script>
 </head>
 <body>
   <header class="admin-bar">
@@ -43,12 +44,12 @@
       <span class="preview-badge" id="apiBadge">배너 API 확인 중…</span>
     </div>
 
-    <!-- 관리자 배너 API 가 없을 때만 표시된다 (js/admin-banners.js 의 applyMode) -->
+
     <div class="api-notice" id="apiNotice" role="status" hidden></div>
 
     <div class="toolbar">
       <label class="search-box">
-        <svg class="icn" viewBox="0 0 24 24" style="width:15px;height:15px"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg>
+        <svg class="icn icn-sm" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg>
         <input type="text" id="q" placeholder="배너명·링크 검색">
       </label>
       <select id="statusFilter" hidden>

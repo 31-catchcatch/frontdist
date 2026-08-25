@@ -52,7 +52,6 @@
   ];
 
   function isLoggedIn() {
-    // [5-1 조치] 토큰 저장 키를 직접 읽지 않고 공용 인증 모듈에 위임한다.
     return Boolean(window.CatchAuth && CatchAuth.isLoggedIn());
   }
 
@@ -68,7 +67,7 @@
   }
 
   function clearLoginState() {
-    // [5-1 조치] 저장 키 직접 접근 제거. 화면 이동은 기존처럼 각 호출부가 담당한다.
+
     if (window.CatchAuth) CatchAuth.clearSession();
   }
 
@@ -430,10 +429,6 @@
     }
   });
 
-  // [1-3 조치] 주문 대상과 금액은 서버가 확정한다.
-  //   예전에는 선택한 cartItemId 를 sessionStorage 에 담아 주문서로 넘겼다. 서버는 결제 요청
-  //   시점에야 "무엇을 사려는지" 를 처음 받았고, 그래서 productId/optionId/수량 변조를 대조할
-  //   기준이 없었다. 이제는 여기서 초안(draft)을 만들고 그 식별자만 주문서로 넘긴다.
   checkoutButton.addEventListener("click", async () => {
     const selectedIds = cartItems
       .filter((item) => item.selected)
@@ -453,7 +448,7 @@
       sessionStorage.removeItem("catchcatch.directCheckoutItem");
       location.href = "checkout.html?draft=" + encodeURIComponent(draft.draftId);
     } catch (error) {
-      // CatchApi 는 fetch 응답을 직접 넘겨주지 않으므로 상태 코드로 같은 판정을 한다.
+
       if (handleUnauthorized({ status: error && error.status })) return;
       checkoutButton.disabled = false;
       showMessage(error.message || "주문 진행에 실패했습니다. 잠시 후 다시 시도해 주세요.");

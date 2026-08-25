@@ -9,7 +9,7 @@
 </head>
 <body>
 
-<!-- ================= 공통 헤더 시작 (수정 금지) ================= -->
+
 <div class="utility">
   <div class="wrap">
     <a href="customercenter.html">고객센터</a>
@@ -25,7 +25,7 @@
   <div class="wrap head-row">
     <div class="head-left">
       <form class="search" action="product-list.html" method="get" role="search">
-        <svg class="icn" viewBox="0 0 24 24" style="width:15px;height:15px"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg>
+        <svg class="icn icn-sm" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg>
         <input type="text" name="q" placeholder="찾으시는 상품이 있나요?" aria-label="상품 검색">
       </form>
     </div>
@@ -54,17 +54,10 @@
     <a href="seller-dashboard.html" class="cat-seller" data-seller-only hidden>판매 관리</a>
   </div>
 </nav>
-<!-- ================= 공통 헤더 끝 ================= -->
+
 
 <main class="wrap review-page">
 
-<!-- ▼▼▼ 리뷰 작성 =====================================
-     기능정의서 매핑
-     - U-REVIEW-001 리뷰 작성
-       → POST /api/v1/products/{productId}/reviews
-       ※ 구매확정한 주문에 대해서만 작성 가능
-     받는 파라미터: ?orderId=주문번호
-================================================================ -->
 
   <div class="review-head">
     <div>
@@ -73,7 +66,7 @@
     </div>
   </div>
 
-  <!-- 대상 상품 정보 -->
+
   <div class="review-product">
     <div class="rp-thumb">
       <img data-role="product-image" src="" alt="상품 이미지">
@@ -87,7 +80,7 @@
 
   <form id="reviewForm" class="review-form" novalidate>
 
-    <!-- 별점 -->
+
     <div class="form-block">
       <label class="block-label">별점 <span class="req">*</span></label>
       <div class="star-rating" data-role="star-rating">
@@ -100,7 +93,7 @@
       </div>
     </div>
 
-    <!-- 리뷰 내용 -->
+
     <div class="form-block">
       <label class="block-label" for="reviewBody">리뷰 내용 <span class="req">*</span></label>
       <textarea id="reviewBody" rows="8"
@@ -111,7 +104,7 @@
       </div>
     </div>
 
-    <!-- 사진 첨부 -->
+
     <div class="form-block">
       <label class="block-label">사진 첨부 <span class="optional">(선택 · 최대 1장)</span></label>
       <div class="photo-area">
@@ -124,7 +117,7 @@
       </div>
     </div>
 
-    <!-- 버튼 -->
+
     <div class="form-actions">
       <button type="button" class="btn-cancel" data-action="cancel">취소</button>
       <button type="submit" class="btn-submit">등록하기</button>
@@ -132,11 +125,10 @@
 
   </form>
 
-<!-- ▲▲▲ 여기까지 ▲▲▲ -->
 
 </main>
 
-<!-- ================= 공통 푸터 시작 (수정 금지) ================= -->
+
 <footer>
   <div class="wrap">
     <div class="foot-top">
@@ -167,8 +159,9 @@
     </div>
   </div>
 </footer>
-<!-- ================= 공통 푸터 끝 ================= -->
 
+
+<script src="js/http.js"></script>
 <script src="js/auth.js"></script>
 <script src="js/review-write.js"></script>
 <script src="js/navigation.js"></script>

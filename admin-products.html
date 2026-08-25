@@ -7,8 +7,9 @@
   <title>상품 관리 · 캐치캐치 관리자</title>
   <link rel="stylesheet" href="css/common.css">
   <link rel="stylesheet" href="css/admin.css">
+  <script src="js/http.js"></script>
   <script src="js/admin-auth.js"></script>
-  <script>AdminAuth.requireLogin();</script>
+  <script src="js/admin-guard.js"></script>
 </head>
 <body>
   <header class="admin-bar">
@@ -44,11 +45,10 @@
 
     <div class="toolbar">
       <label class="search-box">
-        <svg class="icn" viewBox="0 0 24 24" style="width:15px;height:15px"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg>
+        <svg class="icn icn-sm" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg>
         <input type="text" id="q" placeholder="상품명·판매자·ID 검색">
       </label>
-      <!-- "신고접수"는 백엔드에 신고 기능·데이터가 없어 제거. 판매중지와 삭제는
-           공개 목록에서 똑같이 빠져 API 로 구분할 수 없으므로 한 항목으로 합쳤다. -->
+
       <select id="statusFilter">
         <option value="">전체 상태</option>
         <option value="ok">판매중</option>
@@ -84,7 +84,7 @@
   </main>
 
   <script src="js/admin-ui.js"></script>
-  
+
   <script src="js/admin-api.js"></script>
   <script src="js/admin-products.js"></script>
 </body>

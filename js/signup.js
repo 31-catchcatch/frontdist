@@ -2,7 +2,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const API_BASE = window.CATCHCATCH_API_BASE_URL || "/api/v1";
 
-  // ===== 유형 선택 =====
+
   const typeSelect = document.getElementById("signupTypeSelect");
   const formBlock = document.getElementById("signupFormBlock");
 
@@ -15,7 +15,7 @@ document.addEventListener("DOMContentLoaded", () => {
     location.href = "seller-signup.html";
   });
 
-  // ===== STEP 전환 =====
+
   const form = document.getElementById("signupForm");
   const stepPanels = form.querySelectorAll("[data-step-panel]");
   const stepTabs = document.querySelectorAll("[data-step-tab]");
@@ -56,7 +56,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   form.querySelector('[data-action="go-step1"]').addEventListener("click", () => showStep(1));
 
-  // ===== 전체 동의 =====
+
   const agreeAll = form.querySelector('[data-action="agree-all"]');
   const agreeItems = form.querySelectorAll(".agree-item input[type=checkbox]");
   agreeAll.addEventListener("change", () => {
@@ -68,10 +68,10 @@ document.addEventListener("DOMContentLoaded", () => {
     })
   );
 
-  // ===== 아이디 중복확인 =====
+
   const userIdInput = document.getElementById("userId");
   const checkUsernameBtn = form.querySelector('[data-action="check-username"]');
-  let checkedUsername = null; // 중복확인을 통과한 아이디. 값이 바뀌면 초기화된다.
+  let checkedUsername = null;
 
   userIdInput.addEventListener("input", () => {
     if (userIdInput.value.trim() !== checkedUsername) {
@@ -123,7 +123,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // ===== 인증코드 공통 로직 =====
+
   function setupCodeVerification(cfg) {
     const sendBtn = form.querySelector(cfg.sendBtn);
     const group = form.querySelector(cfg.group);
@@ -143,8 +143,7 @@ document.addEventListener("DOMContentLoaded", () => {
         timerEl.textContent = `${m}:${s}`;
       };
 
-      // 재발송 시 이전 만료 메시지를 지우고 즉시 03:00으로 리셋해 표시한다.
-      // (setInterval 첫 tick은 1초 뒤라, 즉시 render 하지 않으면 옛 값이 1초간 남는다)
+
       msgEl.textContent = "";
       msgEl.className = "field-msg";
       render();
@@ -191,7 +190,7 @@ document.addEventListener("DOMContentLoaded", () => {
     msg: '[data-role="auth-msg"]',
   });
 
-  // ===== 최종 제출 =====
+
   form.addEventListener("submit", async (e) => {
   e.preventDefault();
 
@@ -215,7 +214,7 @@ document.addEventListener("DOMContentLoaded", () => {
       alert((data && data.message) || "회원가입에 실패했습니다.");
       return;
     }
-    showStep(3); // 성공 시에만 완료 화면
+    showStep(3);
   } catch (err) {
     alert("서버에 연결할 수 없습니다. WEB/WAS 상태를 확인해 주세요.");
   }

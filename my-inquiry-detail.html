@@ -10,7 +10,7 @@
 </head>
 <body>
 
-<!-- ================= 공통 헤더 시작 (수정 금지) ================= -->
+
 <div class="utility">
   <div class="wrap">
     <a href="customercenter.html">고객센터</a>
@@ -26,7 +26,7 @@
   <div class="wrap head-row">
     <div class="head-left">
       <form class="search" action="search.html" method="get" role="search">
-        <svg class="icn" viewBox="0 0 24 24" style="width:15px;height:15px"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg>
+        <svg class="icn icn-sm" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg>
         <input type="text" name="q" placeholder="찾으시는 상품이 있나요?" aria-label="상품 검색">
       </form>
     </div>
@@ -55,17 +55,10 @@
     <a href="seller-dashboard.html" class="cat-seller" data-seller-only hidden>판매 관리</a>
   </div>
 </nav>
-<!-- ================= 공통 헤더 끝 ================= -->
+
 
 <main class="wrap myinquiry-page">
 
-<!-- ▼▼▼ 나의 문의 상세 =====================================
-     - 문의 단건 조회 API 가 없어서(백엔드에 GET .../inquiries/{id} 없음)
-       목록 API 를 페이지 단위로 훑어 ?id= 에 해당하는 문의를 찾아 쓴다.
-       GET /api/v1/customer-center/inquiries (본인 문의만, 로그인 필요)
-     - 목록이 애초에 "내 문의"만 내려주므로 남의 문의 id 를 넣어도 열리지 않는다.
-     받는 파라미터: ?id=문의번호
-================================================================ -->
 
   <div class="myinquiry-head">
     <div>
@@ -75,12 +68,12 @@
     <a class="inq-back" href="my-inquiries.html" data-redirect-back>목록으로</a>
   </div>
 
-  <!-- 불러오는 중 -->
+
   <div class="inquiry-empty" data-role="loading">
     <p>문의 내용을 불러오는 중입니다…</p>
   </div>
 
-  <!-- 문의 본문 -->
+
   <article class="inquiry-detail" data-role="detail" hidden>
     <div class="inq-top">
       <span class="inq-category" data-role="category"></span>
@@ -106,7 +99,7 @@
       <p class="inq-content" data-role="content"></p>
     </section>
 
-    <!-- 답변 완료 -->
+
     <div class="inq-answer" data-role="answer-block" hidden>
       <div class="inq-answer-head">
         <b>관리자 답변</b>
@@ -115,7 +108,7 @@
       <p data-role="answer"></p>
     </div>
 
-    <!-- 답변 대기 -->
+
     <div class="detail-waiting" data-role="waiting-block" hidden>
       <p>아직 답변이 등록되지 않았습니다. 순차적으로 답변드리겠습니다.</p>
     </div>
@@ -125,17 +118,16 @@
     </div>
   </article>
 
-  <!-- 조회 실패 / 없는 문의 -->
+
   <div class="inquiry-empty" data-role="error" hidden>
     <p data-role="error-message">문의 내용을 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.</p>
     <a href="my-inquiries.html" class="btn-primary" data-redirect-back>목록으로</a>
   </div>
 
-<!-- ▲▲▲ 여기까지 ▲▲▲ -->
 
 </main>
 
-<!-- ================= 공통 푸터 시작 (수정 금지) ================= -->
+
 <footer>
   <div class="wrap">
     <div class="foot-top">
@@ -166,8 +158,9 @@
     </div>
   </div>
 </footer>
-<!-- ================= 공통 푸터 끝 ================= -->
 
+
+<script src="js/http.js"></script>
 <script src="js/auth.js"></script>
 <script src="js/api.js"></script>
 <script src="js/my-inquiry-detail.js"></script>
