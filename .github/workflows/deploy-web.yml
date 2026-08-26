@@ -85,6 +85,11 @@ jobs:
           scp -F ~/.ssh/config ../frontdist.tar.gz web01:C:/Users/Catchcatch31admin/deploy_temp/frontdist.tar.gz
           scp -F ~/.ssh/config deploy/deploy.ps1 web01:C:/Users/Catchcatch31admin/deploy_temp/deploy.ps1
 
+      - name: 소스코드 백업 (S3)
+        continue-on-error: true
+        run: |
+          aws s3 cp ../frontdist.tar.gz s3://catchcatch-backup-511529/source-backups/frontdist/latest.tar.gz
+
       - name: web-01 배포 적용
         run: |
           ssh -F ~/.ssh/config web01 'powershell.exe -NoProfile -ExecutionPolicy Bypass -File C:\Users\Catchcatch31admin\deploy_temp\deploy.ps1'
