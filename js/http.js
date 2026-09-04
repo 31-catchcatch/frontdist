@@ -55,7 +55,7 @@
   }
 
   function readCsrfToken() {
-    const m = document.cookie.match(new RegExp("(?:^|;\s*)" + CSRF_COOKIE + "=([^;]*)"));
+    const m = document.cookie.match(new RegExp("(?:^|;\\s*)" + CSRF_COOKIE + "=([^;]*)"));
     if (!m) return "";
     try { return decodeURIComponent(m[1]); } catch (_) { return m[1]; }
   }
@@ -94,7 +94,7 @@
       headers: headers,
     })
       .then(function (res) {
-        if (res.status === 401 || res.status === 403) clearSessionHints();
+        if (res.status === 401) clearSessionHints();
         return res.ok;
       })
       .catch(function () { return false; })
