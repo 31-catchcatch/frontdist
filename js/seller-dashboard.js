@@ -143,10 +143,11 @@ document.addEventListener("DOMContentLoaded", async () => {
       }
     });
 
-    if (
-      response.status === 401 ||
-      response.status === 403
-    ) {
+    if (response.status === 403) {
+      throw new Error("요청이 거부되었습니다. 접근 권한이 없거나 입력 내용이 너무 커서 차단되었을 수 있습니다.");
+    }
+
+    if (response.status === 401) {
       clearLoginState();
       moveToSellerLogin();
       throw new Error("UNAUTHORIZED");

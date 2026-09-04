@@ -68,6 +68,10 @@ document.addEventListener("DOMContentLoaded", () => {
     location.href = "login.html";
   };
 
+  const handleForbidden = () => {
+    alert("요청이 거부되었습니다. 접근 권한이 없거나 입력 내용이 너무 커서 차단되었을 수 있습니다.");
+  };
+
   const cardHTML = (item) => {
     const productId = Number(item.productId);
     const productName =
@@ -279,10 +283,12 @@ document.addEventListener("DOMContentLoaded", () => {
         }
       );
 
-      if (
-        response.status === 401 ||
-        response.status === 403
-      ) {
+      if (response.status === 403) {
+        handleForbidden();
+        return;
+      }
+
+      if (response.status === 401) {
         handleUnauthorized();
         return;
       }
@@ -357,10 +363,12 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     );
 
-    if (
-      response.status === 401 ||
-      response.status === 403
-    ) {
+    if (response.status === 403) {
+      handleForbidden();
+      return null;
+    }
+
+    if (response.status === 401) {
       handleUnauthorized();
       return null;
     }
